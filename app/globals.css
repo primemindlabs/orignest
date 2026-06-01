@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Custom Properties — Apple HIG + PrimeMind brand ─────────────────── */
+:root {
+  --c-bg:      #F2F2F7;
+  --c-surface: #FFFFFF;
+  --c-border:  rgba(60, 60, 67, 0.12);
+  --c-fill:    rgba(118, 118, 128, 0.12);
+  --c-text:    #000000;
+  --c-label2:  #6C6C70;
+  --c-label3:  #AEAEB2;
+  --c-blue:    #007AFF;
+  --c-green:   #34C759;
+  --c-orange:  #FF9500;
+  --c-red:     #FF3B30;
+  --c-gold:    #C9A95C;
+  --c-navy:    #0F1D2E;
+  --sidebar-w: 220px;
+  --topbar-h:  56px;
+}
+
+/* ── Base resets ─────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-color: var(--c-bg);
+  color: var(--c-text);
+}
+
+/* ── Metric display numbers (Apple HIG — ultralight tabular) ─────────────── */
+.metric-value {
+  font-weight: 200;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* ── Frosted glass surfaces ──────────────────────────────────────────────── */
+.glass-sidebar {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+}
+
+.glass-topbar {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ── Card shadows ────────────────────────────────────────────────────────── */
+.card-shadow {
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Scrollbar styling (webkit) ──────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(60, 60, 67, 0.18);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(60, 60, 67, 0.30);
+}
+
+/* ── Focus rings ─────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--c-blue);
+  outline-offset: 2px;
+}
+
+/* ── Skeleton shimmer ────────────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(60, 60, 67, 0.06) 25%,
+    rgba(60, 60, 67, 0.10) 50%,
+    rgba(60, 60, 67, 0.06) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* ── Typography helpers ──────────────────────────────────────────────────── */
+.text-balance {
+  text-wrap: balance;
+}
+
+/* ── Compliance status colors ────────────────────────────────────────────── */
+.trid-ok       { @apply text-green bg-green/10 border-green/20; }
+.trid-due      { @apply text-orange bg-orange/10 border-orange/20; }
+.trid-overdue  { @apply text-red bg-red/10 border-red/20; }
+.trid-blocked  { @apply text-red bg-red/10 border-red/20; }
+.trid-na       { @apply text-label-2 bg-fill border-border; }
