@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { format } from 'date-fns';
 import type { LeadStage } from '@/types';
+import { StageFilter, LeadRow } from './leads-interactive';
 
 export const metadata: Metadata = { title: 'Leads' };
 
@@ -158,23 +159,7 @@ export default async function LeadsPage({
         </form>
 
         {/* Stage filter */}
-        <select
-          defaultValue={searchParams.stage ?? ''}
-          className="h-8 px-3 rounded-[8px] bg-fill border border-border text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue/30"
-          onChange={(e) => {
-            if (typeof window !== 'undefined') {
-              const url = new URL(window.location.href);
-              if (e.target.value) url.searchParams.set('stage', e.target.value);
-              else url.searchParams.delete('stage');
-              window.location.href = url.toString();
-            }
-          }}
-        >
-          <option value="">All Stages</option>
-          {Object.entries(STAGE_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>{label}</option>
-          ))}
-        </select>
+        <StageFilter stages={Object.entries(STAGE_LABELS)} />
 
         {/* Loan type chips */}
         <div className="flex flex-wrap gap-1.5">
@@ -243,15 +228,7 @@ export default async function LeadsPage({
                   trid.le === 'overdue' || trid.le === 'due_today' || trid.cd === 'overdue' || trid.cd === 'blocked';
 
                 return (
-                  <tr
-                    key={lead.id}
-                    className="hover:bg-fill transition-colors cursor-pointer"
-                    onClick={() => {
-                      if (typeof window !== 'undefined') {
-                        window.location.href = `/leads/${lead.id}`;
-                      }
-                    }}
-                  >
+                  <LeadRow key={lead.id} href={`/leads/${lead.id}`}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-7 h-7 rounded-full bg-blue/10 flex items-center justify-center flex-shrink-0">
@@ -317,7 +294,7 @@ export default async function LeadsPage({
                         ? format(new Date(lead.created_at), 'MMM d, yyyy')
                         : '—'}
                     </td>
-                  </tr>
+                  </LeadRow>
                 );
               })}
             </tbody>

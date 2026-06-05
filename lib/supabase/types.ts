@@ -311,6 +311,34 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['rate_limits']['Row'], 'id'>;
         Update: Partial<Database['public']['Tables']['rate_limits']['Row']>;
       };
+      ai_feedback: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          user_id: string;
+          lead_id: string | null;
+          field_type: string;
+          prompt_used: string;
+          ai_output: string;
+          user_action: 'accepted' | 'rejected' | 'modified' | 'ignored';
+          final_text: string | null;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['ai_feedback']['Row'], 'id' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['ai_feedback']['Row']>;
+      };
+      notification_reads: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          user_id: string;
+          notification_type: string;
+          reference_id: string | null;
+          read_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['notification_reads']['Row'], 'id' | 'read_at'>;
+        Update: Partial<Database['public']['Tables']['notification_reads']['Row']>;
+      };
       mfa_status: {
         Row: {
           clerk_user_id: string;

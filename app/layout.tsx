@@ -12,18 +12,18 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Conduit CRM',
-    template: '%s | Conduit CRM',
+    default: 'Orignest',
+    template: '%s | Orignest',
   },
-  description: 'The CRM built for mortgage teams that close. TRID · TCPA · GLBA compliant.',
-  keywords: ['mortgage CRM', 'loan officer software', 'TRID compliance', 'mortgage pipeline'],
+  description: 'The mortgage OS built for loan officers and brokers. TRID · TCPA · GLBA compliant. AI-powered pipeline, DSCR tools, and autopilot automation.',
+  keywords: ['mortgage CRM', 'loan officer software', 'TRID compliance', 'DSCR calculator', 'mortgage pipeline', 'non-QM', 'mortgage broker software'],
   authors: [{ name: 'PrimeMind Labs' }],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.conduitcrm.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.orignest.com'),
   openGraph: {
     type: 'website',
-    title: 'Conduit CRM',
-    description: 'The CRM built for mortgage teams that close.',
-    siteName: 'Conduit CRM',
+    title: 'Orignest — Mortgage OS',
+    description: 'Run your entire mortgage business on autopilot.',
+    siteName: 'Orignest',
   },
   robots: {
     index: false,

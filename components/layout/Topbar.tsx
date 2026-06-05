@@ -1,9 +1,11 @@
 'use client';
 
 import { clsx } from 'clsx';
-import { Bell, Search, ChevronRight } from 'lucide-react';
+import { Search, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { NotificationCenter } from '@/components/layout/NotificationCenter';
+import { useCommandPalette } from '@/components/providers/CommandPaletteProvider';
 
 interface BreadcrumbItem {
   label: string;
@@ -21,11 +23,13 @@ function useBreadcrumbs(): BreadcrumbItem[] {
   const segments = pathname.split('/').filter(Boolean);
 
   const LABELS: Record<string, string> = {
+    today: 'Today',
     dashboard: 'Dashboard',
     pipeline: 'Pipeline',
     leads: 'Leads',
     applications: 'Applications',
     rates: 'Rates',
+    calendar: 'Pipeline Calendar',
     campaigns: 'Campaigns',
     partners: 'Partners',
     reports: 'Reports',
@@ -34,7 +38,26 @@ function useBreadcrumbs(): BreadcrumbItem[] {
     billing: 'Billing',
     'ai-coach': 'AI Coach',
     inbox: 'Inbox',
+    'video-messages': 'Video Messages',
+    templates: 'Templates',
+    reviews: 'Reviews & NPS',
     admin: 'Admin',
+    pricing: 'Pricing Engine',
+    dscr: 'DSCR / Non-QM',
+    commercial: 'Commercial',
+    dialer: 'Dialer',
+    tasks: 'Tasks',
+    broadcast: 'Broadcast',
+    lenders: 'Lender Marketplace',
+    brokers: 'Brokers',
+    revenue: 'Revenue Intelligence',
+    commissions: 'Commissions',
+    'post-close': 'Post-Close',
+    nmls: 'NMLS Compliance',
+    'credit-repair': 'Credit Repair',
+    processing: 'Processing',
+    processor: 'Processor Dashboard',
+    organizations: 'My Organizations',
   };
 
   if (segments.length === 0) return [{ label: 'Dashboard' }];
@@ -50,6 +73,7 @@ function useBreadcrumbs(): BreadcrumbItem[] {
 export function Topbar({ breadcrumbs: propBreadcrumbs, actions }: TopbarProps) {
   const autoBreadcrumbs = useBreadcrumbs();
   const breadcrumbs = propBreadcrumbs ?? autoBreadcrumbs;
+  const { setOpen: openCommandPalette } = useCommandPalette();
 
   return (
     <header
@@ -89,14 +113,15 @@ export function Topbar({ breadcrumbs: propBreadcrumbs, actions }: TopbarProps) {
       <div className="flex items-center gap-2 flex-shrink-0">
         {actions}
 
-        {/* Search trigger */}
+        {/* Search trigger — opens CommandPalette */}
         <button
+          onClick={() => openCommandPalette(true)}
           className={clsx(
             'flex items-center gap-2 h-8 px-3 rounded-[8px]',
             'bg-[rgba(60,60,67,0.06)] hover:bg-[rgba(60,60,67,0.10)]',
             'text-[13px] text-label-2 transition-colors'
           )}
-          aria-label="Search"
+          aria-label="Search (⌘K)"
         >
           <Search size={14} />
           <span className="hidden sm:inline">Search</span>
@@ -105,19 +130,8 @@ export function Topbar({ breadcrumbs: propBreadcrumbs, actions }: TopbarProps) {
           </kbd>
         </button>
 
-        {/* Notifications */}
-        <button
-          className={clsx(
-            'relative w-8 h-8 rounded-[8px] flex items-center justify-center',
-            'hover:bg-[rgba(60,60,67,0.06)] transition-colors',
-            'text-label-2'
-          )}
-          aria-label="Notifications"
-        >
-          <Bell size={16} />
-          {/* Notification dot — show when there are unread */}
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red rounded-full" />
-        </button>
+        {/* Notification Center */}
+        <NotificationCenter />
       </div>
     </header>
   );

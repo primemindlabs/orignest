@@ -1,33 +1,24 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+
 
 const isPublicRoute = createRouteMatcher([
+  '/',
   '/sign-in(.*)',
   '/sign-up(.*)',
-  '/api/webhooks/(.*)',
-  '/apply(.*)',
+  '/partner/(.*)',
+  '/borrower/(.*)',
+  '/widget/(.*)',
+  '/api/partner-portal/(.*)',
+  '/api/borrower-portal/(.*)',
+  '/api/widget/(.*)',
+  '/api/stripe/webhook',
+  '/api/webhooks/clerk',
 ]);
 
-const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)']);
-
-export default clerkMiddleware(async (auth, req) => {
-  if (isPublicRoute(req)) {
-    return NextResponse.next();
+export default clerkMiddleware(async (auth, request) => {
+  if (!isPublicRoute(request)) {
+    await auth.protect();
   }
-
-  const { userId, orgId } = await auth();
-
-  // Not authenticated → redirect to sign-in
-  if (!userId) {
-    return (await auth()).redirectToSignIn({ returnBackUrl: req.url });
-  }
-
-  // Authenticated but no org → onboarding (unless already there)
-  if (!orgId && !isOnboardingRoute(req)) {
-    return NextResponse.redirect(new URL('/onboarding', req.url));
-  }
-
-  return NextResponse.next();
 });
 
 export const config = {

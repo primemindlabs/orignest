@@ -32,6 +32,9 @@ const config: Config = {
           bg: '#F2F2F7',
           surface: '#FFFFFF',
         },
+        // Sidebar uses these without hyphens
+        label2: '#6C6C70',
+        label3: '#AEAEB2',
       },
       fontFamily: {
         sans: [
@@ -94,12 +97,21 @@ const config: Config = {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
         },
+        'pulse-ring': {
+          '0%': { transform: 'scale(1)', opacity: '1' },
+          '100%': { transform: 'scale(2.5)', opacity: '0' },
+        },
+        'bounce-dots': {
+          '0%, 80%, 100%': { transform: 'translateY(0)' },
+          '40%': { transform: 'translateY(-4px)' },
+        },
       },
       animation: {
         'fade-in': 'fade-in 0.2s ease-out',
         'slide-in-right': 'slide-in-right 0.25s ease-out',
         'slide-up': 'slide-up 0.25s ease-out',
         shimmer: 'shimmer 1.5s infinite linear',
+        'pulse-ring': 'pulse-ring 1.2s cubic-bezier(0.215,0.61,0.355,1) infinite',
       },
     },
   },

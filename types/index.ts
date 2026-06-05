@@ -87,7 +87,14 @@ export type AuditAction =
   | 'user.invited'
   | 'user.role_changed'
   | 'settings.changed'
-  | 'billing.changed';
+  | 'billing.changed'
+  | 'application.created'
+  | 'application.updated'
+  | 'application.submitted'
+  | 'nmls.verified'
+  | 'credit_repair.enrolled'
+  | 'credit_repair.score_updated'
+  | 'credit_repair.reactivated';
 
 // ---- Core Entities ----
 
@@ -361,6 +368,102 @@ export interface PIIAccessLog {
   fields_accessed: string[];
   purpose: string;
   ip_address: string | null;
+  created_at: string;
+}
+
+// ---- Marketing Suite Types ----
+
+export type AdPlatform = 'facebook' | 'google' | 'instagram' | 'linkedin' | 'email';
+
+export type AdCampaignStatus = 'draft' | 'active' | 'paused' | 'completed';
+
+export interface AdCampaign {
+  id: string;
+  org_id: string;
+  created_by: string;
+  name: string;
+  platform: AdPlatform;
+  goal: string;
+  status: AdCampaignStatus;
+  target_config: Record<string, unknown>;
+  creative_config: Record<string, unknown>;
+  daily_budget: number | null;
+  start_date: string | null;
+  end_date: string | null;
+  leads_generated: number;
+  spend_to_date: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LandingPage {
+  id: string;
+  org_id: string;
+  lo_id: string | null;
+  slug: string;
+  headline: string;
+  subheadline: string | null;
+  features: unknown[];
+  lo_config: Record<string, unknown>;
+  active: boolean;
+  page_views: number;
+  leads_captured: number;
+  created_at: string;
+}
+
+export type SocialPlatform = 'linkedin' | 'instagram' | 'facebook' | 'twitter';
+
+export type SocialPostStatus = 'draft' | 'scheduled' | 'posted';
+
+export interface SocialPost {
+  id: string;
+  org_id: string;
+  created_by: string;
+  platform: SocialPlatform;
+  content_type: string;
+  tone: string;
+  body: string;
+  hashtags: string[];
+  status: SocialPostStatus;
+  scheduled_at: string | null;
+  posted_at: string | null;
+  compliance_flag: boolean;
+  compliance_note: string | null;
+  engagement_note: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type CoMarketingMaterialType =
+  | 'rate_sheet'
+  | 'open_house_flyer'
+  | 'just_closed_post'
+  | 'buyers_guide'
+  | 'email_signature';
+
+export interface CoMarketingMaterial {
+  id: string;
+  org_id: string;
+  created_by: string;
+  partner_id: string | null;
+  material_type: CoMarketingMaterialType;
+  content: Record<string, unknown>;
+  preview_html: string | null;
+  created_at: string;
+}
+
+export type NurtureSequenceStatus = 'scheduled' | 'sent' | 'skipped' | 'bounced';
+
+export interface NurtureSequence {
+  id: string;
+  org_id: string;
+  lead_id: string;
+  sequence_type: string;
+  scheduled_date: string;
+  status: NurtureSequenceStatus;
+  content: string | null;
+  sent_at: string | null;
+  opened_at: string | null;
   created_at: string;
 }
 
