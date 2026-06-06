@@ -12,18 +12,18 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Orignest',
-    template: '%s | Orignest',
+    default: 'Ashley AI — Your AI Mortgage Assistant',
+    template: '%s | Ashley AI',
   },
-  description: 'The mortgage OS built for loan officers and brokers. TRID · TCPA · GLBA compliant. AI-powered pipeline, DSCR tools, and autopilot automation.',
-  keywords: ['mortgage CRM', 'loan officer software', 'TRID compliance', 'DSCR calculator', 'mortgage pipeline', 'non-QM', 'mortgage broker software'],
+  description: 'Ashley AI answers leads in seconds, follows up automatically, collects documents, updates your pipeline, and helps you close more loans.',
+  keywords: ['mortgage CRM', 'AI mortgage assistant', 'loan officer software', 'TRID compliance', 'mortgage pipeline', 'mortgage broker software'],
   authors: [{ name: 'PrimeMind Labs' }],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.orignest.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://lender-crm.vercel.app'),
   openGraph: {
     type: 'website',
-    title: 'Orignest — Mortgage OS',
-    description: 'Run your entire mortgage business on autopilot.',
-    siteName: 'Orignest',
+    title: 'Ashley AI — Your AI Mortgage Assistant',
+    description: 'The AI mortgage assistant that never sleeps.',
+    siteName: 'Ashley AI',
   },
   robots: {
     index: false,

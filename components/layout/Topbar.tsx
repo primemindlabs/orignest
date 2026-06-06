@@ -24,7 +24,7 @@ function useBreadcrumbs(): BreadcrumbItem[] {
 
   const LABELS: Record<string, string> = {
     today: 'Today',
-    dashboard: 'Dashboard',
+    dashboard: 'Command Center',
     pipeline: 'Pipeline',
     leads: 'Leads',
     applications: 'Applications',

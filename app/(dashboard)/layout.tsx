@@ -7,6 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { CommandPaletteProvider } from '@/components/providers/CommandPaletteProvider';
 import { SpeedTicker } from '@/components/dashboard/SpeedTicker';
 import { ClosingCelebrationListener } from '@/components/ui/ClosingCelebrationListener';
+import { AskAshleyWidget } from '@/components/dashboard/AskAshleyWidget';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { userId, orgId } = await auth();
@@ -59,6 +60,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {/* Global UX layer */}
       <SpeedTicker />
       <ClosingCelebrationListener loName={loName} />
+      <AskAshleyWidget />
     </CommandPaletteProvider>
   );
 }
