@@ -18,7 +18,9 @@ export const metadata: Metadata = {
   description: 'Ashley AI answers leads in seconds, follows up automatically, collects documents, updates your pipeline, and helps you close more loans.',
   keywords: ['mortgage CRM', 'AI mortgage assistant', 'loan officer software', 'TRID compliance', 'mortgage pipeline', 'mortgage broker software'],
   authors: [{ name: 'PrimeMind Labs' }],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://lender-crm.vercel.app'),
+  // Use `||` (not `??`) so an empty-string env var also falls back — an empty
+  // NEXT_PUBLIC_APP_URL would otherwise crash the build with `new URL("")`.
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://app.orignest.com'),
   openGraph: {
     type: 'website',
     title: 'Ashley AI — Your AI Mortgage Assistant',
