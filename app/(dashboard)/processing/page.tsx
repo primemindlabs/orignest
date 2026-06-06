@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
 import { ProcessingWorkspace } from '@/components/processing/ProcessingWorkspace';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Processing' };
 
 export default async function ProcessingPage() {

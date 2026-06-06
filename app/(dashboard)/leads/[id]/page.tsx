@@ -11,6 +11,8 @@ import { maskSSN, maskIncome } from '@/lib/compliance/encryption';
 import { format, formatDistanceToNow } from 'date-fns';
 import type { LeadStage } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Lead Detail' };
 
 const STAGE_LABELS: Record<string, string> = {

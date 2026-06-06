@@ -4,6 +4,8 @@ import { Heart } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { PostCloseClient } from './PostCloseClient';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Post-Close Nurture — Orignest' };
 
 // Indicative market rate — in production this comes from the Pricing Engine

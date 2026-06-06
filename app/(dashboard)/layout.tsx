@@ -9,6 +9,8 @@ import { SpeedTicker } from '@/components/dashboard/SpeedTicker';
 import { ClosingCelebrationListener } from '@/components/ui/ClosingCelebrationListener';
 import { AskAshleyWidget } from '@/components/dashboard/AskAshleyWidget';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { userId, orgId } = await auth();
 

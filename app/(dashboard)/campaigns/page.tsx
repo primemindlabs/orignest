@@ -7,6 +7,8 @@ import { Plus, Mail, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Campaigns' };
 
 export default async function CampaignsPage() {

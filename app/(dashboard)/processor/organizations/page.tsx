@@ -8,6 +8,8 @@ import { Building2, CheckCircle2, Clock, FileText, ArrowLeft } from 'lucide-reac
 import { format } from 'date-fns';
 import { ProcessorOrgActions } from '@/components/processor/ProcessorOrgActions';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'My Organizations — Orignest' };
 
 export default async function ProcessorOrganizationsPage() {

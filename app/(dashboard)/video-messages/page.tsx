@@ -4,6 +4,8 @@ import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { VideoMessagesClient } from './VideoMessagesClient';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Video Messages' };
 
 export default async function VideoMessagesPage() {

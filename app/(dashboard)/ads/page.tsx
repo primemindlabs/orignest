@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/server';
 import { AdCenterClient } from './AdCenterClient';
 import type { Profile } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Ad Center — Orignest' };
 
 export default async function AdCenterPage() {

@@ -10,6 +10,8 @@ import Link from 'next/link';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Processing File' };
 
 const STAGE_LABELS: Record<string, string> = {

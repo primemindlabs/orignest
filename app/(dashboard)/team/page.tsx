@@ -8,6 +8,8 @@ import { UserPlus } from 'lucide-react';
 import { format } from 'date-fns';
 import { TeamProcessorsTab } from '@/components/team/TeamProcessorsTab';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Team' };
 
 const ROLE_LABELS: Record<string, string> = {

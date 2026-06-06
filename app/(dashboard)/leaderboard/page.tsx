@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { LeaderboardClient } from './LeaderboardClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function LeaderboardPage() {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) redirect('/sign-in');

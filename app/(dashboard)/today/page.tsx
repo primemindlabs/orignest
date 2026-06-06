@@ -6,6 +6,8 @@ import { createClient } from '@/lib/supabase/server';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { TodayClient } from './TodayClient';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Today' };
 
 // ─── Types ────────────────────────────────────────────────────────────────────

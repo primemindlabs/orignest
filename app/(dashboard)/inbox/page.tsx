@@ -28,6 +28,8 @@ import { Button } from '@/components/ui/Button';
 import { formatDistanceToNow, format } from 'date-fns';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Channel = 'sms' | 'email' | 'instagram' | 'facebook' | 'voicemail';

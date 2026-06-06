@@ -8,6 +8,8 @@ import type { Lead } from '@/types';
 import { format, formatDistanceToNow } from 'date-fns';
 import { CommandCenterClient } from './CommandCenterClient';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Command Center' };
 
 function formatCurrency(amount: number): string {

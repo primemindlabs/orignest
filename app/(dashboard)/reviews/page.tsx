@@ -19,6 +19,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { format, formatDistanceToNow } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface NpsResponse {

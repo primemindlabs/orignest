@@ -4,6 +4,8 @@ import type { Metadata } from 'next';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { ProcessorDashboard } from '@/components/processor/ProcessorDashboard';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Processor Dashboard — Orignest' };
 
 export default async function ProcessorPage() {

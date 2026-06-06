@@ -54,6 +54,47 @@ export async function recordAIFeedback(params: {
   }).then(() => undefined).catch(() => undefined); // graceful — table may not exist yet
 }
 
+// ─── Record AI input (pre-action) ─────────────────────────────────────────────
+
+type AIFeedbackType =
+  | 'lead_score'
+  | 'sms_draft'
+  | 'email_draft'
+  | 'morning_briefing'
+  | 'deal_analysis'
+  | 'conditions_parse';
+
+/**
+ * Log an AI generation as soon as it is produced, before the user has acted on it.
+ * The user_action is recorded as 'no_action' and is updated later (accepted /
+ * rejected / edited) once the user saves or dismisses the output.
+ *
+ * Best-effort: never throws — feedback tracking must not block the AI response.
+ */
+export async function recordAIFeedbackInput(params: {
+  orgId: string;
+  userId: string;
+  aiType: AIFeedbackType;
+  inputContext: Record<string, unknown>;
+  aiOutput: string;
+}): Promise<void> {
+  const sb = createAdminClient();
+
+  await sb
+    .from('ai_feedback')
+    .insert({
+      org_id: params.orgId,
+      user_id: params.userId,
+      ai_type: params.aiType,
+      input_context: params.inputContext,
+      ai_output: params.aiOutput,
+      user_action: 'no_action',
+      edited_output: null,
+    })
+    .then(() => undefined)
+    .catch(() => undefined); // graceful — table may not exist yet
+}
+
 // ─── Build org-specific context ───────────────────────────────────────────────
 
 export async function buildOrgContext(orgId: string): Promise<OrgAIContext> {

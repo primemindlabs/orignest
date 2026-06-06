@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
 import RevenueClient from './RevenueClient';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Revenue Intelligence' };
 
 export default async function RevenuePage() {

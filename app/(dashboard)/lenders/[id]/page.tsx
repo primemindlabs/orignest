@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
 import LenderDetailClient from './LenderDetailClient';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Lender Profile' };
 
 export default async function LenderDetailPage({

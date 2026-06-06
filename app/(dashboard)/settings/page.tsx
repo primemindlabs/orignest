@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { CreditCard, Users, Building2, Shield, Bell, ChevronRight } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Settings' };
 
 const SETTINGS_SECTIONS = [

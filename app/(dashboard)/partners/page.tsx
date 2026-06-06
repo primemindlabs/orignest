@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Plus, Network } from 'lucide-react';
 import { format } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Partners' };
 
 const PARTNER_TYPE_LABELS: Record<string, string> = {

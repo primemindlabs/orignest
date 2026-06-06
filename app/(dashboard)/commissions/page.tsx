@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
 import CommissionsClient, { type Commission, type Lead, type Profile } from './CommissionsClient';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Commissions' };
 
 export default async function CommissionsPage() {

@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/server';
 import { CoMarketingClient } from './CoMarketingClient';
 import type { ReferralPartner, Profile } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Co-Marketing — Orignest' };
 
 export default async function CoMarketingPage() {

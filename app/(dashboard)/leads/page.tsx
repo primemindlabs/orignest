@@ -10,6 +10,8 @@ import { format } from 'date-fns';
 import type { LeadStage } from '@/types';
 import { StageFilter, LeadRow } from './leads-interactive';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Leads' };
 
 const STAGE_LABELS: Record<string, string> = {

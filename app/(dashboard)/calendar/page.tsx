@@ -4,6 +4,8 @@ import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { CalendarClient } from './CalendarClient';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Pipeline Calendar' };
 
 export interface CalendarLoan {

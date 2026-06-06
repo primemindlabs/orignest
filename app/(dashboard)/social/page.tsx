@@ -4,6 +4,8 @@ import { Share2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { SocialClient } from './SocialClient';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Social Media — Orignest' };
 
 export default async function SocialPage() {

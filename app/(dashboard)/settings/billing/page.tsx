@@ -8,6 +8,8 @@ import { BillingActions } from './BillingActions';
 import { format } from 'date-fns';
 import type { SubscriptionStatus } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Billing' };
 
 const STATUS_CONFIG: Record<SubscriptionStatus, {

@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
 import { CreditRepairClient } from './CreditRepairClient';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Credit Repair Pipeline' };
 
 export default async function CreditRepairPage() {

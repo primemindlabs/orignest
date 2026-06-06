@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/server';
 import { MetricCard } from '@/components/ui/MetricCard';
 import { TrendingUp, Users, DollarSign, Clock } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Reports' };
 
 export default async function ReportsPage() {

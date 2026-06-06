@@ -8,6 +8,8 @@ import { AlertTriangle } from 'lucide-react';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { format } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Applications' };
 
 const APPLICATION_STAGES = ['application', 'processing', 'underwriting', 'conditional_approval', 'clear_to_close'];

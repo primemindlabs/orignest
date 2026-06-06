@@ -8,6 +8,8 @@ import Link from 'next/link';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { formatDistanceToNow } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Pipeline' };
 
 const STAGES = [
