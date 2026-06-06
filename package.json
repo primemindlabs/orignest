@@ -29,7 +29,8 @@
     "react-hook-form": "^7.56.3",
     "@hookform/resolvers": "^5.0.1",
     "sonner": "^2.0.3",
-    "recharts": "^2.15.4"
+    "recharts": "^2.15.4",
+    "@anthropic-ai/sdk": "^0.39.0"
   },
   "devDependencies": {
     "@types/node": "^22",
