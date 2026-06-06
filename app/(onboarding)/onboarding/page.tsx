@@ -1,383 +1,161 @@
 'use client';
 
-import { useState } from 'react';
-import { useUser, useOrganization } from '@clerk/nextjs';
+import { useEffect, useState } from 'react';
+import { useOrganizationList, useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import { Check, ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const PLANS = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    price: 99,
-    seats: 1,
-    badge: null,
-    features: [
-      '1 loan officer seat',
-      'Up to 100 active leads',
-      'TRID compliance tracker',
-      'TCPA consent management',
-      'AI Coach (basic)',
-      'Email campaigns',
-      'Audit log',
-    ],
-  },
-  {
-    id: 'growth',
-    name: 'Growth',
-    price: 199,
-    seats: 5,
-    badge: 'Most popular',
-    features: [
-      'Up to 5 loan officer seats',
-      'Unlimited active leads',
-      'TRID + ECOA compliance suite',
-      'TCPA consent management',
-      'AI Coach (advanced)',
-      'Email + SMS campaigns',
-      'Pipeline analytics',
-      'Branch manager dashboard',
-      'Partner network',
-    ],
-  },
-  {
-    id: 'team',
-    name: 'Team',
-    price: 399,
-    seats: 20,
-    badge: null,
-    features: [
-      'Up to 20 loan officer seats',
-      'Unlimited active leads',
-      'Full compliance suite (TRID, TCPA, GLBA)',
-      'AI Coach (premium)',
-      'Email + SMS + voice campaigns',
-      'Advanced analytics + fair lending',
-      'White-label borrower portal',
-      'Custom NMLS reporting',
-      'Priority support + CSM',
-    ],
-  },
-] as const;
-
-type PlanId = 'starter' | 'growth' | 'team';
-
-interface Step1Data {
-  companyName: string;
-  nmlsCompanyId: string;
-  billingEmail: string;
-  teamSize: string;
+/** Small inline Ashley AI wordmark (matches the landing page). */
+function AshleyMark() {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path
+            d="M11 3L13.5 8.5H19L14.5 12L16.5 17.5L11 14L5.5 17.5L7.5 12L3 8.5H8.5L11 3Z"
+            fill="white"
+            stroke="white"
+            strokeWidth="0.5"
+          />
+          <circle cx="17" cy="5" r="2.5" fill="#2563EB" />
+        </svg>
+      </div>
+      <div>
+        <span className="text-[18px] font-bold text-gray-900">Ashley</span>
+        <span className="text-[18px] font-bold text-blue-600"> AI</span>
+        <p className="text-[11px] text-gray-400 leading-none">Your AI Mortgage Assistant</p>
+      </div>
+    </div>
+  );
 }
 
 export default function OnboardingPage() {
   const { user } = useUser();
-  const { organization } = useOrganization();
+  const { isLoaded, setActive, userMemberships, createOrganization } = useOrganizationList({
+    userMemberships: true,
+  });
   const router = useRouter();
 
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [loading, setLoading] = useState(false);
+  const [companyName, setCompanyName] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [activating, setActivating] = useState(false);
 
-  const [step1, setStep1] = useState<Step1Data>({
-    companyName: '',
-    nmlsCompanyId: '',
-    billingEmail: user?.primaryEmailAddress?.emailAddress ?? '',
-    teamSize: '1',
-  });
-  const [selectedPlan, setSelectedPlan] = useState<PlanId>('growth');
+  const memberships = userMemberships?.data ?? [];
 
-  // If org already exists, go to dashboard
-  if (organization) {
-    router.replace('/dashboard');
-    return null;
-  }
+  // If the user already belongs to an organization, activate it and go to the dashboard.
+  useEffect(() => {
+    if (!isLoaded || !setActive) return;
+    const first = memberships[0];
+    if (first && !activating) {
+      setActivating(true);
+      setActive({ organization: first.organization.id })
+        .then(() =>
+          fetch('/api/onboarding/provision', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              clerkOrgId: first.organization.id,
+              companyName: first.organization.name,
+            }),
+          }).catch(() => undefined)
+        )
+        .then(() => router.replace('/dashboard'))
+        .catch(() => {
+          setActivating(false);
+          toast.error('Could not open your workspace. Please try again.');
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, memberships.length]);
 
-  async function handleStep1Submit(e: React.FormEvent) {
+  async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!step1.companyName.trim()) {
+    if (!companyName.trim()) {
       toast.error('Company name is required');
       return;
     }
-    setStep(2);
-  }
-
-  async function handleCheckout() {
-    setLoading(true);
+    if (!createOrganization || !setActive) return;
+    setBusy(true);
     try {
-      const res = await fetch('/api/stripe/checkout', {
+      const org = await createOrganization({ name: companyName.trim() });
+      await setActive({ organization: org.id });
+      await fetch('/api/onboarding/provision', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          plan: selectedPlan,
-          companyName: step1.companyName,
-          nmlsCompanyId: step1.nmlsCompanyId,
-          billingEmail: step1.billingEmail,
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? 'Failed to create checkout session');
-      }
-
-      const { url } = await res.json();
-      window.location.href = url;
+        body: JSON.stringify({ clerkOrgId: org.id, companyName: companyName.trim() }),
+      }).catch(() => undefined);
+      router.replace('/dashboard');
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Something went wrong');
-    } finally {
-      setLoading(false);
+      const msg = err instanceof Error ? err.message : 'Could not create your workspace';
+      toast.error(msg);
+      setBusy(false);
     }
   }
 
+  // While we detect/activate an existing org, show a spinner instead of the form.
+  if (!isLoaded || activating || memberships.length > 0) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
+        <AshleyMark />
+        <div className="flex items-center gap-2 text-gray-500 text-sm">
+          <Loader2 size={16} className="animate-spin" />
+          Opening your workspace…
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6">
-      {/* Wordmark */}
-      <div className="text-[22px] font-bold text-navy tracking-tight mb-8">
-        Conduit<span className="text-gold">.</span>
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
+      <div className="mb-8">
+        <AshleyMark />
       </div>
 
-      {/* Step indicator */}
-      <div className="flex items-center gap-2 mb-8">
-        {[1, 2, 3].map((n) => (
-          <div key={n} className="flex items-center gap-2">
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
-                step > n
-                  ? 'bg-green text-white'
-                  : step === n
-                  ? 'bg-blue text-white'
-                  : 'bg-fill text-label-2'
-              }`}
-            >
-              {step > n ? <Check size={14} /> : n}
-            </div>
-            {n < 3 && <div className={`w-8 h-0.5 ${step > n ? 'bg-green' : 'bg-border'}`} />}
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-1 tracking-tight">
+          Create your workspace
+        </h2>
+        <p className="text-gray-500 text-sm mb-6">
+          Set up your mortgage company to get started with Ashley.
+        </p>
+        <form onSubmit={handleCreate} className="space-y-4">
+          <div>
+            <label className="text-sm font-medium text-gray-900 block mb-1.5">
+              Company name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              autoFocus
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              placeholder="Acme Mortgage, LLC"
+              className="w-full h-10 px-3 rounded-lg border border-gray-200 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
+            />
           </div>
-        ))}
-      </div>
-
-      {/* ── Step 1: Company details ────────────────────────────────── */}
-      {step === 1 && (
-        <div className="w-full max-w-md bg-surface rounded-card shadow-card border border-border p-6">
-          <h2 className="text-xl font-bold text-black mb-1 tracking-tight">
-            Set up your company
-          </h2>
-          <p className="text-label-2 text-sm mb-6">
-            Tell us about your mortgage company. This info appears on your disclosures.
-          </p>
-          <form onSubmit={handleStep1Submit} className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-black block mb-1.5">
-                Company Name <span className="text-red">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={step1.companyName}
-                onChange={(e) => setStep1((s) => ({ ...s, companyName: e.target.value }))}
-                placeholder="Acme Mortgage, LLC"
-                className="w-full h-9 px-3 rounded-[10px] border border-border bg-surface text-sm text-black placeholder:text-label-3 focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-black block mb-1.5">
-                NMLS Company ID
-              </label>
-              <input
-                type="text"
-                value={step1.nmlsCompanyId}
-                onChange={(e) => setStep1((s) => ({ ...s, nmlsCompanyId: e.target.value }))}
-                placeholder="1234567"
-                className="w-full h-9 px-3 rounded-[10px] border border-border bg-surface text-sm text-black placeholder:text-label-3 focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue"
-              />
-              <p className="text-xs text-label-3 mt-1">
-                Required for TRID disclosures. Find yours at nmlsconsumeraccess.org
-              </p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-black block mb-1.5">
-                Billing Email <span className="text-red">*</span>
-              </label>
-              <input
-                type="email"
-                required
-                value={step1.billingEmail}
-                onChange={(e) => setStep1((s) => ({ ...s, billingEmail: e.target.value }))}
-                placeholder="billing@yourcompany.com"
-                className="w-full h-9 px-3 rounded-[10px] border border-border bg-surface text-sm text-black placeholder:text-label-3 focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-black block mb-1.5">
-                Team Size
-              </label>
-              <select
-                value={step1.teamSize}
-                onChange={(e) => setStep1((s) => ({ ...s, teamSize: e.target.value }))}
-                className="w-full h-9 px-3 rounded-[10px] border border-border bg-surface text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue"
-              >
-                <option value="1">Just me</option>
-                <option value="2-5">2–5 loan officers</option>
-                <option value="6-10">6–10 loan officers</option>
-                <option value="11-20">11–20 loan officers</option>
-                <option value="20+">20+ loan officers</option>
-              </select>
-            </div>
-            <button
-              type="submit"
-              className="w-full h-10 rounded-btn bg-blue text-white text-sm font-semibold hover:bg-blue/90 transition-colors flex items-center justify-center gap-2"
-            >
-              Continue
-              <ChevronRight size={16} />
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* ── Step 2: Plan selection ─────────────────────────────────── */}
-      {step === 2 && (
-        <div className="w-full max-w-3xl">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-bold text-black tracking-tight">Choose your plan</h2>
-            <p className="text-label-2 text-sm mt-1">
-              14-day free trial on all plans. Cancel anytime.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {PLANS.map((plan) => (
-              <button
-                key={plan.id}
-                onClick={() => setSelectedPlan(plan.id)}
-                className={`relative text-left bg-surface rounded-card border-2 p-5 transition-all ${
-                  selectedPlan === plan.id
-                    ? 'border-blue shadow-elevated'
-                    : 'border-border hover:border-label-3'
-                }`}
-              >
-                {plan.badge && (
-                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-blue text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    {plan.badge}
-                  </span>
-                )}
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-semibold text-black">{plan.name}</span>
-                  {selectedPlan === plan.id && (
-                    <div className="w-5 h-5 rounded-full bg-blue flex items-center justify-center">
-                      <Check size={12} className="text-white" />
-                    </div>
-                  )}
-                </div>
-                <div className="mb-3">
-                  <span className="text-2xl font-bold text-black metric-value">${plan.price}</span>
-                  <span className="text-xs text-label-2">/mo</span>
-                  <p className="text-xs text-label-2 mt-0.5">Up to {plan.seats} seat{plan.seats !== 1 ? 's' : ''}</p>
-                </div>
-                <ul className="space-y-1.5">
-                  {plan.features.slice(0, 5).map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-xs text-label-2">
-                      <Check size={12} className="text-green flex-shrink-0 mt-0.5" />
-                      {f}
-                    </li>
-                  ))}
-                  {plan.features.length > 5 && (
-                    <li className="text-xs text-label-3">
-                      +{plan.features.length - 5} more features
-                    </li>
-                  )}
-                </ul>
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-3 justify-center">
-            <button
-              onClick={() => setStep(1)}
-              className="h-10 px-5 rounded-btn text-sm font-medium bg-fill hover:bg-border text-black border border-border transition-colors"
-            >
-              Back
-            </button>
-            <button
-              onClick={() => setStep(3)}
-              className="h-10 px-6 rounded-btn bg-blue text-white text-sm font-semibold hover:bg-blue/90 transition-colors flex items-center gap-2"
-            >
-              Continue
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Step 3: Confirm ───────────────────────────────────────── */}
-      {step === 3 && (
-        <div className="w-full max-w-md bg-surface rounded-card shadow-card border border-border p-6">
-          <h2 className="text-xl font-bold text-black mb-1 tracking-tight">
-            Start your free trial
-          </h2>
-          <p className="text-label-2 text-sm mb-5">
-            Review your selections and start your 14-day trial. No charge until day 15.
-          </p>
-
-          <div className="space-y-3 mb-5">
-            <div className="flex justify-between text-sm">
-              <span className="text-label-2">Company</span>
-              <span className="font-medium text-black">{step1.companyName}</span>
-            </div>
-            {step1.nmlsCompanyId && (
-              <div className="flex justify-between text-sm">
-                <span className="text-label-2">NMLS ID</span>
-                <span className="font-medium text-black">{step1.nmlsCompanyId}</span>
-              </div>
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full h-10 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {busy ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Creating…
+              </>
+            ) : (
+              <>
+                Continue to dashboard
+                <ChevronRight size={16} />
+              </>
             )}
-            <div className="flex justify-between text-sm">
-              <span className="text-label-2">Plan</span>
-              <span className="font-medium text-black capitalize">{selectedPlan}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-label-2">Price after trial</span>
-              <span className="font-medium text-black">
-                ${PLANS.find((p) => p.id === selectedPlan)?.price}/mo
-              </span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-label-2">Trial ends</span>
-              <span className="font-medium text-black">
-                {new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              onClick={() => setStep(2)}
-              className="flex-1 h-10 rounded-btn text-sm font-medium bg-fill hover:bg-border text-black border border-border transition-colors"
-            >
-              Back
-            </button>
-            <button
-              onClick={handleCheckout}
-              disabled={loading}
-              className="flex-1 h-10 rounded-btn bg-blue text-white text-sm font-semibold hover:bg-blue/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {loading ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  Redirecting...
-                </>
-              ) : (
-                'Start Free Trial'
-              )}
-            </button>
-          </div>
-
-          <p className="text-xs text-label-3 text-center mt-4">
-            You&apos;ll be redirected to Stripe to enter payment info. Your card won&apos;t be
-            charged until after the trial period.
-          </p>
-        </div>
-      )}
+          </button>
+        </form>
+        <p className="text-xs text-gray-400 text-center mt-4">
+          Signed in as {user?.primaryEmailAddress?.emailAddress}
+        </p>
+      </div>
     </div>
   );
 }

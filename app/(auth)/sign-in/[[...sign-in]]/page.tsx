@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Sign In',
-  description: 'Sign in to your Conduit CRM account.',
+  description: 'Sign in to your Ashley AI account.',
 };
 
 const FEATURES = [
@@ -42,14 +42,27 @@ export default function SignInPage() {
         <div className="absolute -bottom-44 -right-44 w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(201,169,92,0.18)_0%,transparent_70%)]" />
 
         {/* Wordmark */}
-        <div className="text-[26px] font-bold text-white tracking-tight z-10">
-          Conduit<span className="text-gold">.</span>
+        <div className="flex items-center gap-3 z-10">
+          <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center">
+            <svg width="24" height="24" viewBox="0 0 22 22" fill="none">
+              <path
+                d="M11 3L13.5 8.5H19L14.5 12L16.5 17.5L11 14L5.5 17.5L7.5 12L3 8.5H8.5L11 3Z"
+                fill="white"
+                stroke="white"
+                strokeWidth="0.5"
+              />
+              <circle cx="17" cy="5" r="2.5" fill="#C9A95C" />
+            </svg>
+          </div>
+          <span className="text-[26px] font-bold text-white tracking-tight">
+            Ashley<span className="text-gold"> AI</span>
+          </span>
         </div>
 
         {/* Headline */}
         <div className="flex-1 flex flex-col justify-center z-10 max-w-lg">
           <h1 className="text-[36px] font-bold text-white leading-tight tracking-tight mb-4">
-            The CRM built for mortgage teams that close.
+            Your AI mortgage assistant that never sleeps.
           </h1>
           <p className="text-white/70 text-base leading-relaxed mb-10">
             From first contact to funded — manage every lead, every partner, every touchpoint.
@@ -79,7 +92,7 @@ export default function SignInPage() {
         <div className="w-full max-w-sm">
           {/* Mobile wordmark */}
           <div className="lg:hidden text-[22px] font-bold text-navy tracking-tight mb-8">
-            Conduit<span className="text-gold">.</span>
+            Ashley<span className="text-gold"> AI</span>
           </div>
 
           <h2 className="text-2xl font-bold text-black mb-1 tracking-tight">Welcome back</h2>
@@ -106,7 +119,7 @@ export default function SignInPage() {
           />
 
           <p className="mt-6 text-xs text-label-3 text-center">
-            By signing in, you agree to Conduit&apos;s{' '}
+            By signing in, you agree to Ashley AI&apos;s{' '}
             <a href="/terms" className="underline hover:text-label-2">
               Terms of Service
             </a>{' '}
