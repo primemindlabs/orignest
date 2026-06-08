@@ -1860,7 +1860,504 @@ Phase 14: social_posts
 Phase 15: training_courses, training_completions
 Phase 17: income_calculations
 Phase 20: investor_entities, borrower_entity_links
+Phase 22: rate_options, rate_selections, rate_portal_sessions, rate_portal_tokens
 RLS:      All RLS policies and indexes (run last)
+```
+
+---
+
+## PHASE 22 — BORROWER DECISION PORTAL
+
+The Borrower Decision Portal is a magic-link borrower-facing experience that replaces the LO rate explanation phone call. The LO creates 2–3 rate options, the system generates AI-powered plain-English explanations (including why the borrower didn't qualify for other programs), and the borrower selects their preferred option. The LO is notified instantly with behavioral context about how the borrower engaged.
+
+This is Ashley IQ's most differentiated consumer-facing feature. Build it to look like a premium fintech product — clean, trustworthy, Apple-caliber.
+
+---
+
+### 22.1 — Schema
+
+```sql
+-- Rate options created by the LO per lead
+CREATE TABLE rate_options (
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  lead_id          uuid NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
+  tenant_id        uuid NOT NULL REFERENCES tenants(id),
+  created_by       uuid NOT NULL REFERENCES users(id),
+  label            text NOT NULL,                          -- e.g. "Option A — 30-Year Fixed"
+  rate             numeric(6,4) NOT NULL,                  -- e.g. 6.6250
+  apr              numeric(6,4) NOT NULL,
+  loan_amount      numeric(12,2) NOT NULL,
+  loan_term_months integer NOT NULL DEFAULT 360,
+  points           numeric(5,4) NOT NULL DEFAULT 0,        -- discount points paid (e.g. 1.0 = 1 point)
+  points_cost      numeric(12,2) GENERATED ALWAYS AS (loan_amount * points / 100) STORED,
+  monthly_payment  numeric(10,2) NOT NULL,
+  total_interest   numeric(12,2) NOT NULL,
+  loan_program     text NOT NULL,                          -- 'FHA' | 'Conventional' | 'VA' | 'USDA' | 'Jumbo' | 'DSCR' | 'ARM_5_1' | 'ARM_7_1'
+  is_recommended   boolean DEFAULT false,
+  display_order    integer NOT NULL DEFAULT 1,
+  -- AI-generated explanations (set by server on creation)
+  explanation_headline text,                               -- e.g. "Lowest monthly payment, most flexibility"
+  explanation_body     text,                               -- 2-3 sentences plain English
+  -- Pricing engine source
+  pricing_source   text NOT NULL DEFAULT 'manual'          CHECK (pricing_source IN ('manual','optimal_blue','polly','lender_price')),
+  pricing_engine_ref text,                                 -- external ID from PPE if source != manual
+  expires_at       timestamptz NOT NULL DEFAULT (now() + interval '7 days'),
+  created_at       timestamptz DEFAULT now(),
+  updated_at       timestamptz DEFAULT now()
+);
+
+-- Programs the borrower did NOT qualify for, with AI explanations
+CREATE TABLE rate_disqualifications (
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  lead_id          uuid NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
+  tenant_id        uuid NOT NULL REFERENCES tenants(id),
+  program_name     text NOT NULL,                          -- e.g. "VA Loan", "Conventional 95% LTV"
+  disqualification_reason text NOT NULL,                   -- AI-generated plain English
+  improvement_path text,                                   -- Optional: "Here's how to qualify"
+  created_at       timestamptz DEFAULT now()
+);
+
+-- Borrower rate selection (INSERT-only — audit trail)
+CREATE TABLE rate_selections (
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  lead_id          uuid NOT NULL REFERENCES leads(id),
+  tenant_id        uuid NOT NULL REFERENCES tenants(id),
+  rate_option_id   uuid NOT NULL REFERENCES rate_options(id),
+  selected_by_type text NOT NULL CHECK (selected_by_type IN ('borrower','co_borrower')),
+  portal_session_id uuid,                                  -- FK to rate_portal_sessions
+  ip_address       inet,
+  user_agent       text,
+  created_at       timestamptz DEFAULT now()
+);
+
+-- Portal access tokens (magic links for borrower + co-borrower)
+CREATE TABLE rate_portal_tokens (
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  lead_id          uuid NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
+  tenant_id        uuid NOT NULL REFERENCES tenants(id),
+  token            text NOT NULL UNIQUE DEFAULT encode(gen_random_bytes(32), 'hex'),
+  token_type       text NOT NULL CHECK (token_type IN ('borrower','co_borrower')),
+  expires_at       timestamptz NOT NULL DEFAULT (now() + interval '7 days'),
+  used_count       integer DEFAULT 0,
+  revoked          boolean DEFAULT false,
+  created_at       timestamptz DEFAULT now()
+);
+
+-- Borrower engagement tracking (behavioral signals for the LO)
+CREATE TABLE rate_portal_sessions (
+  id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  lead_id             uuid NOT NULL REFERENCES leads(id),
+  tenant_id           uuid NOT NULL REFERENCES tenants(id),
+  token_id            uuid REFERENCES rate_portal_tokens(id),
+  viewer_type         text NOT NULL CHECK (viewer_type IN ('borrower','co_borrower')),
+  session_started_at  timestamptz DEFAULT now(),
+  session_ended_at    timestamptz,
+  total_seconds       integer GENERATED ALWAYS AS (
+    EXTRACT(EPOCH FROM (session_ended_at - session_started_at))::integer
+  ) STORED,
+  option_hover_data   jsonb DEFAULT '{}',  -- { "option_id": seconds_hovered }
+  option_views        jsonb DEFAULT '{}',  -- { "option_id": view_count }
+  scenario_used       text[],              -- which stay-duration scenarios they toggled
+  breakeven_viewed    boolean DEFAULT false,
+  disqualifications_expanded boolean DEFAULT false,
+  came_back           boolean DEFAULT false,   -- true if this is a repeat visit
+  created_at          timestamptz DEFAULT now()
+);
+
+-- Indexes
+CREATE INDEX ON rate_options(lead_id);
+CREATE INDEX ON rate_options(tenant_id, expires_at);
+CREATE INDEX ON rate_disqualifications(lead_id);
+CREATE INDEX ON rate_selections(lead_id);
+CREATE INDEX ON rate_portal_tokens(token) WHERE revoked = false;
+CREATE INDEX ON rate_portal_tokens(lead_id);
+CREATE INDEX ON rate_portal_sessions(lead_id);
+
+-- RLS
+ALTER TABLE rate_options          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rate_disqualifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rate_selections       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rate_portal_tokens    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rate_portal_sessions  ENABLE ROW LEVEL SECURITY;
+
+-- LO/staff can CRUD rate_options for their tenant
+CREATE POLICY "rate_options_tenant" ON rate_options
+  USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+
+-- rate_selections is INSERT-only — no updates or deletes, ever
+CREATE POLICY "rate_selections_insert" ON rate_selections
+  FOR INSERT WITH CHECK (true);
+CREATE POLICY "rate_selections_no_update" ON rate_selections
+  FOR UPDATE USING (false);
+CREATE POLICY "rate_selections_no_delete" ON rate_selections
+  FOR DELETE USING (false);
+
+-- Portal tokens: LO can create/read for their tenant; public read by token (handled in API route with admin client)
+CREATE POLICY "rate_portal_tokens_tenant" ON rate_portal_tokens
+  USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+
+-- Portal sessions: service role only (borrower portal routes use admin client)
+CREATE POLICY "rate_portal_sessions_tenant" ON rate_portal_sessions
+  USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+```
+
+---
+
+### 22.2 — LO Rate Builder (LO Dashboard)
+
+**Location:** Add a `"Rate Options"` tab to the lead record detail page (alongside Conditions, Documents, etc.)
+
+**UI — Rate Options tab:**
+
+A card-based builder. The LO sees their current options (or an empty state with a "Create rate options" CTA).
+
+**Create/edit form per option:**
+- Loan program (select: Conventional / FHA / VA / USDA / Jumbo / ARM 5/1 / ARM 7/1 / DSCR / NonQM)
+- Rate (number input, e.g. `6.625`)
+- APR (auto-calculated when possible, or manual input)
+- Loan amount (pre-filled from lead record)
+- Loan term (30yr / 20yr / 15yr / 10yr)
+- Points (number input — `0`, `0.5`, `1`, `2`, etc.)
+- Monthly payment (auto-calculated using standard amortization formula)
+- Is recommended (toggle — one option can be flagged as LO's recommendation, shown with a gold badge)
+- Display order (drag to reorder)
+
+**Auto-calculation formula (run client-side on input change):**
+```typescript
+// Standard amortization
+const monthlyRate = rate / 100 / 12;
+const n = loanTermMonths;
+const monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, n)) / (Math.pow(1 + monthlyRate, n) - 1);
+const totalPaid = monthlyPayment * n;
+const totalInterest = totalPaid - loanAmount;
+```
+
+**Expiration:** Each option expires in 7 days by default. Show a warning badge when < 24 hours remain. LO can extend (+7 days) with one click.
+
+**Send Portal button:** Once at least one option exists, show a prominent `"Send to Borrower"` button. This calls `POST /api/leads/[id]/rate-portal/send`, which:
+1. Creates or refreshes the borrower's `rate_portal_token`
+2. Triggers `POST /api/leads/[id]/rate-portal/generate-explanations` to generate AI content
+3. Sends a Resend email to the borrower with the magic link
+4. Optionally sends SMS via Relay if the lead has a valid opt-in
+
+**Option B — Pricing Engine Integration (feature flag: `pricingEngineEnabled`):**
+
+When `OPTIMAL_BLUE_API_KEY` env var is set, show a `"Pull Live Rates"` button above the manual form. This calls:
+
+```typescript
+// lib/pricing/optimalBlue.ts
+export async function fetchOptimalBlueRates(leadProfile: LeadPricingProfile): Promise<RateOption[]>
+```
+
+The function passes credit score, LTV, loan amount, property type, and occupancy to the Optimal Blue Product and Pricing API (`POST /v1/search`). Returns the top 3 best-execution options (best 30yr fixed, best 15yr fixed, best ARM). LO reviews and confirms before sending to borrower.
+
+If Optimal Blue is not configured, the `"Pull Live Rates"` button is hidden and the form defaults to manual entry. No stub data — if the env var is absent, the feature simply doesn't appear.
+
+---
+
+### 22.3 — AI Explanation Generation
+
+**API route:** `POST /api/leads/[id]/rate-portal/generate-explanations`
+
+This is called server-side after options are saved. It calls Claude Haiku for each option and for the disqualification list.
+
+**Per-option prompt:**
+```
+You are a mortgage loan officer explaining a rate option to a borrower in plain English.
+
+Loan program: [PROGRAM]
+Rate: [RATE]%
+APR: [APR]%
+Monthly payment: $[PAYMENT]
+Loan term: [TERM] years
+Points paid: [POINTS] ([POINTS_COST])
+Total interest over life of loan: $[TOTAL_INTEREST]
+
+Write:
+1. A headline (max 8 words): the single best reason to choose this option
+2. A body (2-3 sentences): what this option means for the borrower day-to-day and over time
+
+No jargon. No technical terms. Speak directly to "you." Be warm and honest — don't oversell.
+Return JSON: { "headline": "...", "body": "..." }
+```
+
+**Disqualification prompt (called once, covers all programs not offered):**
+
+Fetch the lead record's credit score, LTV, DTI, loan amount, property type, and state. Then:
+
+```
+You are a mortgage loan officer. A borrower did not qualify for the following loan programs.
+For each program, write one plain-English sentence explaining the primary reason they didn't qualify,
+and (where applicable) one sentence on what would change their eligibility.
+
+Borrower profile:
+- Credit score: [SCORE]
+- LTV: [LTV]%
+- DTI: [DTI]%
+- Loan amount: $[AMOUNT]
+- Property type: [TYPE]
+- State: [STATE]
+
+Programs not offered (and primary disqualifying reason — internal):
+[LIST OF { program, reason } OBJECTS]
+
+Return JSON array: [{ "program_name": "...", "disqualification_reason": "...", "improvement_path": "..." }]
+Improvement path is optional — only include it if there is a concrete, actionable thing the borrower can do.
+```
+
+Insert results into `rate_options` (headline/body per option) and `rate_disqualifications` (per program).
+
+---
+
+### 22.4 — Borrower Decision Portal (Public-Facing Pages)
+
+**Route structure (unauthenticated, token-gated):**
+```
+/portal/rates/[token]          — main rate selection page
+/portal/rates/[token]/selected — confirmation screen after selection
+```
+
+**Token validation middleware (`middleware.ts` or route-level):**
+```typescript
+// Validate token on every request to /portal/rates/[token]
+// Use admin client (service role) — borrower has no Clerk session
+const { data: tokenRecord } = await supabase
+  .from('rate_portal_tokens')
+  .select('*, leads(*)')
+  .eq('token', params.token)
+  .eq('revoked', false)
+  .gt('expires_at', new Date().toISOString())
+  .single();
+
+if (!tokenRecord) return redirect('/portal/expired');
+```
+
+**Main page — `/portal/rates/[token]`**
+
+Layout: Ashley IQ brand header (logo + "Powered by Ashley IQ" in Coastal Slate), no nav. Clean white background. Mobile-first.
+
+**Sections (in order):**
+
+**① Greeting card**
+```
+"Hi [FIRST_NAME], here are your loan options."
+[LO_NAME] has prepared [2/3] rate options for your review.
+These rates are valid until [DATE]. — [X days remaining countdown]
+```
+
+**② Rate option cards (2–3 cards, side by side on desktop, stacked on mobile)**
+
+Each card contains:
+- Option label (e.g. "Option A — 30-Year Fixed")
+- Gold "Recommended" badge if `is_recommended = true`
+- Rate prominently: `6.625%` in 40px DM Mono ultralight
+- APR in Coastal Slate below
+- Monthly payment: `$2,187/mo` in 28px DM Mono
+- Points row: `1 point paid · $3,200` (hidden if points = 0)
+- Total interest row: `$187,320 total interest over 30 years`
+- AI explanation headline in Lora Bold (16px)
+- AI explanation body in Instrument Sans (14px, Coastal Slate)
+- `"Select this option"` button (btn-primary for recommended, outlined Navy for others)
+
+**③ Break-even calculator (appears if any option has points > 0)**
+
+Auto-rendered card below the rate options:
+
+```
+💡 Should you pay points?
+
+[OPTION_LABEL] includes [X] point(s) — an upfront cost of $[POINTS_COST].
+In exchange, your rate drops from [BASE_RATE]% to [POINTS_RATE]%.
+
+Monthly savings: $[SAVINGS]/mo
+Break-even: [N] months ([N/12] years)
+
+If you plan to stay in this home longer than [BREAK_EVEN_YEARS] years, paying points saves you money.
+```
+
+Break-even calculation:
+```typescript
+const monthlySavings = baseMonthlyPayment - pointsMonthlyPayment;
+const breakEvenMonths = Math.ceil(pointsCost / monthlySavings);
+```
+
+**④ Stay duration scenario toggle**
+
+A segmented control: `5 years  |  10 years  |  15 years  |  30 years`
+
+When the borrower picks a scenario, each rate card updates to show:
+- Total cost for that duration (principal paid + interest paid + points)
+- A simple horizontal bar chart comparing options (pure CSS, no library)
+
+For ARM options: show a note at the < 10-year scenarios: *"This rate is fixed for [5/7] years. After that, it adjusts annually. Ideal if you plan to sell or refinance before the adjustment."*
+
+**⑤ Why you didn't qualify (collapsed accordion, opens on click)**
+
+Header: `"Why aren't more options shown?"`
+
+Each disqualified program is one row:
+- Program name in Navy Bold
+- Disqualification reason in Coastal Slate
+- (Optional) Improvement path in a gold-tinted callout box: `"Here's how to change this: [PATH]"`
+
+This section is intentionally below the fold — borrowers who are happy with the options don't need to see it. But it's always there.
+
+**⑥ Co-borrower share section (if co-borrower name/email exists on lead)**
+
+```
+Is [CO_BORROWER_NAME] reviewing this with you?
+[Send them a link →]
+```
+
+Clicking "Send them a link" calls `POST /api/leads/[id]/rate-portal/send-coborrower` which creates a `co_borrower` token and sends a Resend email. No SMS for co-borrower (only primary borrower has TCPA consent).
+
+---
+
+### 22.5 — Borrower Selection Flow
+
+**On "Select this option" click:**
+
+1. Show a confirmation modal:
+   ```
+   Confirm your selection
+
+   You're choosing [OPTION_LABEL]
+   Rate: [RATE]% · Monthly payment: $[PAYMENT]/mo
+   [Points info if applicable]
+
+   By selecting this option, you're letting [LO_NAME] know your preference.
+   This is not a rate lock or loan commitment.
+
+   [Confirm selection]   [Go back]
+   ```
+
+2. On confirm: `POST /api/portal/rates/[token]/select` (public route, admin client)
+   - Validates token still valid and not expired
+   - Inserts into `rate_selections` (INSERT-only)
+   - Updates `rate_portal_sessions` with `session_ended_at`
+   - Calls `POST /api/notifications/rate-selected` → triggers Relay notification to LO
+
+3. Redirect to `/portal/rates/[token]/selected`
+
+**Confirmation page:**
+```
+✓ Your selection has been received.
+
+You chose [OPTION_LABEL] — [RATE]%, $[PAYMENT]/mo.
+[LO_NAME] has been notified and will be in touch shortly.
+
+[LO PHOTO / AVATAR]
+[LO_NAME] · NMLS #[NMLS]
+[Phone] · [Email]
+```
+
+---
+
+### 22.6 — LO Notification (via Relay)
+
+**Trigger:** On borrower selection, call Relay with:
+
+```typescript
+await relay.send({
+  channel: ['email', 'sms'],       // LO gets both
+  to: lo.email,
+  sms_to: lo.phone,                // only if LO has a phone on file
+  template: 'rate_selected',
+  data: {
+    lo_first_name: lo.first_name,
+    borrower_name: `${lead.first_name} ${lead.last_name}`,
+    selected_option: option.label,
+    rate: option.rate,
+    monthly_payment: option.monthly_payment,
+    loan_number: lead.loan_number,
+    portal_url: `${BASE_URL}/leads/${lead.id}`,
+    behavioral_summary: await generateBehavioralSummary(sessionData),
+  }
+});
+```
+
+**`generateBehavioralSummary`** — call Claude Haiku with the session data:
+```
+Summarize this borrower's engagement in 1-2 sentences for a loan officer.
+Session data: [JSON]
+Be specific. E.g. "Borrower spent 4 minutes on Option B before selecting Option A — may have hesitated on the higher payment."
+```
+
+The behavioral summary is included in the LO email as a callout box.
+
+**LO dashboard notification:** The lead card gets a gold banner: `"⚡ [BORROWER_NAME] selected a rate — view their choice"`
+
+---
+
+### 22.7 — Behavioral Session Tracking
+
+**On portal load:** `POST /api/portal/rates/[token]/session/start` → creates `rate_portal_sessions` record, returns `session_id` stored in `sessionStorage`.
+
+**Client-side tracking (no external analytics):**
+
+```typescript
+// Track hover time per option
+const hoverTimers: Record<string, number> = {};
+
+optionCards.forEach(card => {
+  card.addEventListener('mouseenter', () => {
+    hoverTimers[card.dataset.optionId] = Date.now();
+  });
+  card.addEventListener('mouseleave', () => {
+    const elapsed = (Date.now() - hoverTimers[card.dataset.optionId]) / 1000;
+    updateSessionHover(card.dataset.optionId, elapsed);
+  });
+});
+```
+
+**On session end (beforeunload or selection):** `PATCH /api/portal/rates/[token]/session/end` with final hover data, scenario toggles used, and whether disqualifications were expanded.
+
+---
+
+### 22.8 — LO View: Behavioral Intelligence Panel
+
+**On the lead record's Rate Options tab**, below the options list, add a `"Borrower Engagement"` section. Only visible after the portal has been opened at least once.
+
+**Shows:**
+- Last viewed: `"2 hours ago"`
+- Sessions: `"3 visits"`
+- Came back: `"Yes — returned the next day"`
+- Time on portal: `"6 min 12 sec total"`
+- Most viewed option: `"Option B (ARM) — 4 min"`
+- Scenarios tested: `"5 years, 10 years"`
+- Disqualifications viewed: `"Yes — expanded the accordion"`
+- Co-borrower viewed: `"Yes — spouse opened the link"`
+- AI summary: `"[BEHAVIORAL_SUMMARY from most recent session]"`
+
+This panel is read-only. It refreshes via Supabase Realtime on `rate_portal_sessions`.
+
+---
+
+### 22.9 — Rate Expiration Handling
+
+**7 days after creation**, rate options expire. The portal shows:
+
+```
+⏰ These rates have expired.
+Rates change daily. Contact [LO_NAME] to get updated options.
+[LO phone] · [LO email]
+```
+
+The LO dashboard shows a `"Rates expired"` badge on the lead card. One-click to clone the existing options (same structure, new expiration), then update rates and resend.
+
+**Proactive expiration alert:** 24 hours before expiration, Relay sends the LO an SMS: *"Rate options for [BORROWER_NAME] expire tomorrow. Update and resend? [link]"*
+
+---
+
+### 22.10 — Compliance Note
+
+Add this footer to every portal page in 12px Coastal Slate:
+
+```
+These rate options are for informational purposes only and are not a loan commitment, 
+rate lock, or Loan Estimate as defined by TRID (12 CFR § 1026.37). Rates are subject 
+to change based on market conditions and borrower qualification. [LENDER_NAME] | 
+NMLS #[NMLS] | Equal Housing Lender ⊞
 ```
 
 ---

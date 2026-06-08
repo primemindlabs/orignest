@@ -32,6 +32,7 @@ import {
   Handshake,
   FileCheck,
   LayoutGrid,
+  Wallet,
 } from 'lucide-react';
 
 interface NavItem {
@@ -71,6 +72,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/pre-approval', label: 'Pre-Approval', icon: FileCheck },
       { href: '/scenarios', label: 'Scenarios', icon: LayoutGrid },
       { href: '/refi-watch', label: 'Refi Watch', icon: TrendingDown },
+      { href: '/equity', label: 'Equity Tracker', icon: Wallet },
       { href: '/partners', label: 'Partners', icon: Handshake },
     ],
   },
