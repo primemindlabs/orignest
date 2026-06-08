@@ -153,13 +153,13 @@ export default function OnboardingPage() {
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
               placeholder="Acme Mortgage, LLC"
-              className="w-full h-10 px-3 rounded-lg border border-gray-200 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
+              className="w-full h-10 px-3 rounded-lg border border-gray-200 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gold-500/30 focus:border-gold-500"
             />
           </div>
           <button
             type="submit"
             disabled={busy}
-            className="w-full h-10 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full h-10 rounded-lg bg-gold-600 text-white text-sm font-semibold hover:bg-gold-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {busy ? (
               <>

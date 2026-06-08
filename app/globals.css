@@ -8,20 +8,21 @@
   --c-bg:      #F5F5F7;   /* Apple system gray — page background */
   --c-surface: #FFFFFF;   /* pure white — cards, panels */
   --c-surface2: #FBFBFD;  /* near-white neutral — secondary panels */
-  --c-border:  rgba(15, 29, 46, 0.10);   /* Navy at 10% — borders */
-  --c-fill:    rgba(15, 29, 46, 0.06);   /* Navy at 6% — fills, hovers */
+  --c-border:  rgba(0, 0, 0, 0.10);   /* neutral hairline — borders (Apple) */
+  --c-fill:    rgba(0, 0, 0, 0.05);   /* neutral 5% — fills, hovers */
 
-  /* Text — always dark on light, uses Navy family */
-  --c-text:    #0F1D2E;   /* Midnight Navy — primary text */
-  --c-label2:  #6B7B8D;   /* Coastal Slate — secondary text */
-  --c-label3:  #A8B4BE;   /* Slate muted — tertiary / placeholders */
+  /* Text — Apple near-black + system grays */
+  --c-text:    #1D1D1F;   /* Apple near-black — primary text */
+  --c-label2:  #6E6E73;   /* Apple system gray — secondary text */
+  --c-label3:  #86868B;   /* Apple system gray — tertiary / placeholders */
 
-  /* Brand accent colors */
-  --c-navy:    #0F1D2E;   /* Midnight Navy — primary CTAs, headings, nav */
-  --c-gold:    #C9A95C;   /* Meridian Gold — highlights, key metrics, focus */
-  --c-gold-light: rgba(201, 169, 92, 0.12); /* Gold at 12% — gold fills */
-  --c-ivory:   #F5F5F7;   /* neutral secondary bg (was warm ivory) */
-  --c-slate:   #6B7B8D;   /* Coastal Slate — secondary text, icons */
+  /* Brand accent — Meridian Gold (the single accent, Apple-structured UI) */
+  --c-navy:    #1D1D1F;   /* near-black — headings, dark surfaces */
+  --c-gold:    #C9A95C;   /* Meridian Gold — accent: CTAs, links, focus */
+  --c-gold-deep: #876830; /* deep gold — accessible accent text (links) */
+  --c-gold-light: rgba(201, 169, 92, 0.14); /* Gold at 14% — gold fills */
+  --c-ivory:   #F5F5F7;   /* neutral secondary bg */
+  --c-slate:   #6E6E73;   /* Apple system gray — secondary text, icons */
 
   /* Semantic status colors (neutral — not Apple blue) */
   --c-success: #2D7A4F;   /* Deep green — success states */
@@ -53,6 +54,8 @@ html {
 body {
   background-color: var(--c-bg);
   color: var(--c-text);
+  font-family: var(--font-ui);
+  letter-spacing: -0.01em;   /* Apple-tight body tracking */
 }
 
 /* ── Metric display numbers (Apple HIG — ultralight tabular) ─────────────── */
@@ -135,15 +138,17 @@ select:focus-visible {
   text-wrap: balance;
 }
 
-/* ── Font CSS variables (bound from Next.js font loader) ─────────────────── */
+/* ── Font CSS variables — Apple SF Pro system stack (no serif) ───────────── */
 :root {
-  --font-display:    var(--font-lora), Georgia, serif;
-  --font-ui:         var(--font-instrument-sans), system-ui, sans-serif;
-  --font-data:       var(--font-dm-mono), ui-monospace, monospace;
+  --font-sf:         -apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, system-ui, sans-serif;
+  --font-display:    -apple-system, BlinkMacSystemFont, 'SF Pro Display', Inter, system-ui, sans-serif;
+  --font-ui:         var(--font-sf);
+  --font-data:       var(--font-sf);
 }
 
-/* All metric/number values use DM Mono automatically */
+/* Numbers/metrics: SF with tabular-nums (Apple HIG). Covers `.font-mono` too. */
 .font-data,
+.font-mono,
 [data-metric],
 .metric-value {
   font-family: var(--font-data);
@@ -151,9 +156,11 @@ select:focus-visible {
   font-feature-settings: "tnum";
 }
 
-/* Headings use Lora */
-h1, h2, .font-display {
+/* Headings — SF Pro Display, bold, Apple-tight tracking (NO serif) */
+h1, h2, h3, .font-display {
   font-family: var(--font-display);
+  letter-spacing: -0.022em;
+  font-weight: 600;
 }
 
 /* ── Compliance status colors — PrimeMind semantic palette ───────────────── */
@@ -163,30 +170,35 @@ h1, h2, .font-display {
 .trid-blocked  { color: #C4724A; background: rgba(196,114,74,0.10); border-color: rgba(196,114,74,0.25); }
 .trid-na       { color: #6B7B8D; background: rgba(15,29,46,0.06);   border-color: rgba(15,29,46,0.10); }
 
-/* ── Primary button — Navy, Gold on hover ────────────────────────────────── */
+/* ── Primary button — Gold accent, Apple shape (rounded, soft shadow) ─────── */
 .btn-primary {
-  background-color: #0F1D2E;
-  color: #FFFFFF;
-  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  background-color: #C9A95C;
+  color: #1D1D1F;
+  font-weight: 600;
+  border-radius: 10px;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
 }
 .btn-primary:hover {
-  background-color: #1A3550;
-  box-shadow: 0 2px 12px rgba(15,29,46,0.25);
+  background-color: #D4B870;
+  box-shadow: 0 2px 14px rgba(201,169,92,0.35);
 }
 .btn-primary:active {
-  background-color: #0F1D2E;
+  background-color: #BE9C4C;
+  transform: scale(0.985);
 }
 
-/* ── Gold accent button ───────────────────────────────────────────────────── */
+/* ── Gold accent button (alias of primary) ───────────────────────────────── */
 .btn-gold {
   background-color: #C9A95C;
-  color: #0F1D2E;
+  color: #1D1D1F;
+  font-weight: 600;
+  border-radius: 10px;
   transition: background-color 0.15s ease;
 }
 .btn-gold:hover {
   background-color: #D4B870;
 }
 
-/* ── Link / interactive text — Navy, never Apple blue ────────────────────── */
-a { color: #0F1D2E; text-decoration: none; }
+/* ── Link / interactive text — gold accent (accessible deep gold for text) ── */
+a { color: var(--c-gold-deep); text-decoration: none; }
 a:hover { color: #C9A95C; }

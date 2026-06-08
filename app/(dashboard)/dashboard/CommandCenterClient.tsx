@@ -97,8 +97,8 @@ export function CommandCenterClient({
       <div className="grid grid-cols-4 gap-4">
         {stats.map((s) => (
           <div key={s.label} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mb-3">
-              {(() => { const Icon = STAT_ICONS[s.icon] ?? MessageSquare; return <Icon className="w-5 h-5 text-blue-600" strokeWidth={1.75} />; })()}
+            <div className="w-10 h-10 rounded-xl bg-gold-50 flex items-center justify-center mb-3">
+              {(() => { const Icon = STAT_ICONS[s.icon] ?? MessageSquare; return <Icon className="w-5 h-5 text-gold-600" strokeWidth={1.75} />; })()}
             </div>
             <div className="text-[28px] font-black text-gray-900">{s.value}</div>
             <div className="text-[12px] text-gray-500 mt-0.5">{s.label}</div>
@@ -114,7 +114,7 @@ export function CommandCenterClient({
         <div className="col-span-4 bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-1">
             <h2 className="text-[14px] font-semibold text-gray-900">Pipeline Overview</h2>
-            <a href="/pipeline" className="text-[12px] text-blue-600 hover:underline">View pipeline →</a>
+            <a href="/pipeline" className="text-[12px] text-gold-600 hover:underline">View pipeline →</a>
           </div>
 
           <div className="relative" style={{ height: 180 }}>
@@ -164,7 +164,7 @@ export function CommandCenterClient({
         <div className="col-span-8 bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-[14px] font-semibold text-gray-900">Recent Conversations</h2>
-            <a href="/inbox" className="text-[12px] text-blue-600 hover:underline">View all →</a>
+            <a href="/inbox" className="text-[12px] text-gold-600 hover:underline">View all →</a>
           </div>
 
           {recentLeads.length === 0 ? (
@@ -177,7 +177,7 @@ export function CommandCenterClient({
                   href={`/leads/${lead.id}`}
                   className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors"
                 >
-                  <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-[12px] font-bold text-blue-600 flex-shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-gold-100 flex items-center justify-center text-[12px] font-bold text-gold-600 flex-shrink-0">
                     {lead.initials}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -186,7 +186,7 @@ export function CommandCenterClient({
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="text-[11px] text-gray-400">{lead.time}</p>
-                    <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full font-medium">{lead.stage}</span>
+                    <span className="text-[10px] bg-gold-50 text-gold-600 px-1.5 py-0.5 rounded-full font-medium">{lead.stage}</span>
                   </div>
                   <div className="w-5 h-5 rounded-full border border-gray-200 flex items-center justify-center flex-shrink-0">
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -203,7 +203,7 @@ export function CommandCenterClient({
         <div className="col-span-5 bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-[14px] font-semibold text-gray-900">Task List</h2>
-            <a href="/tasks" className="text-[12px] text-blue-600 hover:underline">View all →</a>
+            <a href="/tasks" className="text-[12px] text-gold-600 hover:underline">View all →</a>
           </div>
           {tasks.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-4">No pending tasks</p>
@@ -248,7 +248,7 @@ export function CommandCenterClient({
                   <span className="text-[12px] text-gray-600 w-24 flex-shrink-0 truncate">{src.label}</span>
                   <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-blue-600 rounded-full transition-all duration-500"
+                      className="h-full bg-gold-600 rounded-full transition-all duration-500"
                       style={{ width: `${(src.count / maxSource) * 100}%` }}
                     ></div>
                   </div>

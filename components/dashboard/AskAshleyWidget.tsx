@@ -76,7 +76,7 @@ export function AskAshleyWidget() {
               <div key={i} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
                 <div className={`max-w-[80%] px-3 py-2 rounded-xl text-[13px] leading-relaxed ${
                   m.role === 'user'
-                    ? 'bg-blue-600 text-white rounded-br-sm'
+                    ? 'bg-gold-600 text-white rounded-br-sm'
                     : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                 }`}>
                   {m.text}
@@ -102,9 +102,9 @@ export function AskAshleyWidget() {
                   <button
                     key={q}
                     onClick={() => send(q)}
-                    className="w-full text-left px-3 py-2 rounded-xl border border-blue-100 bg-blue-50 text-[12px] text-blue-700 hover:bg-blue-100 transition-colors flex items-center gap-2"
+                    className="w-full text-left px-3 py-2 rounded-xl border border-gold-100 bg-gold-50 text-[12px] text-gold-700 hover:bg-gold-100 transition-colors flex items-center gap-2"
                   >
-                    <MessageSquare className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" strokeWidth={1.75} />
+                    <MessageSquare className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" strokeWidth={1.75} />
                     {q}
                   </button>
                 ))}
@@ -115,7 +115,7 @@ export function AskAshleyWidget() {
 
           {/* Input */}
           <div className="px-3 pb-3 pt-2 border-t border-gray-100">
-            <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 border border-gray-200 focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+            <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 border border-gray-200 focus-within:border-gold-300 focus-within:ring-2 focus-within:ring-gold-100 transition-all">
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -126,7 +126,7 @@ export function AskAshleyWidget() {
               <button
                 onClick={() => send(input)}
                 disabled={!input.trim() || loading}
-                className="w-7 h-7 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-40 flex items-center justify-center transition-colors"
+                className="w-7 h-7 rounded-lg bg-gold-600 hover:bg-gold-700 disabled:opacity-40 flex items-center justify-center transition-colors"
               >
                 <Send className="w-3.5 h-3.5 text-white" />
               </button>

@@ -23,7 +23,7 @@ export default async function RootPage() {
             <Link href="/sign-in" className="text-sm text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
               Sign in
             </Link>
-            <Link href="/sign-up" className="text-sm text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors font-medium">
+            <Link href="/sign-up" className="text-sm text-white bg-gold-600 hover:bg-gold-700 px-4 py-2 rounded-lg transition-colors font-medium">
               Get started
             </Link>
           </div>
@@ -35,7 +35,7 @@ export default async function RootPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
             <h1 className="text-5xl font-black text-gray-900 leading-tight tracking-tight">
-              Meet Ashley<span className="text-blue-600">.</span>
+              Meet Ashley<span className="text-gold-600">.</span>
             </h1>
             <p className="text-2xl font-semibold text-gray-500 mt-2 leading-tight">
               The AI Mortgage Assistant<br />That Never Sleeps.
@@ -47,7 +47,7 @@ export default async function RootPage() {
             <div className="flex items-center gap-4 mt-8">
               <Link
                 href="/sign-up"
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm"
+                className="flex items-center gap-2 bg-gold-600 hover:bg-gold-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm"
               >
                 Book a Demo
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -81,11 +81,11 @@ export default async function RootPage() {
               {/* Chat preview card */}
               <div className="absolute -bottom-4 -right-8 bg-white rounded-2xl shadow-xl p-4 w-56 border border-gray-100">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-full bg-gold-600 flex items-center justify-center">
                     <span className="text-white text-[9px] font-bold">A</span>
                   </div>
                   <span className="text-[12px] font-semibold text-gray-900">Ashley</span>
-                  <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium">AI</span>
+                  <span className="text-[10px] bg-gold-100 text-gold-600 px-1.5 py-0.5 rounded font-medium">AI</span>
                 </div>
                 <p className="text-[12px] text-gray-700 leading-relaxed">
                   Good morning!<br/>
@@ -126,7 +126,7 @@ export default async function RootPage() {
                 { icon: Users, value: '14', label: 'Leads Followed Up', trend: '+27%' },
               ].map((stat) => (
                 <div key={stat.label} className="p-5">
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center mb-3"><stat.icon className="w-5 h-5 text-blue-600" strokeWidth={1.75} /></div>
+                  <div className="w-9 h-9 rounded-xl bg-gold-50 flex items-center justify-center mb-3"><stat.icon className="w-5 h-5 text-gold-600" strokeWidth={1.75} /></div>
                   <div className="text-[28px] font-black text-gray-900">{stat.value}</div>
                   <div className="text-[12px] text-gray-500 mt-0.5">{stat.label}</div>
                   <div className="text-[11px] text-green-600 font-semibold mt-1">↑ {stat.trend} vs yesterday</div>
@@ -139,9 +139,9 @@ export default async function RootPage() {
 
       {/* ── Ashley works 24/7 banner ── */}
       <section className="py-12 max-w-6xl mx-auto px-6">
-        <div className="bg-blue-50 rounded-2xl p-6 flex items-center justify-between">
+        <div className="bg-gold-50 rounded-2xl p-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center"><Sparkles className="w-6 h-6 text-blue-600" strokeWidth={1.75} /></div>
+            <div className="w-12 h-12 rounded-xl bg-gold-100 flex items-center justify-center"><Sparkles className="w-6 h-6 text-gold-600" strokeWidth={1.75} /></div>
             <div>
               <h3 className="font-bold text-gray-900">Ashley works 24/7</h3>
               <p className="text-sm text-gray-500">Never misses a lead. Never forgets to follow up.</p>
@@ -149,7 +149,7 @@ export default async function RootPage() {
           </div>
           <div className="flex items-center gap-3">
             <p className="text-sm text-gray-600">Let Ashley grow your mortgage business.</p>
-            <Link href="/sign-up" className="flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+            <Link href="/sign-up" className="flex items-center gap-1.5 text-sm font-semibold text-gold-600 hover:text-gold-700 transition-colors">
               Learn More
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M3 7H11M11 7L8 4M11 7L8 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -163,11 +163,11 @@ export default async function RootPage() {
       <section className="pb-20 max-w-6xl mx-auto px-6">
         <div className="grid grid-cols-5 gap-4">
           {[
-            { icon: Zap, title: 'Lead Response', desc: 'Responds in seconds so you never miss another opportunity.', color: 'bg-blue-50', fg: 'text-yellow-600' },
+            { icon: Zap, title: 'Lead Response', desc: 'Responds in seconds so you never miss another opportunity.', color: 'bg-gold-50', fg: 'text-yellow-600' },
             { icon: CalendarCheck, title: 'Appointment Booking', desc: 'Books appointments directly to your calendar.', color: 'bg-green-50', fg: 'text-green-600' },
             { icon: FileText, title: 'Document Collection', desc: 'Requests, collects, and organizes borrower documents.', color: 'bg-orange-50', fg: 'text-orange-600' },
             { icon: Search, title: 'Pipeline Management', desc: 'Keeps every loan moving forward and nothing falls through.', color: 'bg-purple-50', fg: 'text-purple-600' },
-            { icon: Sparkles, title: 'AI Mortgage Assistant', desc: 'Available 24/7 to you and your borrowers.', color: 'bg-blue-50', fg: 'text-blue-600' },
+            { icon: Sparkles, title: 'AI Mortgage Assistant', desc: 'Available 24/7 to you and your borrowers.', color: 'bg-gold-50', fg: 'text-gold-600' },
           ].map((f) => (
             <div key={f.title} className="bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-md transition-shadow">
               <div className={`w-10 h-10 ${f.color} rounded-xl flex items-center justify-center mb-4`}><f.icon className={`w-5 h-5 ${f.fg}`} strokeWidth={1.75} /></div>
@@ -187,7 +187,7 @@ export default async function RootPage() {
       <footer className="border-t border-gray-100 py-8">
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gold-50 flex items-center justify-center">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <circle cx="7" cy="7" r="5" stroke="#2563EB" strokeWidth="1.5"/>
                 <circle cx="7" cy="7" r="2" fill="#2563EB"/>
@@ -201,7 +201,7 @@ export default async function RootPage() {
           </div>
           <Link
             href="/sign-up"
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm"
+            className="flex items-center gap-2 bg-gold-600 hover:bg-gold-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm"
           >
             Book a Demo
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">

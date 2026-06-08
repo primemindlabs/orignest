@@ -37,19 +37,19 @@ const config: Config = {
           800: '#654D22',
           900: '#433215',
         },
-        // Surfaces — warm white / ivory (NOT Apple gray)
-        bg: '#F5F5F7',          // Linen Ivory — page bg
+        // Surfaces — Apple: cool neutral page bg, pure-white cards
+        bg: '#F5F5F7',          // Apple system gray — page bg
         surface: '#FFFFFF',     // pure white — cards
         ivory: '#F5F5F7',       // alias for bg
-        // Text hierarchy
-        label: '#0F1D2E',
-        'label-1': '#0F1D2E',   // primary — Midnight Navy
-        'label-2': '#6B7B8D',   // secondary — Coastal Slate
-        'label-3': '#A8B4BE',   // tertiary — muted Slate
-        slate: '#6B7B8D',       // Coastal Slate
-        // Borders & fills use Navy at low opacity
-        border: 'rgba(15,29,46,0.10)',
-        fill: 'rgba(15,29,46,0.06)',
+        // Text hierarchy — Apple near-black + system grays
+        label: '#1D1D1F',
+        'label-1': '#1D1D1F',   // primary — Apple near-black
+        'label-2': '#6E6E73',   // secondary — Apple system gray
+        'label-3': '#86868B',   // tertiary — Apple system gray
+        slate: '#6E6E73',       // secondary text
+        // Borders & fills — neutral gray hairlines (Apple)
+        border: 'rgba(0,0,0,0.10)',
+        fill: 'rgba(0,0,0,0.05)',
         // Semantic states — NOT Apple system colors
         green: '#2D7A4F',       // success
         orange: '#B07D28',      // warning (warm amber, gold-adjacent)
@@ -62,28 +62,43 @@ const config: Config = {
           gold:    '#C9A95C',
           bg:      '#F5F5F7',
           surface: '#FFFFFF',
-          slate:   '#6B7B8D',
+          slate:   '#6E6E73',
           ivory:   '#F5F5F7',
           danger:  '#C4724A',
         },
         // Sidebar aliases (no hyphens for Tailwind class compatibility)
-        label2: '#6B7B8D',
-        label3: '#A8B4BE',
+        label2: '#6E6E73',
+        label3: '#86868B',
       },
       fontFamily: {
-        // Display — headings, product names, metric callouts
-        display: ['Lora', 'Georgia', 'serif'],
-        // UI — all labels, body, inputs (Instrument Sans, falls back to Inter)
-        sans: [
-          'Instrument Sans',
-          'Inter',
+        // Display — headings. Apple feel: SF Pro Display, NO serif.
+        display: [
           '-apple-system',
           'BlinkMacSystemFont',
+          'SF Pro Display',
+          'Inter',
           'system-ui',
           'sans-serif',
         ],
-        // Data — all numbers, percentages, dates, IDs, codes
-        mono: ['DM Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        // UI — all labels, body, inputs. SF Pro Text first (Apple system font).
+        sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'SF Pro Text',
+          'Inter',
+          'system-ui',
+          'sans-serif',
+        ],
+        // Data — numbers render in SF with tabular-nums (Apple HIG), not a true
+        // monospace. (`.font-mono` gets tabular-nums applied in globals.css.)
+        mono: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'SF Pro Text',
+          'Inter',
+          'system-ui',
+          'sans-serif',
+        ],
       },
       fontSize: {
         '2xs': ['11px', '14px'],

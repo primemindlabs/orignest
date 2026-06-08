@@ -63,7 +63,7 @@ const TYPE_ICON: Record<TodayAction['type'], LucideIcon> = {
 const TYPE_ICON_COLOR: Record<TodayAction['type'], string> = {
   trid_alert: 'text-red-500',
   speed_to_contact: 'text-amber-500',
-  followup_due: 'text-blue-500',
+  followup_due: 'text-gold-500',
   task_due: 'text-green-500',
   app_incomplete: 'text-orange-500',
   rate_watch: 'text-emerald-600',

@@ -149,21 +149,21 @@ export function Sidebar({ userRole, orgName }: SidebarProps) {
                         className={cn(
                           'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium transition-colors',
                           active
-                            ? 'bg-blue-50 text-blue-600'
+                            ? 'bg-gold-50 text-gold-700'
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                         )}
                       >
                         <item.icon
                           className={cn(
                             'w-4 h-4 flex-shrink-0',
-                            active ? 'text-blue-600' : 'text-gray-400'
+                            active ? 'text-gold-600' : 'text-gray-400'
                           )}
                         />
                         <span className="flex-1">{item.label}</span>
                         {item.badge !== undefined && (
                           <span className={cn(
                             'text-[11px] font-semibold rounded-full px-1.5 py-0.5 leading-none min-w-[20px] text-center',
-                            active ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
+                            active ? 'bg-gold-100 text-gold-700' : 'bg-gray-100 text-gray-600'
                           )}>
                             {item.badge}
                           </span>
@@ -179,13 +179,13 @@ export function Sidebar({ userRole, orgName }: SidebarProps) {
       </nav>
 
       {/* Ashley works 24/7 widget */}
-      <div className="mx-3 mb-3 p-3 rounded-xl bg-blue-50 border border-blue-100">
+      <div className="mx-3 mb-3 p-3 rounded-xl bg-gold-50 border border-gold-100">
         <div className="flex items-center gap-2 mb-1">
-          <Sparkles className="w-4 h-4 text-blue-600" strokeWidth={1.75} />
-          <span className="text-[12px] font-semibold text-blue-800">Ashley works 24/7</span>
+          <Sparkles className="w-4 h-4 text-gold-600" strokeWidth={1.75} />
+          <span className="text-[12px] font-semibold text-gold-800">Ashley works 24/7</span>
         </div>
-        <p className="text-[11px] text-blue-600 leading-relaxed">Never misses a lead. Never forgets to follow up.</p>
-        <Link href="/ai-coach" className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 mt-2 flex items-center gap-1">
+        <p className="text-[11px] text-gold-600 leading-relaxed">Never misses a lead. Never forgets to follow up.</p>
+        <Link href="/ai-coach" className="text-[11px] font-semibold text-gold-600 hover:text-gold-800 mt-2 flex items-center gap-1">
           Learn more →
         </Link>
       </div>
@@ -193,7 +193,7 @@ export function Sidebar({ userRole, orgName }: SidebarProps) {
       {/* User chip */}
       <div className="border-t border-gray-100 p-3 flex-shrink-0">
         <div className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-gray-50 transition-colors group cursor-pointer">
-          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-gold-600 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0">
             {initials}
           </div>
           <div className="flex-1 min-w-0">
