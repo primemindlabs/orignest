@@ -216,7 +216,7 @@ export default function ScenarioMatcherModal({ lenders, onClose }: Props) {
           <button
             onClick={runMatch}
             disabled={!isReady}
-            className="w-full py-2.5 rounded-xl bg-[#007AFF] text-white text-sm font-semibold hover:bg-[#0066D6] disabled:opacity-40 transition-colors"
+            className="w-full py-2.5 rounded-xl bg-[#C9A95C] text-white text-sm font-semibold hover:bg-[#B08D3C] disabled:opacity-40 transition-colors"
           >
             Find Matching Lenders
           </button>

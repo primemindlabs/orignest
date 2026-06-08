@@ -18,7 +18,7 @@ function formatCurrency(amount: number): string {
 // CSS-only confetti — 50 colored divs with random animations
 function Confetti() {
   const colors = [
-    '#007AFF', '#34C759', '#C9A95C', '#FF9500', '#FF3B30',
+    '#C9A95C', '#34C759', '#C9A95C', '#FF9500', '#FF3B30',
     '#AF52DE', '#5AC8FA', '#FFCC00', '#FF2D55', '#4CD964',
   ];
 

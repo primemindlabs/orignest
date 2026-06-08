@@ -380,7 +380,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                           onClick={item.action}
                           className={clsx(
                             'w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors duration-75',
-                            isActive ? 'bg-[#007AFF] text-white' : 'text-[#1C1C1E] hover:bg-black/[0.04]'
+                            isActive ? 'bg-[#C9A95C] text-white' : 'text-[#1C1C1E] hover:bg-black/[0.04]'
                           )}
                         >
                           <span

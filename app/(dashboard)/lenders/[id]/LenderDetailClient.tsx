@@ -299,7 +299,7 @@ export default function LenderDetailClient({ lender, products, commLog, orgId }:
               <button
                 onClick={addNote}
                 disabled={savingNote || !newNote.trim()}
-                className="px-4 py-2 rounded-xl bg-[#007AFF] text-white text-sm font-medium hover:bg-[#0066D6] disabled:opacity-40 transition-colors"
+                className="px-4 py-2 rounded-xl bg-[#C9A95C] text-white text-sm font-medium hover:bg-[#B08D3C] disabled:opacity-40 transition-colors"
               >
                 Add
               </button>

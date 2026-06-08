@@ -204,7 +204,7 @@ function ScoreCard({ label, starting, current, target }: { label: string; starti
 function LoanUnlockBar({ score }: { score: number }) {
   const products = [
     { label: 'FHA', minScore: 580, color: '#34C759' },
-    { label: 'Conventional', minScore: 620, color: '#007AFF' },
+    { label: 'Conventional', minScore: 620, color: '#C9A95C' },
     { label: 'Best rates', minScore: 680, color: '#C9A95C' },
     { label: 'Jumbo', minScore: 720, color: '#8B5CF6' },
   ];

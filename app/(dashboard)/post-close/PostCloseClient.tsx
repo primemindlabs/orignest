@@ -159,7 +159,7 @@ function NurtureList({ borrowers, currentMarketRate }: { borrowers: ClosedBorrow
             onClick={() => setFilter(f.id)}
             className={`px-3.5 py-1.5 rounded-xl text-[12px] font-medium border transition-all ${
               filter === f.id
-                ? 'bg-[#007AFF] text-white border-[#007AFF]'
+                ? 'bg-[#C9A95C] text-white border-[#C9A95C]'
                 : 'border-black/[0.10] bg-white text-[#3C3C43] hover:bg-[#F2F2F7]'
             }`}
           >
@@ -226,7 +226,7 @@ function NurtureList({ borrowers, currentMarketRate }: { borrowers: ClosedBorrow
                         <button
                           onClick={() => handleSendReferralAsk(b.id)}
                           disabled={generatingId === b.id}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#007AFF] text-white text-[11px] font-semibold hover:bg-[#0066CC] disabled:opacity-40 transition-colors whitespace-nowrap"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#C9A95C] text-white text-[11px] font-semibold hover:bg-[#0066CC] disabled:opacity-40 transition-colors whitespace-nowrap"
                         >
                           {generatingId === b.id ? <Sparkles size={11} className="animate-pulse" /> : <Send size={11} />}
                           {generatingId === b.id ? 'Generating…' : isRefiOpportunity ? 'Send Refi Alert' : 'Referral Ask'}
@@ -264,7 +264,7 @@ function SequencesConfig() {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-[13px] text-[#8A8A8E]">{activeCount} of {sequences.length} sequences active</p>
-        <button className="text-[12px] text-[#007AFF] font-medium">
+        <button className="text-[12px] text-[#C9A95C] font-medium">
           Enable All
         </button>
       </div>
@@ -341,9 +341,9 @@ function EquityTracker({ borrowers, currentMarketRate }: { borrowers: ClosedBorr
 
   return (
     <div className="space-y-3">
-      <div className="flex items-start gap-2.5 p-3 rounded-xl bg-[#007AFF]/08 border border-[#007AFF]/20">
-        <AlertCircle size={14} className="text-[#007AFF] mt-0.5 flex-shrink-0" />
-        <p className="text-[12px] text-[#007AFF]">
+      <div className="flex items-start gap-2.5 p-3 rounded-xl bg-[#C9A95C]/08 border border-[#C9A95C]/20">
+        <AlertCircle size={14} className="text-[#C9A95C] mt-0.5 flex-shrink-0" />
+        <p className="text-[12px] text-[#C9A95C]">
           Equity estimates use 4% annual appreciation and a 7% 30-yr amortization model. Actual values depend on market conditions. Always recommend a formal appraisal before refinancing.
         </p>
       </div>
@@ -392,7 +392,7 @@ function EquityTracker({ borrowers, currentMarketRate }: { borrowers: ClosedBorr
               <button
                 onClick={() => handleSendUpdate(b.id)}
                 disabled={generatingId === b.id}
-                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-[#007AFF] text-[#007AFF] text-[12px] font-semibold hover:bg-[#007AFF]/05 disabled:opacity-40 transition-colors"
+                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-[#C9A95C] text-[#C9A95C] text-[12px] font-semibold hover:bg-[#C9A95C]/05 disabled:opacity-40 transition-colors"
               >
                 {generatingId === b.id ? <Sparkles size={12} className="animate-pulse" /> : <Send size={12} />}
                 {generatingId === b.id ? 'Generating…' : 'Send Equity Update'}

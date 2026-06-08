@@ -161,7 +161,7 @@ function ContentGenerator({ onSave }: { onSave: (post: SavedPost) => void }) {
               onClick={() => setPlatform(p.id)}
               className={`px-4 py-2 rounded-xl text-[13px] font-medium border transition-all ${
                 platform === p.id
-                  ? 'border-[#007AFF] bg-[#007AFF]/10 text-[#007AFF]'
+                  ? 'border-[#C9A95C] bg-[#C9A95C]/10 text-[#C9A95C]'
                   : 'border-black/[0.10] bg-white text-[#3C3C43] hover:bg-[#F2F2F7]'
               }`}
             >
@@ -181,7 +181,7 @@ function ContentGenerator({ onSave }: { onSave: (post: SavedPost) => void }) {
               onClick={() => setContentType(ct.id)}
               className={`px-3.5 py-1.5 rounded-xl text-[13px] font-medium border transition-all ${
                 contentType === ct.id
-                  ? 'border-[#007AFF] bg-[#007AFF]/10 text-[#007AFF]'
+                  ? 'border-[#C9A95C] bg-[#C9A95C]/10 text-[#C9A95C]'
                   : 'border-black/[0.10] bg-white text-[#3C3C43] hover:bg-[#F2F2F7]'
               }`}
             >
@@ -201,7 +201,7 @@ function ContentGenerator({ onSave }: { onSave: (post: SavedPost) => void }) {
               onClick={() => setTone(t.id)}
               className={`px-4 py-2 rounded-xl text-[13px] font-medium border transition-all ${
                 tone === t.id
-                  ? 'border-[#007AFF] bg-[#007AFF]/10 text-[#007AFF]'
+                  ? 'border-[#C9A95C] bg-[#C9A95C]/10 text-[#C9A95C]'
                   : 'border-black/[0.10] bg-white text-[#3C3C43] hover:bg-[#F2F2F7]'
               }`}
             >
@@ -216,7 +216,7 @@ function ContentGenerator({ onSave }: { onSave: (post: SavedPost) => void }) {
         <label className="flex items-center gap-2 cursor-pointer">
           <div
             onClick={() => setIncludeRate(!includeRate)}
-            className={`w-10 h-6 rounded-full transition-colors relative ${includeRate ? 'bg-[#007AFF]' : 'bg-[#E5E5EA]'}`}
+            className={`w-10 h-6 rounded-full transition-colors relative ${includeRate ? 'bg-[#C9A95C]' : 'bg-[#E5E5EA]'}`}
           >
             <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${includeRate ? 'translate-x-5' : 'translate-x-1'}`} />
           </div>
@@ -225,7 +225,7 @@ function ContentGenerator({ onSave }: { onSave: (post: SavedPost) => void }) {
         <label className="flex items-center gap-2 cursor-pointer">
           <div
             onClick={() => setIncludeMarket(!includeMarket)}
-            className={`w-10 h-6 rounded-full transition-colors relative ${includeMarket ? 'bg-[#007AFF]' : 'bg-[#E5E5EA]'}`}
+            className={`w-10 h-6 rounded-full transition-colors relative ${includeMarket ? 'bg-[#C9A95C]' : 'bg-[#E5E5EA]'}`}
           >
             <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${includeMarket ? 'translate-x-5' : 'translate-x-1'}`} />
           </div>
@@ -236,7 +236,7 @@ function ContentGenerator({ onSave }: { onSave: (post: SavedPost) => void }) {
       <button
         onClick={handleGenerate}
         disabled={!platform || !contentType || loading}
-        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#007AFF] text-white text-[14px] font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#0066CC] transition-colors"
+        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#C9A95C] text-white text-[14px] font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#0066CC] transition-colors"
       >
         <Sparkles size={15} />
         {loading ? 'Generating…' : 'Generate Post'}
@@ -270,10 +270,10 @@ function ContentGenerator({ onSave }: { onSave: (post: SavedPost) => void }) {
 
           {result.hashtags.length > 0 && (
             <div className="flex items-start gap-2">
-              <Hash size={13} className="text-[#007AFF] mt-0.5 flex-shrink-0" />
+              <Hash size={13} className="text-[#C9A95C] mt-0.5 flex-shrink-0" />
               <div className="flex gap-1.5 flex-wrap">
                 {result.hashtags.map(tag => (
-                  <span key={tag} className="text-[13px] text-[#007AFF]">#{tag}</span>
+                  <span key={tag} className="text-[13px] text-[#C9A95C]">#{tag}</span>
                 ))}
               </div>
             </div>
@@ -301,7 +301,7 @@ function ContentGenerator({ onSave }: { onSave: (post: SavedPost) => void }) {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#007AFF] text-white text-[13px] font-semibold hover:bg-[#0066CC] disabled:opacity-40 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#C9A95C] text-white text-[13px] font-semibold hover:bg-[#0066CC] disabled:opacity-40 transition-colors"
             >
               {saved ? <Check size={13} /> : <BookOpen size={13} />}
               {saved ? 'Saved!' : saving ? 'Saving…' : 'Save to Library'}
@@ -336,7 +336,7 @@ function ContentLibrary({ posts }: { posts: SavedPost[] }) {
         <button
           onClick={() => setFilterPlatform('all')}
           className={`px-3.5 py-1.5 rounded-xl text-[13px] font-medium border transition-all ${
-            filterPlatform === 'all' ? 'bg-[#007AFF] text-white border-[#007AFF]' : 'border-black/[0.10] bg-white text-[#3C3C43] hover:bg-[#F2F2F7]'
+            filterPlatform === 'all' ? 'bg-[#C9A95C] text-white border-[#C9A95C]' : 'border-black/[0.10] bg-white text-[#3C3C43] hover:bg-[#F2F2F7]'
           }`}
         >
           All
@@ -346,7 +346,7 @@ function ContentLibrary({ posts }: { posts: SavedPost[] }) {
             key={p.id}
             onClick={() => setFilterPlatform(p.id)}
             className={`px-3.5 py-1.5 rounded-xl text-[13px] font-medium border transition-all ${
-              filterPlatform === p.id ? 'bg-[#007AFF] text-white border-[#007AFF]' : 'border-black/[0.10] bg-white text-[#3C3C43] hover:bg-[#F2F2F7]'
+              filterPlatform === p.id ? 'bg-[#C9A95C] text-white border-[#C9A95C]' : 'border-black/[0.10] bg-white text-[#3C3C43] hover:bg-[#F2F2F7]'
             }`}
           >
             {p.label}
@@ -377,7 +377,7 @@ function ContentLibrary({ posts }: { posts: SavedPost[] }) {
             </div>
             <p className="text-[13px] text-[#1C1C1E] leading-relaxed line-clamp-3">{post.body}</p>
             {post.hashtags.length > 0 && (
-              <p className="text-[12px] text-[#007AFF] mt-1.5">
+              <p className="text-[12px] text-[#C9A95C] mt-1.5">
                 {post.hashtags.map(h => `#${h}`).join(' ')}
               </p>
             )}
@@ -385,7 +385,7 @@ function ContentLibrary({ posts }: { posts: SavedPost[] }) {
               <p className="text-[11px] text-[#C7C7CC]">
                 {new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </p>
-              <button className="text-[12px] text-[#007AFF] font-medium hover:text-[#0066CC]">
+              <button className="text-[12px] text-[#C9A95C] font-medium hover:text-[#0066CC]">
                 Reuse
               </button>
             </div>

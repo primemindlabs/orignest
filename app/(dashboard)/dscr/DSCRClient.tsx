@@ -15,10 +15,10 @@ import { AlertTriangle, Save, TrendingUp, Building2 } from 'lucide-react';
 // ─── Shared UI helpers ────────────────────────────────────────────────────────
 
 const INPUT_CLS =
-  'w-full h-9 px-3 rounded-xl bg-[#F2F2F7] border border-black/[0.06] text-[13px] text-[#0F1D2E] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 focus:border-[#007AFF]/40 transition-all';
+  'w-full h-9 px-3 rounded-xl bg-[#F2F2F7] border border-black/[0.06] text-[13px] text-[#0F1D2E] focus:outline-none focus:ring-2 focus:ring-[#C9A95C]/30 focus:border-[#C9A95C]/40 transition-all';
 
 const SELECT_CLS =
-  'w-full h-9 px-3 rounded-xl bg-[#F2F2F7] border border-black/[0.06] text-[13px] text-[#0F1D2E] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 appearance-none cursor-pointer';
+  'w-full h-9 px-3 rounded-xl bg-[#F2F2F7] border border-black/[0.06] text-[13px] text-[#0F1D2E] focus:outline-none focus:ring-2 focus:ring-[#C9A95C]/30 appearance-none cursor-pointer';
 
 function InputField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -105,7 +105,7 @@ function ResultRow({ label, value, accent = false }: { label: string; value: str
   return (
     <div className="flex justify-between items-center py-2 border-b border-black/[0.04] last:border-0">
       <span className="text-[12px] text-[#6C6C70]">{label}</span>
-      <span className={cn('text-[12px] font-medium tabular-nums', accent ? 'text-[#007AFF]' : 'text-[#0F1D2E]')}>
+      <span className={cn('text-[12px] font-medium tabular-nums', accent ? 'text-[#C9A95C]' : 'text-[#0F1D2E]')}>
         {value}
       </span>
     </div>
@@ -335,7 +335,7 @@ function BankStatementTab() {
                 className={cn(
                   'flex-1 h-8 rounded-xl text-[12px] font-medium transition-colors capitalize',
                   incomeType === t
-                    ? 'bg-[#007AFF] text-white'
+                    ? 'bg-[#C9A95C] text-white'
                     : 'bg-[#F2F2F7] text-[#6C6C70] hover:bg-black/[0.06]'
                 )}
               >
@@ -371,7 +371,7 @@ function BankStatementTab() {
                 onClick={() => setPeriod(p)}
                 className={cn(
                   'px-4 py-1.5 text-[12px] font-medium transition-colors',
-                  period === p ? 'bg-[#007AFF] text-white' : 'bg-[#F2F2F7] text-[#6C6C70]'
+                  period === p ? 'bg-[#C9A95C] text-white' : 'bg-[#F2F2F7] text-[#6C6C70]'
                 )}
               >
                 {p}-Month
@@ -393,8 +393,8 @@ function BankStatementTab() {
             <ResultRow label="Max Loan at 43% DTI (24mo)" value={formatCurrency(result.maxLoanAt43DTI, { compact: true })} accent />
           </div>
 
-          <div className="mt-4 p-3 rounded-xl bg-[#007AFF]/[0.06] border border-[#007AFF]/20">
-            <p className="text-[11px] text-[#007AFF] leading-relaxed">
+          <div className="mt-4 p-3 rounded-xl bg-[#C9A95C]/[0.06] border border-[#C9A95C]/20">
+            <p className="text-[11px] text-[#C9A95C] leading-relaxed">
               <strong>Lender note:</strong> Most lenders prefer 24-month average. Some allow 12-month
               if business is 2+ years old. Expense ratios vary by lender (40–60% typical for business).
             </p>
@@ -474,7 +474,7 @@ function AssetDepletionTab() {
 
           <div className="grid grid-cols-2 gap-3 mb-4">
             <MetricCard label="Total Qualifying Income" value={formatCurrency(result.totalQualifyingIncome)} />
-            <MetricCard label="Max Loan Amount" value={formatCurrency(result.maxLoanAmount, { compact: true })} color="text-[#007AFF]" />
+            <MetricCard label="Max Loan Amount" value={formatCurrency(result.maxLoanAmount, { compact: true })} color="text-[#C9A95C]" />
           </div>
 
           <div className="p-3 rounded-xl bg-[#F2F2F7]">
@@ -572,7 +572,7 @@ function PLTab() {
 
           <div className="grid grid-cols-2 gap-3 mb-4">
             <MetricCard label="2-Year Avg (monthly)" value={formatCurrency(result.twoYearAvg)} />
-            <MetricCard label="Max Loan Amount" value={formatCurrency(result.maxLoanAmount, { compact: true })} color="text-[#007AFF]" />
+            <MetricCard label="Max Loan Amount" value={formatCurrency(result.maxLoanAmount, { compact: true })} color="text-[#C9A95C]" />
           </div>
 
           <div className="p-3 rounded-xl bg-[#F2F2F7] text-[12px]">
@@ -680,11 +680,11 @@ function FixFlipTab() {
               color={result.estimatedROI >= 20 ? 'text-[#34C759]' : result.estimatedROI >= 10 ? 'text-[#FF9500]' : 'text-[#FF3B30]'}
             />
             <MetricCard label="Max Loan (90% LTC / 70% ARV)" value={formatCurrency(result.maxLoan, { compact: true })} />
-            <MetricCard label="Bridge Loan Size" value={formatCurrency(result.bridgeLoanSize, { compact: true })} color="text-[#007AFF]" />
+            <MetricCard label="Bridge Loan Size" value={formatCurrency(result.bridgeLoanSize, { compact: true })} color="text-[#C9A95C]" />
           </div>
 
           {exitStrategy === 'dscr_refi' && (
-            <div className="p-3 rounded-xl bg-[#007AFF]/[0.06] border border-[#007AFF]/20 text-[12px] text-[#007AFF]">
+            <div className="p-3 rounded-xl bg-[#C9A95C]/[0.06] border border-[#C9A95C]/20 text-[12px] text-[#C9A95C]">
               <strong>Refi Readiness:</strong> At {formatCurrency(parseFloat(arv) || 0)} ARV, an 80% LTV
               DSCR loan would be {formatCurrency((parseFloat(arv) || 0) * 0.8)}. Run DSCR tab to
               confirm rental income coverage.
@@ -820,7 +820,7 @@ function NonQMFinderTab() {
               step={5}
               value={creditScore}
               onChange={(e) => setCreditScore(Number(e.target.value))}
-              className="w-full accent-[#007AFF]"
+              className="w-full accent-[#C9A95C]"
             />
           </div>
           <div>
@@ -949,7 +949,7 @@ export default function DSCRClient() {
       {/* Page header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <TrendingUp className="w-5 h-5 text-[#007AFF]" />
+          <TrendingUp className="w-5 h-5 text-[#C9A95C]" />
           <h1 className="text-2xl font-semibold text-[#0F1D2E] tracking-tight">DSCR / Non-QM Suite</h1>
         </div>
         <p className="text-[#AEAEB2] text-sm">

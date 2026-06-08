@@ -116,7 +116,7 @@ export function SpeedTicker() {
         {/* CTA */}
         <Link
           href={hasMultiple ? '/leads?stage=new_inquiry' : `/leads/${oldest.id}`}
-          className="flex items-center gap-1 h-7 px-3 rounded-lg bg-[#007AFF] text-white text-[12px] font-medium hover:bg-[#007AFF]/90 transition-colors flex-shrink-0"
+          className="flex items-center gap-1 h-7 px-3 rounded-lg bg-[#C9A95C] text-white text-[12px] font-medium hover:bg-[#C9A95C]/90 transition-colors flex-shrink-0"
         >
           Contact Now
           <ChevronRight size={11} />

@@ -189,7 +189,7 @@ function ScenarioCard({ result }: { result: EligibilityResult }) {
           {/* Expandable details */}
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="flex items-center gap-1 text-[11px] text-[#007AFF] font-medium mb-2"
+            className="flex items-center gap-1 text-[11px] text-[#C9A95C] font-medium mb-2"
           >
             <ChevronDown
               className={cn('w-3.5 h-3.5 transition-transform', expanded && 'rotate-180')}
@@ -255,10 +255,10 @@ function InputField({
 }
 
 const INPUT_CLS =
-  'w-full h-9 px-3 rounded-xl bg-[#F2F2F7] border border-black/[0.06] text-[13px] text-[#0F1D2E] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 focus:border-[#007AFF]/40 transition-all';
+  'w-full h-9 px-3 rounded-xl bg-[#F2F2F7] border border-black/[0.06] text-[13px] text-[#0F1D2E] focus:outline-none focus:ring-2 focus:ring-[#C9A95C]/30 focus:border-[#C9A95C]/40 transition-all';
 
 const SELECT_CLS =
-  'w-full h-9 px-3 rounded-xl bg-[#F2F2F7] border border-black/[0.06] text-[13px] text-[#0F1D2E] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 appearance-none cursor-pointer';
+  'w-full h-9 px-3 rounded-xl bg-[#F2F2F7] border border-black/[0.06] text-[13px] text-[#0F1D2E] focus:outline-none focus:ring-2 focus:ring-[#C9A95C]/30 appearance-none cursor-pointer';
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -352,7 +352,7 @@ export default function PricingClient() {
             <Download className="w-3.5 h-3.5" />
             Export PDF
           </button>
-          <button className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-[#007AFF] text-[12px] font-medium text-white hover:bg-[#007AFF]/90 transition-colors">
+          <button className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-[#C9A95C] text-[12px] font-medium text-white hover:bg-[#C9A95C]/90 transition-colors">
             <Send className="w-3.5 h-3.5" />
             Send to Borrower
           </button>
@@ -365,7 +365,7 @@ export default function PricingClient() {
           {/* Borrower Profile */}
           <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Calculator className="w-4 h-4 text-[#007AFF]" />
+              <Calculator className="w-4 h-4 text-[#C9A95C]" />
               <h2 className="text-[13px] font-semibold text-[#0F1D2E]">Borrower Profile</h2>
             </div>
             <div className="space-y-4">
@@ -395,7 +395,7 @@ export default function PricingClient() {
                   step={5}
                   value={creditScore}
                   onChange={(e) => setCreditScore(Number(e.target.value))}
-                  className="w-full accent-[#007AFF]"
+                  className="w-full accent-[#C9A95C]"
                 />
                 <div className="flex justify-between text-[10px] text-[#AEAEB2] mt-0.5">
                   <span>580</span>
@@ -442,7 +442,7 @@ export default function PricingClient() {
                   id="va"
                   checked={vaEligible}
                   onChange={(e) => setVaEligible(e.target.checked)}
-                  className="w-4 h-4 accent-[#007AFF] rounded"
+                  className="w-4 h-4 accent-[#C9A95C] rounded"
                 />
                 <label htmlFor="va" className="text-[12px] text-[#0F1D2E] cursor-pointer">
                   VA Eligible Borrower
@@ -484,7 +484,7 @@ export default function PricingClient() {
                         className={cn(
                           'px-2.5 py-1 text-[11px] font-medium transition-colors',
                           downPaymentMode === m
-                            ? 'bg-[#007AFF] text-white'
+                            ? 'bg-[#C9A95C] text-white'
                             : 'bg-[#F2F2F7] text-[#6C6C70]'
                         )}
                       >

@@ -116,14 +116,14 @@ export function AICompose({ fieldType, leadId, existingText, onGenerated }: AICo
         onClick={() => setOpen((o) => !o)}
         disabled={generating}
         title="AI Compose"
-        className="flex items-center gap-1 h-6 px-2 rounded-md bg-[#007AFF]/8 hover:bg-[#007AFF]/14 text-[#007AFF] text-[11px] font-medium transition-colors disabled:opacity-50"
+        className="flex items-center gap-1 h-6 px-2 rounded-md bg-[#C9A95C]/8 hover:bg-[#C9A95C]/14 text-[#C9A95C] text-[11px] font-medium transition-colors disabled:opacity-50"
       >
         <Sparkles size={11} />
         {generating ? (
           <span className="flex items-center gap-1">
-            <span className="inline-block w-1 h-1 rounded-full bg-[#007AFF] animate-bounce [animation-delay:0ms]" />
-            <span className="inline-block w-1 h-1 rounded-full bg-[#007AFF] animate-bounce [animation-delay:150ms]" />
-            <span className="inline-block w-1 h-1 rounded-full bg-[#007AFF] animate-bounce [animation-delay:300ms]" />
+            <span className="inline-block w-1 h-1 rounded-full bg-[#C9A95C] animate-bounce [animation-delay:0ms]" />
+            <span className="inline-block w-1 h-1 rounded-full bg-[#C9A95C] animate-bounce [animation-delay:150ms]" />
+            <span className="inline-block w-1 h-1 rounded-full bg-[#C9A95C] animate-bounce [animation-delay:300ms]" />
           </span>
         ) : (
           'AI'
@@ -148,7 +148,7 @@ export function AICompose({ fieldType, leadId, existingText, onGenerated }: AICo
                 onClick={() => generate(opt)}
                 className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-[#1C1C1E] hover:bg-black/[0.04] transition-colors text-left"
               >
-                <Sparkles size={12} className="text-[#007AFF] flex-shrink-0" />
+                <Sparkles size={12} className="text-[#C9A95C] flex-shrink-0" />
                 {opt.label}
               </button>
             ))}
@@ -170,7 +170,7 @@ export function AICompose({ fieldType, leadId, existingText, onGenerated }: AICo
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
               placeholder="e.g. Draft a congratulatory message for their loan approval..."
-              className="w-full h-20 text-[13px] bg-[#F2F2F7] rounded-lg px-3 py-2 resize-none outline-none focus:ring-2 focus:ring-[#007AFF]/30 text-[#1C1C1E] placeholder:text-[#AEAEB2]"
+              className="w-full h-20 text-[13px] bg-[#F2F2F7] rounded-lg px-3 py-2 resize-none outline-none focus:ring-2 focus:ring-[#C9A95C]/30 text-[#1C1C1E] placeholder:text-[#AEAEB2]"
               autoFocus
             />
             <div className="flex gap-2 mt-2">
@@ -178,7 +178,7 @@ export function AICompose({ fieldType, leadId, existingText, onGenerated }: AICo
                 type="button"
                 onClick={() => doGenerate('custom', customPrompt)}
                 disabled={!customPrompt.trim()}
-                className="flex-1 h-8 rounded-lg bg-[#007AFF] text-white text-[12px] font-medium hover:bg-[#007AFF]/90 transition-colors disabled:opacity-50"
+                className="flex-1 h-8 rounded-lg bg-[#C9A95C] text-white text-[12px] font-medium hover:bg-[#C9A95C]/90 transition-colors disabled:opacity-50"
               >
                 Generate
               </button>
@@ -201,12 +201,12 @@ export function AICompose({ fieldType, leadId, existingText, onGenerated }: AICo
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
-            className="absolute right-0 top-8 w-[320px] bg-white rounded-xl border border-[#007AFF]/20 shadow-elevated z-50 overflow-hidden"
+            className="absolute right-0 top-8 w-[320px] bg-white rounded-xl border border-[#C9A95C]/20 shadow-elevated z-50 overflow-hidden"
           >
-            <div className="flex items-center justify-between px-3 py-2 bg-[#007AFF]/5 border-b border-[#007AFF]/10">
+            <div className="flex items-center justify-between px-3 py-2 bg-[#C9A95C]/5 border-b border-[#C9A95C]/10">
               <div className="flex items-center gap-1.5">
-                <Sparkles size={11} className="text-[#007AFF]" />
-                <span className="text-[11px] font-medium text-[#007AFF]">AI Draft</span>
+                <Sparkles size={11} className="text-[#C9A95C]" />
+                <span className="text-[11px] font-medium text-[#C9A95C]">AI Draft</span>
               </div>
               <button type="button" onClick={dismiss} className="text-[#AEAEB2] hover:text-[#1C1C1E] transition-colors">
                 <X size={11} />

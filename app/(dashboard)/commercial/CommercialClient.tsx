@@ -12,10 +12,10 @@ import {
 // ─── Shared UI helpers ─────────────────────────────────────────────────────────
 
 const INPUT_CLS =
-  'w-full h-9 px-3 rounded-xl bg-[#F2F2F7] border border-black/[0.06] text-[13px] text-[#0F1D2E] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 focus:border-[#007AFF]/40 transition-all';
+  'w-full h-9 px-3 rounded-xl bg-[#F2F2F7] border border-black/[0.06] text-[13px] text-[#0F1D2E] focus:outline-none focus:ring-2 focus:ring-[#C9A95C]/30 focus:border-[#C9A95C]/40 transition-all';
 
 const SELECT_CLS =
-  'w-full h-9 px-3 rounded-xl bg-[#F2F2F7] border border-black/[0.06] text-[13px] text-[#0F1D2E] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 appearance-none cursor-pointer';
+  'w-full h-9 px-3 rounded-xl bg-[#F2F2F7] border border-black/[0.06] text-[13px] text-[#0F1D2E] focus:outline-none focus:ring-2 focus:ring-[#C9A95C]/30 appearance-none cursor-pointer';
 
 function InputField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -223,7 +223,7 @@ function NOITab() {
               <MetricCard
                 label={`Value at ${marketCapRate}% Cap`}
                 value={formatCurrency(result.valueAtCapRate, { compact: true })}
-                color="text-[#007AFF]"
+                color="text-[#C9A95C]"
               />
             )}
             {result.dscr !== null && (
@@ -363,7 +363,7 @@ function CommercialDSCRTab() {
                 id="manualDS"
                 checked={useManualDebtService}
                 onChange={(e) => setUseManualDebtService(e.target.checked)}
-                className="w-4 h-4 accent-[#007AFF]"
+                className="w-4 h-4 accent-[#C9A95C]"
               />
               <label htmlFor="manualDS" className="text-[12px] text-[#0F1D2E] cursor-pointer">
                 Enter annual debt service manually
@@ -510,7 +510,7 @@ function SBATab() {
               className={cn(
                 'px-4 py-1.5 rounded-full text-[13px] font-semibold',
                 result.recommendation === '504'
-                  ? 'bg-[#007AFF]/10 text-[#007AFF]'
+                  ? 'bg-[#C9A95C]/10 text-[#C9A95C]'
                   : 'bg-[#34C759]/10 text-[#1a7a34]'
               )}
             >
@@ -520,7 +520,7 @@ function SBATab() {
           <p className="text-[12px] text-[#6C6C70] mb-5">{result.reason}</p>
 
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-5">
-            <MetricCard label="Eligible Amount" value={formatCurrency(result.eligibleAmount, { compact: true })} color="text-[#007AFF]" />
+            <MetricCard label="Eligible Amount" value={formatCurrency(result.eligibleAmount, { compact: true })} color="text-[#C9A95C]" />
             <MetricCard label="Required Equity Injection" value={formatCurrency(result.requiredEquity, { compact: true })} />
             <MetricCard label="Est. 10-Year Payment" value={formatCurrency(result.estimated10yrPayment)} sub="7(a) ~10.25%" />
             <MetricCard label="Est. 25-Year Payment" value={formatCurrency(result.estimated25yrPayment)} sub="504 RE portion ~6.75%" />
@@ -551,7 +551,7 @@ function SBATab() {
                   ]
               ).map((item) => (
                 <div key={item} className="flex items-start gap-2">
-                  <div className="w-4 h-4 rounded-full border-2 border-[#007AFF]/40 flex-shrink-0 mt-0.5" />
+                  <div className="w-4 h-4 rounded-full border-2 border-[#C9A95C]/40 flex-shrink-0 mt-0.5" />
                   <span className="text-[#6C6C70]">{item}</span>
                 </div>
               ))}
@@ -606,7 +606,7 @@ function MultiFamilyTab() {
             onClick={() => setUnitType(val)}
             className={cn(
               'px-4 py-2 text-[12px] font-medium transition-colors',
-              unitType === val ? 'bg-[#007AFF] text-white' : 'bg-[#F2F2F7] text-[#6C6C70]'
+              unitType === val ? 'bg-[#C9A95C] text-white' : 'bg-[#F2F2F7] text-[#6C6C70]'
             )}
           >
             {label}
@@ -651,7 +651,7 @@ function MultiFamilyTab() {
                   color={ltv <= 80 ? 'text-[#34C759]' : ltv <= 96.5 ? 'text-[#FF9500]' : 'text-[#FF3B30]'}
                 />
               </div>
-              <div className="mt-4 p-3 rounded-xl bg-[#007AFF]/[0.06] border border-[#007AFF]/20 text-[12px] text-[#007AFF]">
+              <div className="mt-4 p-3 rounded-xl bg-[#C9A95C]/[0.06] border border-[#C9A95C]/20 text-[12px] text-[#C9A95C]">
                 FNMA uses 75% of rental income to offset PITIA for 2–4 unit primary residence.
                 Rental income is eligible if documented with lease agreements or Fannie appraiser rental schedule.
               </div>
@@ -792,7 +792,7 @@ function BridgeTrackerTab() {
         <div className="text-[12px] text-[#AEAEB2]">{loans.length} active bridge loans</div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-[#007AFF] text-[12px] font-medium text-white hover:bg-[#007AFF]/90 transition-colors"
+          className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-[#C9A95C] text-[12px] font-medium text-white hover:bg-[#C9A95C]/90 transition-colors"
         >
           <Plus className="w-3.5 h-3.5" />
           Add Bridge Loan
@@ -897,7 +897,7 @@ function BridgeTrackerTab() {
               </button>
               <button
                 onClick={addLoan}
-                className="flex-1 h-9 rounded-xl bg-[#007AFF] text-[13px] font-medium text-white hover:bg-[#007AFF]/90 transition-colors"
+                className="flex-1 h-9 rounded-xl bg-[#C9A95C] text-[13px] font-medium text-white hover:bg-[#C9A95C]/90 transition-colors"
               >
                 Add Loan
               </button>
@@ -930,7 +930,7 @@ export default function CommercialClient() {
       {/* Page header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <Building2 className="w-5 h-5 text-[#007AFF]" />
+          <Building2 className="w-5 h-5 text-[#C9A95C]" />
           <h1 className="text-2xl font-semibold text-[#0F1D2E] tracking-tight">Commercial</h1>
         </div>
         <p className="text-[#AEAEB2] text-sm">

@@ -30,8 +30,8 @@ export default async function AdCenterPage() {
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2.5 mb-1">
-            <div className="w-9 h-9 rounded-xl bg-[#007AFF]/15 flex items-center justify-center">
-              <Megaphone size={18} className="text-[#007AFF]" />
+            <div className="w-9 h-9 rounded-xl bg-[#C9A95C]/15 flex items-center justify-center">
+              <Megaphone size={18} className="text-[#C9A95C]" />
             </div>
             <h1 className="text-[22px] font-bold text-[#1C1C1E] tracking-tight">Ad Center</h1>
           </div>

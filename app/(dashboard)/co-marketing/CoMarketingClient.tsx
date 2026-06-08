@@ -50,7 +50,7 @@ function RateSheetPreview({ html, onClose }: { html: string; onClose: () => void
                 a.click();
                 URL.revokeObjectURL(url);
               }}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#007AFF] text-white text-[13px] font-semibold hover:bg-[#0066CC] transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#C9A95C] text-white text-[13px] font-semibold hover:bg-[#0066CC] transition-colors"
             >
               <Download size={13} />
               Download
@@ -86,14 +86,14 @@ function EmailSignatureGenerator({ partner, lo }: { partner: ReferralPartner; lo
       <strong style="font-size:14px;display:block;margin-bottom:2px;">${lo.first_name} ${lo.last_name}</strong>
       <span style="color:#8A8A8E;display:block;">Mortgage Loan Officer</span>
       ${lo.nmls_id ? `<span style="color:#8A8A8E;display:block;">NMLS #${lo.nmls_id}</span>` : ''}
-      <a href="mailto:${lo.email}" style="color:#007AFF;text-decoration:none;display:block;margin-top:4px;">${lo.email}</a>
+      <a href="mailto:${lo.email}" style="color:#C9A95C;text-decoration:none;display:block;margin-top:4px;">${lo.email}</a>
       ${lo.phone ? `<span style="color:#3C3C43;display:block;">${lo.phone}</span>` : ''}
     </td>
     <td style="padding-left:20px;vertical-align:top;">
       <strong style="font-size:14px;display:block;margin-bottom:2px;">${partner.first_name} ${partner.last_name}</strong>
       <span style="color:#8A8A8E;display:block;">${partner.company_name}</span>
       ${partner.license_number ? `<span style="color:#8A8A8E;display:block;">Lic. #${partner.license_number}</span>` : ''}
-      <a href="mailto:${partner.email}" style="color:#007AFF;text-decoration:none;display:block;margin-top:4px;">${partner.email}</a>
+      <a href="mailto:${partner.email}" style="color:#C9A95C;text-decoration:none;display:block;margin-top:4px;">${partner.email}</a>
       ${partner.phone ? `<span style="color:#3C3C43;display:block;">${partner.phone}</span>` : ''}
     </td>
   </tr>
@@ -118,7 +118,7 @@ function EmailSignatureGenerator({ partner, lo }: { partner: ReferralPartner; lo
       <div className="flex gap-2">
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#007AFF] text-white text-[13px] font-semibold hover:bg-[#0066CC] transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#C9A95C] text-white text-[13px] font-semibold hover:bg-[#0066CC] transition-colors"
         >
           {copied ? <Check size={13} /> : <Copy size={13} />}
           {copied ? 'Copied HTML' : 'Copy HTML'}
@@ -172,7 +172,7 @@ function JustClosedGenerator({ partner, lo }: { partner: ReferralPartner; lo: Pr
       <button
         onClick={handleGenerate}
         disabled={loading}
-        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#007AFF] text-white text-[13px] font-semibold hover:bg-[#0066CC] disabled:opacity-40 transition-colors"
+        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#C9A95C] text-white text-[13px] font-semibold hover:bg-[#0066CC] disabled:opacity-40 transition-colors"
       >
         <Sparkles size={13} />
         {loading ? 'Generating…' : 'Generate Post'}
@@ -251,7 +251,7 @@ function MaterialsGenerator({ partners, profiles }: CoMarketingClientProps) {
             <select
               value={selectedPartner}
               onChange={e => setSelectedPartner(e.target.value)}
-              className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] text-[#1C1C1E] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 focus:border-[#007AFF]"
+              className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] text-[#1C1C1E] focus:outline-none focus:ring-2 focus:ring-[#C9A95C]/30 focus:border-[#C9A95C]"
             >
               <option value="">Select partner…</option>
               {partners.map(p => (
@@ -267,7 +267,7 @@ function MaterialsGenerator({ partners, profiles }: CoMarketingClientProps) {
           <select
             value={selectedLo}
             onChange={e => setSelectedLo(e.target.value)}
-            className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] text-[#1C1C1E] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 focus:border-[#007AFF]"
+            className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] text-[#1C1C1E] focus:outline-none focus:ring-2 focus:ring-[#C9A95C]/30 focus:border-[#C9A95C]"
           >
             <option value="">Select LO…</option>
             {profiles.map(p => (
@@ -287,11 +287,11 @@ function MaterialsGenerator({ partners, profiles }: CoMarketingClientProps) {
               onClick={() => setMaterialType(m.id)}
               className={`text-left px-4 py-3 rounded-xl border transition-all ${
                 materialType === m.id
-                  ? 'border-[#007AFF] bg-[#007AFF]/10'
+                  ? 'border-[#C9A95C] bg-[#C9A95C]/10'
                   : 'border-black/[0.10] bg-white hover:bg-[#F2F2F7]'
               }`}
             >
-              <p className={`text-[13px] font-semibold ${materialType === m.id ? 'text-[#007AFF]' : 'text-[#1C1C1E]'}`}>
+              <p className={`text-[13px] font-semibold ${materialType === m.id ? 'text-[#C9A95C]' : 'text-[#1C1C1E]'}`}>
                 {m.label}
               </p>
               <p className="text-[11px] text-[#8A8A8E] mt-0.5">{m.description}</p>
@@ -303,7 +303,7 @@ function MaterialsGenerator({ partners, profiles }: CoMarketingClientProps) {
       <button
         onClick={handleGenerate}
         disabled={!canGenerate || loading}
-        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#007AFF] text-white text-[14px] font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#0066CC] transition-colors"
+        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#C9A95C] text-white text-[14px] font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#0066CC] transition-colors"
       >
         <FileText size={15} />
         {loading ? 'Generating…' : 'Preview & Download'}
@@ -371,7 +371,7 @@ function SharedLandingPages({ partners, profiles }: CoMarketingClientProps) {
                   Active
                 </span>
               </div>
-              <p className="text-[11px] font-mono text-[#007AFF] truncate">
+              <p className="text-[11px] font-mono text-[#C9A95C] truncate">
                 ashleyiq.app/{loSlug}/{partnerSlug}
               </p>
               <div className="flex items-center gap-3 mt-2">
@@ -383,7 +383,7 @@ function SharedLandingPages({ partners, profiles }: CoMarketingClientProps) {
                   <Eye size={11} />
                   Preview
                 </button>
-                <button className="flex items-center gap-1 flex-1 justify-center py-1.5 rounded-lg bg-[#007AFF] text-white text-[12px] font-semibold hover:bg-[#0066CC] transition-colors">
+                <button className="flex items-center gap-1 flex-1 justify-center py-1.5 rounded-lg bg-[#C9A95C] text-white text-[12px] font-semibold hover:bg-[#0066CC] transition-colors">
                   <Copy size={11} />
                   Copy URL
                 </button>

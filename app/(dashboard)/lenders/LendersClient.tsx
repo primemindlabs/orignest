@@ -228,7 +228,7 @@ export default function LendersClient({ orgLenders }: Props) {
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#007AFF] text-white text-sm font-medium hover:bg-[#0066D6] transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#C9A95C] text-white text-sm font-medium hover:bg-[#B08D3C] transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4" />
             Add Lender
@@ -238,7 +238,7 @@ export default function LendersClient({ orgLenders }: Props) {
 
       {/* Sample data banner */}
       {isSampleMode && (
-        <div className="flex items-start gap-3 bg-[#007AFF]/[0.06] border border-[#007AFF]/[0.15] rounded-2xl p-4">
+        <div className="flex items-start gap-3 bg-[#C9A95C]/[0.06] border border-[#C9A95C]/[0.15] rounded-2xl p-4">
           <Info className="w-4 h-4 text-blue flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-navy">Sample lender data — for reference only</p>
@@ -550,7 +550,7 @@ export default function LendersClient({ orgLenders }: Props) {
               </p>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl bg-[#007AFF] text-white text-sm font-medium mx-auto hover:bg-[#0066D6] transition-colors"
+                className="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl bg-[#C9A95C] text-white text-sm font-medium mx-auto hover:bg-[#B08D3C] transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 Add First Lender

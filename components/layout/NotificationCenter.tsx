@@ -217,7 +217,7 @@ export function NotificationCenter() {
                           <div className="flex items-center gap-1.5 flex-shrink-0 mt-1">
                             <span className="text-[10px] text-[#AEAEB2]">{item.time}</span>
                             {!item.read && (
-                              <div className="w-1.5 h-1.5 rounded-full bg-[#007AFF]" />
+                              <div className="w-1.5 h-1.5 rounded-full bg-[#C9A95C]" />
                             )}
                             <ChevronRight size={10} className="text-[#AEAEB2] opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
@@ -235,7 +235,7 @@ export function NotificationCenter() {
                 <Link
                   href="/inbox"
                   onClick={() => setOpen(false)}
-                  className="text-[12px] text-[#007AFF] hover:underline font-medium"
+                  className="text-[12px] text-[#C9A95C] hover:underline font-medium"
                 >
                   View all in Inbox
                 </Link>

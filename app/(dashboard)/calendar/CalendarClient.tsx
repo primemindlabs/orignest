@@ -68,7 +68,7 @@ function Sparkline({ data }: { data: number[] }) {
             cx={lastPt[0]}
             cy={lastPt[1]}
             r="2.5"
-            fill="#007AFF"
+            fill="#C9A95C"
           />
         );
       })()}

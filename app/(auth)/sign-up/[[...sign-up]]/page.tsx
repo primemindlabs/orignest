@@ -137,7 +137,7 @@ export default function SignUpPage() {
             afterSignUpUrl="/onboarding"
             appearance={{
               variables: {
-                colorPrimary: '#007AFF',
+                colorPrimary: '#C9A95C',
                 fontFamily: 'Inter, -apple-system, system-ui, sans-serif',
                 borderRadius: '10px',
               },

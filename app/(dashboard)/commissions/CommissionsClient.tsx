@@ -326,7 +326,7 @@ function AddCommissionModal({
           <button
             onClick={handleSubmit}
             disabled={saving}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-[#007AFF] text-white text-sm font-medium hover:bg-[#0066D6] disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-[#C9A95C] text-white text-sm font-medium hover:bg-[#B08D3C] disabled:opacity-50 transition-colors"
           >
             {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
             {saving ? 'Saving...' : 'Add Entry'}
@@ -397,7 +397,7 @@ export default function CommissionsClient({ commissions, leads, profiles }: Prop
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[22px] font-semibold text-navy tracking-tight">Commissions</h1>
+          <h2 className="text-[17px] font-semibold text-label tracking-tight">Earned commissions</h2>
           <p className="text-sm text-label2 mt-0.5">
             {isSample
               ? 'Track broker compensation and referral fees per closed loan'
@@ -421,7 +421,7 @@ export default function CommissionsClient({ commissions, leads, profiles }: Prop
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#007AFF] text-white text-sm font-medium hover:bg-[#0066D6] transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#C9A95C] text-white text-sm font-medium hover:bg-[#B08D3C] transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4" />
             Add Entry
@@ -494,7 +494,7 @@ export default function CommissionsClient({ commissions, leads, profiles }: Prop
               <p className="text-xs text-label2 mt-1">Add your first closed loan commission to start tracking revenue.</p>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl bg-[#007AFF] text-white text-sm font-medium mx-auto hover:bg-[#0066D6] transition-colors"
+                className="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl bg-[#C9A95C] text-white text-sm font-medium mx-auto hover:bg-[#B08D3C] transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 Add First Entry

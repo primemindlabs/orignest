@@ -64,7 +64,7 @@ export function EnrollmentDetailClient({ enrollment, disputes, tradelines }: { e
                 <YAxis domain={[500, 800]} tick={{ fontSize: 11 }} />
                 <Tooltip />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Line type="monotone" dataKey="Experian" stroke="#007AFF" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="Experian" stroke="#C9A95C" strokeWidth={2} dot={false} />
                 <Line type="monotone" dataKey="Equifax" stroke="#34C759" strokeWidth={2} dot={false} />
                 <Line type="monotone" dataKey="TransUnion" stroke="#C9A95C" strokeWidth={2} dot={false} />
               </LineChart>

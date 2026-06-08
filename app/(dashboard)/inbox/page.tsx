@@ -77,7 +77,7 @@ interface ThreadItem {
 function channelIcon(channel: Channel, size = 14) {
   switch (channel) {
     case 'sms':        return <MessageSquare size={size} className="text-blue" />;
-    case 'email':      return <Mail size={size} className="text-[#007AFF]" />;
+    case 'email':      return <Mail size={size} className="text-[#C9A95C]" />;
     case 'instagram':  return <Instagram size={size} className="text-[#E1306C]" />;
     case 'facebook':   return <Facebook size={size} className="text-[#1877F2]" />;
     case 'voicemail':  return <PhoneMissed size={size} className="text-orange" />;

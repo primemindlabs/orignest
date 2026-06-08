@@ -16,7 +16,7 @@ interface ClosingCelebrationProps {
   onDismiss: () => void;
 }
 
-const CONFETTI_COLORS = ['#007AFF', '#34C759', '#C9A95C', '#FF9500', '#FF3B30', '#AF52DE'];
+const CONFETTI_COLORS = ['#C9A95C', '#34C759', '#C9A95C', '#FF9500', '#FF3B30', '#AF52DE'];
 const PARTICLE_COUNT = 60;
 
 function formatCurrency(amount: number): string {

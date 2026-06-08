@@ -394,7 +394,7 @@ export default function RevenueClient({
               <Legend
                 wrapperStyle={{ fontSize: 11, color: '#6C6C70', paddingTop: 12 }}
               />
-              <Bar yAxisId="volume" dataKey="conventional" name="Conventional" stackId="a" fill="#007AFF" radius={[0, 0, 0, 0]} />
+              <Bar yAxisId="volume" dataKey="conventional" name="Conventional" stackId="a" fill="#C9A95C" radius={[0, 0, 0, 0]} />
               <Bar yAxisId="volume" dataKey="fha_va" name="FHA/VA/USDA" stackId="a" fill="#34C759" radius={[0, 0, 0, 0]} />
               <Bar yAxisId="volume" dataKey="nonqm" name="Non-QM/DSCR" stackId="a" fill="#C9A95C" radius={[0, 0, 0, 0]} />
               <Bar yAxisId="volume" dataKey="commercial" name="Commercial" stackId="a" fill="#AF52DE" radius={[4, 4, 0, 0]} />

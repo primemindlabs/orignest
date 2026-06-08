@@ -201,7 +201,7 @@ function AllDoneState() {
             const angle = (i * 30) * (Math.PI / 180);
             const x = Math.cos(angle) * 40;
             const y = Math.sin(angle) * 40;
-            const colors = ['#007AFF', '#34C759', '#C9A95C', '#FF9500'];
+            const colors = ['#C9A95C', '#34C759', '#C9A95C', '#FF9500'];
             return (
               <div
                 key={i}

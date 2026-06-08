@@ -162,7 +162,7 @@ function CampaignBuilder() {
               onClick={() => setPlatform(p.id)}
               className={`px-4 py-2 rounded-xl text-[13px] font-medium border transition-all ${
                 platform === p.id
-                  ? 'border-[#007AFF] bg-[#007AFF]/10 text-[#007AFF]'
+                  ? 'border-[#C9A95C] bg-[#C9A95C]/10 text-[#C9A95C]'
                   : 'border-black/[0.10] bg-white text-[#3C3C43] hover:bg-[#F2F2F7]'
               }`}
             >
@@ -182,7 +182,7 @@ function CampaignBuilder() {
               onClick={() => setGoal(g.id)}
               className={`px-4 py-2 rounded-xl text-[13px] font-medium border transition-all ${
                 goal === g.id
-                  ? 'border-[#007AFF] bg-[#007AFF]/10 text-[#007AFF]'
+                  ? 'border-[#C9A95C] bg-[#C9A95C]/10 text-[#C9A95C]'
                   : 'border-black/[0.10] bg-white text-[#3C3C43] hover:bg-[#F2F2F7]'
               }`}
             >
@@ -202,7 +202,7 @@ function CampaignBuilder() {
               onClick={() => setLoanType(l.id)}
               className={`px-4 py-2 rounded-xl text-[13px] font-medium border transition-all ${
                 loanType === l.id
-                  ? 'border-[#007AFF] bg-[#007AFF]/10 text-[#007AFF]'
+                  ? 'border-[#C9A95C] bg-[#C9A95C]/10 text-[#C9A95C]'
                   : 'border-black/[0.10] bg-white text-[#3C3C43] hover:bg-[#F2F2F7]'
               }`}
             >
@@ -223,7 +223,7 @@ function CampaignBuilder() {
             value={states}
             onChange={e => setStates(e.target.value)}
             placeholder="FL, GA, TX"
-            className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] text-[#1C1C1E] placeholder:text-[#C7C7CC] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 focus:border-[#007AFF]"
+            className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] text-[#1C1C1E] placeholder:text-[#C7C7CC] focus:outline-none focus:ring-2 focus:ring-[#C9A95C]/30 focus:border-[#C9A95C]"
           />
         </div>
         <div>
@@ -233,14 +233,14 @@ function CampaignBuilder() {
               type="number"
               value={ageMin}
               onChange={e => setAgeMin(e.target.value)}
-              className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] text-center focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 focus:border-[#007AFF]"
+              className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] text-center focus:outline-none focus:ring-2 focus:ring-[#C9A95C]/30 focus:border-[#C9A95C]"
             />
             <span className="text-[#8A8A8E] text-sm">–</span>
             <input
               type="number"
               value={ageMax}
               onChange={e => setAgeMax(e.target.value)}
-              className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] text-center focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 focus:border-[#007AFF]"
+              className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] text-center focus:outline-none focus:ring-2 focus:ring-[#C9A95C]/30 focus:border-[#C9A95C]"
             />
           </div>
         </div>
@@ -255,7 +255,7 @@ function CampaignBuilder() {
             value={dailyBudget}
             onChange={e => setDailyBudget(e.target.value)}
             placeholder="50"
-            className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 focus:border-[#007AFF]"
+            className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#C9A95C]/30 focus:border-[#C9A95C]"
           />
         </div>
         <div>
@@ -265,7 +265,7 @@ function CampaignBuilder() {
             value={duration}
             onChange={e => setDuration(e.target.value)}
             placeholder="30"
-            className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 focus:border-[#007AFF]"
+            className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#C9A95C]/30 focus:border-[#C9A95C]"
           />
         </div>
       </div>
@@ -273,7 +273,7 @@ function CampaignBuilder() {
       <button
         onClick={handleGenerate}
         disabled={!canGenerate || loading}
-        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#007AFF] text-white text-[14px] font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#0066CC] transition-colors"
+        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#C9A95C] text-white text-[14px] font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#0066CC] transition-colors"
       >
         <Sparkles size={15} />
         {loading ? 'Generating…' : 'Generate AI Ad Copy'}
@@ -303,7 +303,7 @@ function CampaignBuilder() {
                 </span>
                 <button
                   onClick={() => handleCopy(`${v.headline}\n\n${v.body}\n\nCTA: ${v.cta}`, idx)}
-                  className="flex items-center gap-1 text-[12px] text-[#007AFF] hover:text-[#0066CC]"
+                  className="flex items-center gap-1 text-[12px] text-[#C9A95C] hover:text-[#0066CC]"
                 >
                   {copiedIdx === idx ? <Check size={12} /> : <Copy size={12} />}
                   {copiedIdx === idx ? 'Copied' : 'Copy'}
@@ -311,7 +311,7 @@ function CampaignBuilder() {
               </div>
               <p className="text-[15px] font-semibold text-[#1C1C1E]">{v.headline}</p>
               <p className="text-[13px] text-[#3C3C43] leading-relaxed">{v.body}</p>
-              <div className="inline-block px-3 py-1 rounded-lg bg-[#007AFF] text-white text-[12px] font-semibold">
+              <div className="inline-block px-3 py-1 rounded-lg bg-[#C9A95C] text-white text-[12px] font-semibold">
                 {v.cta}
               </div>
             </div>
@@ -346,7 +346,7 @@ function CreativeLibrary() {
             onClick={() => setActiveCategory(cat)}
             className={`px-3.5 py-1.5 rounded-xl text-[13px] font-medium transition-all ${
               activeCategory === cat
-                ? 'bg-[#007AFF] text-white'
+                ? 'bg-[#C9A95C] text-white'
                 : 'bg-white border border-black/[0.10] text-[#3C3C43] hover:bg-[#F2F2F7]'
             }`}
           >
@@ -362,7 +362,7 @@ function CreativeLibrary() {
             key={template.id}
             className={`bg-white border rounded-2xl p-4 space-y-2.5 cursor-pointer transition-all ${
               selectedTemplate?.id === template.id
-                ? 'border-[#007AFF] shadow-[0_0_0_3px_rgba(0,122,255,0.12)]'
+                ? 'border-[#C9A95C] shadow-[0_0_0_3px_rgba(0,122,255,0.12)]'
                 : 'border-black/[0.06] hover:border-black/[0.12] shadow-sm'
             }`}
             onClick={() => setSelectedTemplate(template)}
@@ -374,7 +374,7 @@ function CreativeLibrary() {
             <p className="text-[13px] font-semibold text-[#1C1C1E] leading-snug">{template.headline}</p>
             <p className="text-[12px] text-[#6B6B70] leading-relaxed line-clamp-2">{template.body}</p>
             <div className="flex gap-2">
-              <button className="flex-1 py-1.5 rounded-lg bg-[#007AFF] text-white text-[12px] font-semibold hover:bg-[#0066CC] transition-colors">
+              <button className="flex-1 py-1.5 rounded-lg bg-[#C9A95C] text-white text-[12px] font-semibold hover:bg-[#0066CC] transition-colors">
                 Use Template
               </button>
               <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-black/[0.10] text-[12px] text-[#3C3C43] hover:bg-[#F2F2F7] transition-colors">
@@ -387,11 +387,11 @@ function CreativeLibrary() {
       </div>
 
       {selectedTemplate && (
-        <div className="bg-white border border-[#007AFF] rounded-2xl p-5 space-y-3">
-          <p className="text-[11px] font-semibold text-[#007AFF] uppercase tracking-wide">Selected Template</p>
+        <div className="bg-white border border-[#C9A95C] rounded-2xl p-5 space-y-3">
+          <p className="text-[11px] font-semibold text-[#C9A95C] uppercase tracking-wide">Selected Template</p>
           <p className="text-[16px] font-bold text-[#1C1C1E]">{selectedTemplate.headline}</p>
           <p className="text-[13px] text-[#3C3C43] leading-relaxed">{selectedTemplate.body}</p>
-          <div className="inline-block px-4 py-1.5 rounded-lg bg-[#007AFF] text-white text-[13px] font-semibold">
+          <div className="inline-block px-4 py-1.5 rounded-lg bg-[#C9A95C] text-white text-[13px] font-semibold">
             {selectedTemplate.cta}
           </div>
           <p className="text-[11px] text-[#8A8A8E] italic">
@@ -421,7 +421,7 @@ function LandingPagesTab({ landingPages, profiles }: { landingPages: AdCenterCli
         <p className="text-[13px] text-[#6B6B70]">{landingPages.length} landing {landingPages.length === 1 ? 'page' : 'pages'}</p>
         <button
           onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#007AFF] text-white text-[13px] font-semibold hover:bg-[#0066CC] transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#C9A95C] text-white text-[13px] font-semibold hover:bg-[#0066CC] transition-colors"
         >
           <Plus size={14} />
           Create Landing Page
@@ -435,7 +435,7 @@ function LandingPagesTab({ landingPages, profiles }: { landingPages: AdCenterCli
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-[12px] font-semibold text-[#1C1C1E] mb-1.5">Loan Officer</label>
-              <select className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] text-[#1C1C1E] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 focus:border-[#007AFF]">
+              <select className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] text-[#1C1C1E] focus:outline-none focus:ring-2 focus:ring-[#C9A95C]/30 focus:border-[#C9A95C]">
                 <option value="">Select LO…</option>
                 {profiles.map(p => (
                   <option key={p.id} value={p.id}>{p.first_name} {p.last_name}</option>
@@ -449,7 +449,7 @@ function LandingPagesTab({ landingPages, profiles }: { landingPages: AdCenterCli
                 <input
                   type="text"
                   placeholder="john-smith"
-                  className="flex-1 h-10 px-3 rounded-r-xl border border-black/[0.10] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 focus:border-[#007AFF]"
+                  className="flex-1 h-10 px-3 rounded-r-xl border border-black/[0.10] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#C9A95C]/30 focus:border-[#C9A95C]"
                 />
               </div>
             </div>
@@ -460,7 +460,7 @@ function LandingPagesTab({ landingPages, profiles }: { landingPages: AdCenterCli
             <input
               type="text"
               placeholder="Get Pre-Qualified in Minutes"
-              className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 focus:border-[#007AFF]"
+              className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#C9A95C]/30 focus:border-[#C9A95C]"
             />
           </div>
 
@@ -469,7 +469,7 @@ function LandingPagesTab({ landingPages, profiles }: { landingPages: AdCenterCli
             <input
               type="text"
               placeholder="Expert mortgage guidance for your home purchase or refinance"
-              className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 focus:border-[#007AFF]"
+              className="w-full h-10 px-3 rounded-xl border border-black/[0.10] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#C9A95C]/30 focus:border-[#C9A95C]"
             />
           </div>
 
@@ -480,7 +480,7 @@ function LandingPagesTab({ landingPages, profiles }: { landingPages: AdCenterCli
             >
               Cancel
             </button>
-            <button className="px-4 py-2 rounded-xl bg-[#007AFF] text-white text-[13px] font-semibold hover:bg-[#0066CC] transition-colors">
+            <button className="px-4 py-2 rounded-xl bg-[#C9A95C] text-white text-[13px] font-semibold hover:bg-[#0066CC] transition-colors">
               Create Page
             </button>
           </div>
@@ -494,7 +494,7 @@ function LandingPagesTab({ landingPages, profiles }: { landingPages: AdCenterCli
           <p className="text-[13px] text-[#8A8A8E] mb-4">Create a personalized landing page for each loan officer</p>
           <button
             onClick={() => setShowCreate(true)}
-            className="px-4 py-2 rounded-xl bg-[#007AFF] text-white text-[13px] font-semibold hover:bg-[#0066CC] transition-colors"
+            className="px-4 py-2 rounded-xl bg-[#C9A95C] text-white text-[13px] font-semibold hover:bg-[#0066CC] transition-colors"
           >
             Create Your First Page
           </button>
@@ -513,7 +513,7 @@ function LandingPagesTab({ landingPages, profiles }: { landingPages: AdCenterCli
                       {page.active ? 'Live' : 'Inactive'}
                     </span>
                   </div>
-                  <p className="text-[12px] text-[#007AFF] font-mono">ashleyiq.app/{page.slug}</p>
+                  <p className="text-[12px] text-[#C9A95C] font-mono">ashleyiq.app/{page.slug}</p>
                   <div className="flex items-center gap-4 mt-2">
                     <span className="text-[12px] text-[#8A8A8E]">{page.page_views.toLocaleString()} views</span>
                     <span className="text-[12px] text-[#8A8A8E]">{page.leads_captured} leads</span>

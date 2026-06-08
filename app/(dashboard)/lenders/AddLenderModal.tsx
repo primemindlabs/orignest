@@ -265,7 +265,7 @@ export default function AddLenderModal({ onClose }: Props) {
           <button
             onClick={handleSubmit}
             disabled={saving || !form.name.trim()}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-[#007AFF] text-white text-sm font-medium hover:bg-[#0066D6] disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-[#C9A95C] text-white text-sm font-medium hover:bg-[#B08D3C] disabled:opacity-50 transition-colors"
           >
             {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
             {saving ? 'Saving...' : 'Add Lender'}
