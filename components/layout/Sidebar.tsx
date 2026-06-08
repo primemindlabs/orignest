@@ -33,6 +33,7 @@ import {
   FileCheck,
   LayoutGrid,
   Wallet,
+  Calculator,
 } from 'lucide-react';
 
 interface NavItem {
@@ -71,6 +72,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/pricing', label: 'Pricing', icon: TrendingUp },
       { href: '/pre-approval', label: 'Pre-Approval', icon: FileCheck },
       { href: '/scenarios', label: 'Scenarios', icon: LayoutGrid },
+      { href: '/income', label: 'Income Calc', icon: Calculator },
       { href: '/refi-watch', label: 'Refi Watch', icon: TrendingDown },
       { href: '/equity', label: 'Equity Tracker', icon: Wallet },
       { href: '/partners', label: 'Partners', icon: Handshake },
