@@ -174,9 +174,6 @@ DROP POLICY IF EXISTS "clawback_events_insert" ON clawback_events;
 CREATE POLICY "clawback_events_insert" ON clawback_events
   FOR INSERT WITH CHECK (TRUE);
 
-REVOKE UPDATE ON clawback_events FROM PUBLIC;
-REVOKE DELETE ON clawback_events FROM PUBLIC;
-REVOKE UPDATE ON clawback_events FROM service_role;
-REVOKE DELETE ON clawback_events FROM service_role;
-REVOKE UPDATE ON clawback_events FROM authenticated;
-REVOKE DELETE ON clawback_events FROM authenticated;
+REVOKE UPDATE, DELETE, TRUNCATE ON clawback_events FROM PUBLIC;
+REVOKE UPDATE, DELETE, TRUNCATE ON clawback_events FROM service_role;
+REVOKE UPDATE, DELETE, TRUNCATE ON clawback_events FROM authenticated;
