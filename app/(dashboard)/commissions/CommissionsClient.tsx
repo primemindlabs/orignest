@@ -50,6 +50,7 @@ interface Props {
   commissions: Commission[];
   leads: Lead[];
   profiles: Profile[];
+  isAdmin?: boolean;
 }
 
 // ── Status config ──────────────────────────────────────────────────────
@@ -338,11 +339,36 @@ function AddCommissionModal({
 }
 
 // ── Main component ─────────────────────────────────────────────────────
-export default function CommissionsClient({ commissions, leads, profiles }: Props) {
+export default function CommissionsClient({ commissions, leads, profiles, isAdmin = false }: Props) {
+  const router = useRouter();
   const [showAddModal, setShowAddModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [period, setPeriod] = useState<'MTD' | 'QTD' | 'YTD'>('MTD');
+  const [clawingBack, setClawingBack] = useState<string | null>(null);
+
+  async function handleClawback(c: Commission) {
+    const reason = window.prompt(
+      `Claw back ${formatCurrency(c.compensation_amount)} from ${c.lo_name || 'this LO'}?\n\nEnter a reason (recorded in the append-only audit log):`,
+    );
+    if (reason == null || !reason.trim()) return;
+    setClawingBack(c.id);
+    try {
+      const res = await fetch(`/api/commissions/${c.id}/clawback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reason.trim() }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error ?? 'Failed to record clawback');
+      toast.success('Clawback recorded');
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to record clawback');
+    } finally {
+      setClawingBack(null);
+    }
+  }
 
   const filtered = useMemo(() => {
     return commissions.filter((c) => {
@@ -521,6 +547,7 @@ export default function CommissionsClient({ commissions, leads, profiles }: Prop
                       <th className="text-right px-4 py-3 text-[11px] font-semibold text-label3 uppercase tracking-wide">Referral Fee</th>
                       <th className="text-right px-4 py-3 text-[11px] font-semibold text-label3 uppercase tracking-wide">Net Revenue</th>
                       <th className="text-left px-5 py-3 text-[11px] font-semibold text-label3 uppercase tracking-wide">Status</th>
+                      {isAdmin && <th className="text-right px-5 py-3 text-[11px] font-semibold text-label3 uppercase tracking-wide">Actions</th>}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-black/[0.04]">
@@ -562,6 +589,22 @@ export default function CommissionsClient({ commissions, leads, profiles }: Prop
                               {cfg.label}
                             </span>
                           </td>
+                          {isAdmin && (
+                            <td className="px-5 py-3.5 text-right">
+                              {c.status !== 'clawed_back' ? (
+                                <button
+                                  onClick={() => handleClawback(c)}
+                                  disabled={clawingBack === c.id}
+                                  className="text-[12px] font-medium text-danger hover:underline disabled:opacity-50 inline-flex items-center gap-1"
+                                >
+                                  {clawingBack === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <TrendingDown className="w-3 h-3" />}
+                                  Claw back
+                                </button>
+                              ) : (
+                                <span className="text-[11px] text-label3">—</span>
+                              )}
+                            </td>
+                          )}
                         </tr>
                       );
                     })}

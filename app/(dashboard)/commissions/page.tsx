@@ -142,6 +142,7 @@ export default async function CommissionsPage() {
         commissions={flatCommissions}
         leads={leadsForModal}
         profiles={profilesForModal}
+        isAdmin={isAdmin}
       />
     </div>
   );

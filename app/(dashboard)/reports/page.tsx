@@ -6,7 +6,7 @@ import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { MetricCard } from '@/components/ui/MetricCard';
-import { TrendingUp, Users, DollarSign, Clock, BarChart3, FileText, ShieldCheck, GitBranch, Gauge, Award, ChevronRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, DollarSign, Clock, BarChart3, FileText, ShieldCheck, GitBranch, Gauge, Award, ChevronRight, Download } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,6 +87,7 @@ export default async function ReportsPage() {
             { type: 'production', label: 'Production Report', desc: 'Funded volume & units by LO and loan type', icon: BarChart3 },
             { type: 'pl', label: 'P&L Report', desc: 'Gross revenue, LO comp, branch margin', icon: DollarSign },
             { type: 'velocity', label: 'Pipeline Velocity', desc: 'Days to close, lead→app→close timing', icon: Gauge },
+            { type: 'fallout', label: 'Fallout & Pull-Through', desc: 'Pull-through rate, fallout by type & source', icon: TrendingDown },
             { type: 'referral', label: 'Referral Sources', desc: 'Best lead sources by closed volume', icon: GitBranch },
             { type: 'scorecard', label: 'LO Scorecard', desc: 'Per-LO performance & response time', icon: Award },
             { type: 'hmda', label: 'HMDA Pre-Report', desc: 'Filing readiness & data gaps', icon: FileText },
@@ -104,6 +105,23 @@ export default async function ReportsPage() {
             </Link>
           ))}
         </div>
+      </div>
+
+      <div>
+        <h2 className="text-sm font-semibold text-black mb-3">Regulatory Filing</h2>
+        <a
+          href={`/api/reports/hmda-lar?year=${new Date().getFullYear()}`}
+          className="flex items-center gap-3 bg-surface rounded-card shadow-card border border-border px-4 py-3.5 hover:bg-fill transition-colors"
+        >
+          <div className="w-9 h-9 rounded-[10px] bg-gold/10 flex items-center justify-center flex-shrink-0">
+            <Download size={16} className="text-gold-700" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-black">HMDA LAR Export ({new Date().getFullYear()})</p>
+            <p className="text-xs text-label-2 mt-0.5">Loan/Application Register CSV — originated, denied &amp; withdrawn loans in FFIEC code format</p>
+          </div>
+          <ChevronRight size={16} className="text-label-3 flex-shrink-0" />
+        </a>
       </div>
     </div>
   );

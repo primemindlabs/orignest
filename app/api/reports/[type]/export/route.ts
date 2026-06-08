@@ -17,6 +17,7 @@ function toCsv(type: ReportType, data: Record<string, any>): string {
   else if (type === 'compliance') rows = data.flags ?? [];
   else if (type === 'pl') rows = data.available ? [data.totals] : [{ note: data.note }];
   else if (type === 'hmda') rows = data.available ? (data.applications ?? []) : [{ note: data.note }];
+  else if (type === 'fallout') rows = data.byType ?? [];
   if (!rows.length) return 'no data\n';
   const headers = Object.keys(rows[0]);
   const escape = (v: unknown) => {

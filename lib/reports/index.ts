@@ -6,8 +6,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 type SB = SupabaseClient<any, any, any>;
-export type ReportType = 'production' | 'pl' | 'hmda' | 'velocity' | 'compliance' | 'referral' | 'scorecard';
-export const ALLOWED_REPORT_TYPES: ReportType[] = ['production', 'pl', 'hmda', 'velocity', 'compliance', 'referral', 'scorecard'];
+export type ReportType = 'production' | 'pl' | 'hmda' | 'velocity' | 'compliance' | 'referral' | 'scorecard' | 'fallout';
+export const ALLOWED_REPORT_TYPES: ReportType[] = ['production', 'pl', 'hmda', 'velocity', 'compliance', 'referral', 'scorecard', 'fallout'];
 
 const REFI = ['rate_term_refinance', 'cash_out_refinance'];
 
@@ -156,6 +156,54 @@ export async function runReport(sb: SB, type: ReportType, orgId: string, start: 
         };
       }).sort((a, b) => b.loansClosed - a.loansClosed);
       return { rows };
+    }
+
+    case 'fallout': {
+      // Cohort = leads created in the period. Measure how they resolved, the
+      // fallout rate (declined+withdrawn), and the pull-through rate (funded /
+      // decisioned). Pull-through is a core call-report KPI.
+      const cohort = scoped.filter((l) => inCreatedRange(l, start, end));
+      const closed = cohort.filter((l) => l.stage === 'closed');
+      const declined = cohort.filter((l) => l.stage === 'declined');
+      const withdrawn = cohort.filter((l) => l.stage === 'withdrawn');
+      const active = cohort.filter((l) => !['closed', 'declined', 'withdrawn'].includes(l.stage));
+      const decisioned = closed.length + declined.length + withdrawn.length;
+      const lostUnits = declined.length + withdrawn.length;
+
+      // Fallout grouped by loan type (where loans are dying).
+      const byType: Record<string, { loan_type: string; closed: number; lost: number; lostVolume: number }> = {};
+      for (const l of cohort) {
+        const t = l.loan_type ?? 'other';
+        byType[t] ??= { loan_type: t, closed: 0, lost: 0, lostVolume: 0 };
+        if (l.stage === 'closed') byType[t].closed++;
+        if (l.stage === 'declined' || l.stage === 'withdrawn') { byType[t].lost++; byType[t].lostVolume += loanVal(l); }
+      }
+
+      // Fallout grouped by lead source.
+      const bySource: Record<string, { source: string; lost: number; closed: number }> = {};
+      for (const l of cohort) {
+        const src = l.lead_source ?? 'unknown';
+        bySource[src] ??= { source: src, lost: 0, closed: 0 };
+        if (l.stage === 'closed') bySource[src].closed++;
+        if (l.stage === 'declined' || l.stage === 'withdrawn') bySource[src].lost++;
+      }
+
+      return {
+        totals: {
+          cohort: cohort.length,
+          closed: closed.length,
+          declined: declined.length,
+          withdrawn: withdrawn.length,
+          active: active.length,
+          lostVolume: lostUnits ? (declined.concat(withdrawn)).reduce((s, l) => s + loanVal(l), 0) : 0,
+          falloutRate: decisioned ? Math.round((lostUnits / decisioned) * 100) : 0,
+          pullThroughRate: decisioned ? Math.round((closed.length / decisioned) * 100) : 0,
+        },
+        byType: Object.values(byType)
+          .map((r) => ({ ...r, falloutRate: r.closed + r.lost ? Math.round((r.lost / (r.closed + r.lost)) * 100) : 0 }))
+          .sort((a, b) => b.lost - a.lost),
+        bySource: Object.values(bySource).sort((a, b) => b.lost - a.lost),
+      };
     }
 
     case 'pl': {

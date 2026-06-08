@@ -13,6 +13,7 @@ const TITLES: Record<ReportType, string> = {
   compliance: 'Compliance Report',
   referral: 'Referral Source Report',
   scorecard: 'LO Scorecard',
+  fallout: 'Fallout & Pull-Through',
 };
 
 function fmt(n: number): string {
@@ -116,6 +117,29 @@ function ReportBody({ type, data }: { type: ReportType; data: any }) {
         <StatGrid items={[['Total Flags', String(data.flagCount)], ['High Severity', String(data.highSeverity)], ['Medium', String(data.mediumSeverity)], ['Status', data.flagCount === 0 ? 'Clear' : 'Review']]} />
         <Table headers={['Severity', 'Type', 'Description']} rows={(data.flags ?? []).map((f: any) => [f.severity, f.type, f.description])} />
         {data.notes?.map((n: string) => <p key={n} className="text-xs text-label-3">{n}</p>)}
+      </div>
+    );
+  }
+  if (type === 'fallout') {
+    return (
+      <div className="space-y-4">
+        <StatGrid items={[
+          ['Pull-Through', `${data.totals.pullThroughRate}%`],
+          ['Fallout Rate', `${data.totals.falloutRate}%`],
+          ['Closed / Lost', `${data.totals.closed} / ${data.totals.declined + data.totals.withdrawn}`],
+          ['Lost Volume', fmt(data.totals.lostVolume)],
+        ]} />
+        <h2 className="text-sm font-semibold text-label">Outcomes ({data.totals.cohort} leads in period)</h2>
+        <StatGrid items={[
+          ['Closed', String(data.totals.closed)],
+          ['Declined', String(data.totals.declined)],
+          ['Withdrawn', String(data.totals.withdrawn)],
+          ['Still Active', String(data.totals.active)],
+        ]} />
+        <h2 className="text-sm font-semibold text-label">Fallout by Loan Type</h2>
+        <Table headers={['Loan Type', 'Closed', 'Lost', 'Lost Volume', 'Fallout %']} rows={(data.byType ?? []).map((r: any) => [r.loan_type, r.closed, r.lost, fmt(r.lostVolume), `${r.falloutRate}%`])} />
+        <h2 className="text-sm font-semibold text-label">Fallout by Lead Source</h2>
+        <Table headers={['Source', 'Closed', 'Lost']} rows={(data.bySource ?? []).map((r: any) => [r.source, r.closed, r.lost])} />
       </div>
     );
   }
