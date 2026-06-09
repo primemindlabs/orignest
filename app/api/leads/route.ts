@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getOrgContext } from '@/lib/auth/orgContext';
+import { captureLeadAttribution, hasAttribution } from '@/lib/leads/attribution';
 
 export const dynamic = 'force-dynamic';
 
@@ -144,6 +145,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Phase 33.2 — record ad attribution if UTM / click-id signals are present.
+  const attribution = captureLeadAttribution(body as Record<string, unknown>);
+  if (data?.id && hasAttribution(attribution)) {
+    await sb.from('lead_ad_attribution').insert({
+      lead_id: data.id,
+      org_id: orgId,
+      platform: attribution.platform ?? null,
+      campaign_id: attribution.campaign_id ?? null,
+      utm_source: attribution.utm_source ?? null,
+      utm_medium: attribution.utm_medium ?? null,
+      utm_campaign: attribution.utm_campaign ?? null,
+    }).then(() => undefined, () => undefined);
   }
 
   return NextResponse.json({ lead: data }, { status: 201 });
