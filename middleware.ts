@@ -10,6 +10,9 @@ const isPublicRoute = createRouteMatcher([
   '/api/webhooks(.*)',      // Stripe / Twilio — verified by signature
   '/api/v1(.*)',            // REST API — verified by API key
   '/api/cron(.*)',          // Scheduled jobs — verified by Bearer CRON_SECRET
+  '/api/borrower-portal(.*)', // Borrower/co-borrower portal APIs — token-gated
+  '/api/partner-portal(.*)',  // Partner portal APIs — token-gated
+  '/api/portal(.*)',          // Realtor + title-agent portal APIs — token-gated
   '/icon(.*)', '/apple-icon(.*)', '/favicon(.*)',  // app icons
   '/(borrower)(.*)',        // Borrower portal — token-authenticated
   '/status/(.*)',           // Borrower status pages
@@ -17,6 +20,7 @@ const isPublicRoute = createRouteMatcher([
   '/review/(.*)',           // Annual homeownership review — unguessable id, noindex
   '/(partner)(.*)',         // Partner portal — token-authenticated
   '/portal/realtor/(.*)',   // Realtor portal — token-authenticated, permission-walled
+  '/portal/title/(.*)',     // Title agent portal — token-authenticated, closing-only
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
