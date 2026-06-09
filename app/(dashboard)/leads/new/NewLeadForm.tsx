@@ -78,6 +78,7 @@ export function NewLeadForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [acknowledgedDupes, setAcknowledgedDupes] = useState(false);
+  const [activeElsewhere, setActiveElsewhere] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
@@ -123,6 +124,31 @@ export function NewLeadForm() {
   useEffect(() => {
     setAcknowledgedDupes(false);
   }, [dupes.length]);
+
+  // Phase 31.2a — anonymous cross-tenant active-application check (email only).
+  useEffect(() => {
+    const email = form.email.trim();
+    if (!email || !email.includes('@')) {
+      setActiveElsewhere(false);
+      return;
+    }
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/leads/check-active', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          setActiveElsewhere(Boolean(json.has_active_elsewhere));
+        }
+      } catch {
+        // Non-blocking.
+      }
+    }, 600);
+    return () => clearTimeout(t);
+  }, [form.email]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -191,6 +217,20 @@ export function NewLeadForm() {
           hint="Required to record SMS consent."
         />
       </div>
+
+      {/* Phase 31.2a — confidential cross-tenant active-application notice */}
+      {activeElsewhere && (
+        <div className="bg-orange/5 border border-orange/30 rounded-card p-4">
+          <div className="flex items-start gap-2">
+            <AlertTriangle size={15} className="text-orange flex-shrink-0 mt-0.5" />
+            <p className="text-[12px] text-black leading-snug">
+              <span className="font-semibold">Note:</span> This borrower may have an active application in progress
+              elsewhere. Dual-application disclosure may be required depending on your state. This notice is
+              confidential — visible only to you, and it reveals nothing about the other file.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Possible duplicates */}
       {dupes.length > 0 && (
