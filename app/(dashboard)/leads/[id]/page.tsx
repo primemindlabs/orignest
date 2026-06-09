@@ -12,6 +12,7 @@ import { AIDraftsPanel } from '@/components/loanFile/AIDraftsPanel';
 import { ScenarioAIPanel } from '@/components/scenarioAI/ScenarioAIPanel';
 import { AssignTaskButton } from '@/components/loanFile/AssignTaskButton';
 import { CreditMonitoringButton } from '@/components/leads/CreditMonitoringButton';
+import { PreApprovalCertButton } from '@/components/loan/PreApprovalCertButton';
 import { TRIDTimeline } from '@/components/compliance/TRIDTimeline';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { maskSSN, maskIncome } from '@/lib/compliance/encryption';
@@ -158,6 +159,7 @@ export default async function LeadDetailPage({
             <AIDraftsPanel leadId={lead.id} />
             <AssignTaskButton leadId={lead.id} />
             <CreditMonitoringButton leadId={lead.id} />
+            <PreApprovalCertButton leadId={lead.id} defaultAmount={lead.loan_amount} defaultLoanType={lead.loan_type} />
             <ScenarioAIPanel
               leadId={lead.id}
               initial={{
