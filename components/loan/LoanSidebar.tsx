@@ -74,6 +74,7 @@ const LOAN_NAV: NavSection[] = [
     key: 'docs-compliance', label: 'Docs & Compliance', href: '/docs-compliance', icon: FolderCheck,
     sub: [
       { label: 'Documents', href: '/docs-compliance/documents' },
+      { label: 'Smart Checklist', href: '/docs-compliance/smart-checklist' },
       { label: 'AI Auto-Population', href: '/docs-compliance/auto-extract' },
       { label: 'Conditions', href: '/docs-compliance/conditions' },
       { label: 'Expirations', href: '/docs-compliance/expirations' },

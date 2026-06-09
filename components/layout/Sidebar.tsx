@@ -41,9 +41,11 @@ const NAV: NavGroup[] = [
   {
     key: 'marketing', label: 'Marketing', icon: Megaphone, items: [
       { href: '/social', label: 'Social Media' },
+      { href: '/market-updates', label: 'Market Updates' },
       { href: '/co-marketing', label: 'Co-Marketing' },
       { href: '/co-marketing/listings', label: 'Listings' },
       { href: '/campaigns', label: 'Campaigns' },
+      { href: '/campaigns/rate-drop', label: 'Rate Drop' },
     ],
   },
   {
@@ -55,6 +57,7 @@ const NAV: NavGroup[] = [
       { href: '/scenarios', label: 'Scenarios' },
       { href: '/income', label: 'Income Calc' },
       { href: '/training', label: 'Training' },
+      { href: '/training/ask', label: 'Ask Ashley' },
       { href: '/refi-watch', label: 'Refi Watch' },
       { href: '/equity', label: 'Equity Tracker' },
     ],
