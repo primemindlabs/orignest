@@ -2,6 +2,7 @@ import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { Users, DollarSign, Repeat, Bell } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -79,7 +80,7 @@ export default async function RelationshipsDashboardPage() {
               <tr key={r.id} className="hover:bg-fill">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-black">{r.name}</span>
+                    <Link href={`/relationships/borrowers/${r.id}`} className="text-sm font-medium text-black hover:text-gold-700 transition-colors">{r.name}</Link>
                     {r.alert && <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-gold-700 bg-gold-50 px-1.5 py-0.5 rounded-full"><Bell size={9} /> refi</span>}
                   </div>
                 </td>

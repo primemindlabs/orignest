@@ -13,6 +13,7 @@ const isPublicRoute = createRouteMatcher([
   '/(borrower)(.*)',        // Borrower portal — token-authenticated
   '/status/(.*)',           // Borrower status pages
   '/cert/(.*)',             // Shareable pre-approval certificate — token-gated
+  '/review/(.*)',           // Annual homeownership review — unguessable id, noindex
   '/(partner)(.*)',         // Partner portal — token-authenticated
   '/portal/realtor/(.*)',   // Realtor portal — token-authenticated, permission-walled
 ]);
