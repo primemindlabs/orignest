@@ -1,0 +1,5 @@
+-- Phase 58.1 — DNC engine. dnc_entries INSERT-only suppression (UPD/DEL revoked) +
+-- dnc_scrub_cache (service-role only, 30-day TTL). tcpa_consent_log already exists (reused).
+-- Phase 58.4 — investor_application_extended (latent; EIN AES, ITIN last-4; form deferred,
+-- DSCR calc already in lib/loans/calculators). Real schema: organizations/profiles/leads.
+-- (Full DDL applied via MCP migration phase58_dnc_extended1003.)
