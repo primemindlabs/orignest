@@ -10,6 +10,7 @@ import type { Lead } from '@/types';
 import { format, formatDistanceToNow } from 'date-fns';
 import { CommandCenterClient } from './CommandCenterClient';
 import { AttentionPanel } from '@/components/dashboard/AttentionPanel';
+import { GettingStartedCard } from '@/components/dashboard/GettingStartedCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -131,6 +132,7 @@ export default async function DashboardPage() {
 
   return (
     <>
+      <GettingStartedCard orgId={orgId} clerkUserId={userId} />
       <AttentionPanel orgId={orgId} />
       <CommandCenterClient
       firstName={firstName}
