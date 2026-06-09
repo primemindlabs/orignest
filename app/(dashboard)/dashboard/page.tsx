@@ -9,6 +9,7 @@ import { getTRIDStatus } from '@/lib/compliance/trid';
 import type { Lead } from '@/types';
 import { format, formatDistanceToNow } from 'date-fns';
 import { CommandCenterClient } from './CommandCenterClient';
+import { AttentionPanel } from '@/components/dashboard/AttentionPanel';
 
 export const dynamic = 'force-dynamic';
 
@@ -129,7 +130,9 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <CommandCenterClient
+    <>
+      <AttentionPanel orgId={orgId} />
+      <CommandCenterClient
       firstName={firstName}
       greeting={greeting}
       dateStr={format(today, 'EEEE, MMMM d, yyyy')}
@@ -152,6 +155,7 @@ export default async function DashboardPage() {
       }))}
       topSources={topSources}
       maxSource={maxSource}
-    />
+      />
+    </>
   );
 }

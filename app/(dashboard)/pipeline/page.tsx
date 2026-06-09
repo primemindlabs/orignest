@@ -60,7 +60,7 @@ export default async function PipelinePage() {
   if (!orgId) redirect('/onboarding');
 
   const sb = createAdminClient();
-  const [{ data: leads }, { data: slaRows }] = await Promise.all([
+  const [{ data: leads }, { data: slaRows }, { data: scoreRows }, { data: velocityRows }] = await Promise.all([
     sb
       .from('leads')
       .select(
@@ -73,9 +73,25 @@ export default async function PipelinePage() {
       .from('stage_sla_config')
       .select('stage, warning_days, critical_days, org_id')
       .or(`org_id.eq.${orgId},org_id.is.null`),
+    // Phase 30.5 — behavioral close scores
+    sb.from('borrower_behavior_scores').select('lead_id, score, tier').eq('org_id', orgId),
+    // Phase 30.6 — velocity predictions (reduced to latest per lead below)
+    sb.from('velocity_predictions').select('lead_id, predicted_close_date, risk_level, generated_at').eq('org_id', orgId).order('generated_at', { ascending: false }),
   ]);
 
   const allLeads = leads ?? [];
+
+  // Phase 30.5 — close score by lead.
+  const scoreByLead: Record<string, { score: number; tier: string }> = {};
+  for (const r of scoreRows ?? []) scoreByLead[r.lead_id] = { score: r.score, tier: r.tier };
+
+  // Phase 30.6 — latest velocity prediction by lead (rows already sorted desc).
+  const velocityByLead: Record<string, { predicted_close_date: string; risk_level: string }> = {};
+  for (const r of velocityRows ?? []) {
+    if (!velocityByLead[r.lead_id]) velocityByLead[r.lead_id] = { predicted_close_date: r.predicted_close_date, risk_level: r.risk_level };
+  }
+  const RISK_DOT: Record<string, string> = { on_track: 'bg-green', watch: 'bg-orange', at_risk: 'bg-red', critical: 'bg-red' };
+  const TIER_TEXT: Record<string, string> = { high: 'text-green', medium: 'text-orange', at_risk: 'text-red' };
 
   // Resolve SLA per stage — an org-specific row overrides the platform default.
   const slaByStage: Record<string, { warning: number; critical: number }> = {};
@@ -286,9 +302,28 @@ export default async function PipelinePage() {
                         )}
                       </div>
 
-                      <p className="text-[10px] text-label-3 mt-1.5">
-                        {formatDistanceToNow(new Date(lead.created_at), { addSuffix: true })}
-                      </p>
+                      <div className="flex items-center justify-between gap-2 mt-1.5">
+                        <p className="text-[10px] text-label-3">
+                          {formatDistanceToNow(new Date(lead.created_at), { addSuffix: true })}
+                        </p>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {velocityByLead[lead.id] && (
+                            <span className="inline-flex items-center gap-1 text-[10px] text-label-2 font-mono tabular-nums" title="Predicted close (AI)">
+                              <span className={`w-1.5 h-1.5 rounded-full ${RISK_DOT[velocityByLead[lead.id].risk_level] ?? 'bg-label-2'}`} />
+                              {new Date(velocityByLead[lead.id].predicted_close_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </span>
+                          )}
+                          {scoreByLead[lead.id] && (
+                            <span
+                              className={`inline-flex items-center gap-1 text-[10px] font-mono tabular-nums font-semibold ${TIER_TEXT[scoreByLead[lead.id].tier] ?? 'text-label-2'}`}
+                              title="Borrower close score (engagement)"
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${scoreByLead[lead.id].tier === 'high' ? 'bg-green' : scoreByLead[lead.id].tier === 'medium' ? 'bg-orange' : 'bg-red'}`} />
+                              {scoreByLead[lead.id].score}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </Link>
                   );
                 })}

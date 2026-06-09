@@ -9,6 +9,7 @@ const isPublicRoute = createRouteMatcher([
   '/terms',
   '/api/webhooks(.*)',      // Stripe / Twilio — verified by signature
   '/api/v1(.*)',            // REST API — verified by API key
+  '/api/cron(.*)',          // Scheduled jobs — verified by Bearer CRON_SECRET
   '/icon(.*)', '/apple-icon(.*)', '/favicon(.*)',  // app icons
   '/(borrower)(.*)',        // Borrower portal — token-authenticated
   '/status/(.*)',           // Borrower status pages

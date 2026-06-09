@@ -2,6 +2,8 @@ import { getLoanSummary } from '@/lib/loans/getLoanSummary';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { FileText, Shield, FileCheck, CheckSquare, Users, MapPin } from 'lucide-react';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { VelocityBanner } from '@/components/loan/VelocityBanner';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +16,16 @@ export default async function LoanOverviewPage({ params }: { params: { loanId: s
   const loan = await getLoanSummary(params.loanId);
   if (!loan) notFound();
   const base = `/loans/${loan.id}`;
+
+  // Phase 30.6 — latest velocity prediction for the banner.
+  const { data: velocity } = await createAdminClient()
+    .from('velocity_predictions')
+    .select('predicted_close_date, confidence_interval_days, days_behind_typical, risk_level, risk_factors, recommendation, generated_at')
+    .eq('lead_id', loan.id)
+    .eq('org_id', loan.orgId)
+    .order('generated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   const quickLinks = [
     { href: `${base}/application`, label: '1003 Application', icon: FileText },
@@ -31,6 +43,9 @@ export default async function LoanOverviewPage({ params }: { params: { loanId: s
         <h1 className="text-[20px] font-bold text-[var(--c-text)] tracking-tight">Loan Overview</h1>
         <p className="text-[13px] text-[var(--c-label2)] mt-0.5">{loan.borrowerName}</p>
       </div>
+
+      {/* Phase 30.6 — velocity prediction banner */}
+      <VelocityBanner loanId={loan.id} initial={velocity ?? null} />
 
       {/* Snapshot */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
