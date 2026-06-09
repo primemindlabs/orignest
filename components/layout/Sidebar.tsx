@@ -35,6 +35,7 @@ import {
   Wallet,
   Calculator,
   Gift,
+  GraduationCap,
 } from 'lucide-react';
 
 interface NavItem {
@@ -74,6 +75,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/pre-approval', label: 'Pre-Approval', icon: FileCheck },
       { href: '/scenarios', label: 'Scenarios', icon: LayoutGrid },
       { href: '/income', label: 'Income Calc', icon: Calculator },
+      { href: '/training', label: 'Training', icon: GraduationCap },
       { href: '/refi-watch', label: 'Refi Watch', icon: TrendingDown },
       { href: '/equity', label: 'Equity Tracker', icon: Wallet },
       { href: '/partners', label: 'Partners', icon: Handshake },
