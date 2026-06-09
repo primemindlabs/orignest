@@ -8,6 +8,7 @@ import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/Badge';
 import { EnrollCreditRepairButton } from './EnrollCreditRepairButton';
+import { AIDraftsPanel } from '@/components/loanFile/AIDraftsPanel';
 import { TRIDTimeline } from '@/components/compliance/TRIDTimeline';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { maskSSN, maskIncome } from '@/lib/compliance/encryption';
@@ -151,6 +152,7 @@ export default async function LeadDetailPage({
 
           {/* Quick action buttons — TCPA gated */}
           <div className="flex items-center gap-2 flex-shrink-0">
+            <AIDraftsPanel leadId={lead.id} />
             {lead.phone && lead.sms_consent ? (
               <button className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-sm font-medium bg-green/10 text-green border border-green/20 hover:bg-green/15 transition-colors">
                 <MessageSquare size={14} />

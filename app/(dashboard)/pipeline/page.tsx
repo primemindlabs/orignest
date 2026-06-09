@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/Badge';
 import { AlertTriangle, Plus, Clock, Lock } from 'lucide-react';
 import { DemoControls } from '@/components/pipeline/DemoControls';
+import { MobilePipelineView } from '@/components/pipeline/MobilePipelineView';
 import Link from 'next/link';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { formatDistanceToNow } from 'date-fns';
@@ -218,8 +219,11 @@ export default async function PipelinePage() {
         </div>
       )}
 
+      {/* ── Mobile list view (Phase 42.6) — kanban is desktop-only ───── */}
+      <MobilePipelineView leads={allLeads as never} className="md:hidden" />
+
       {/* ── Kanban board ─────────────────────────────────────────────── */}
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="hidden md:flex gap-4 overflow-x-auto pb-4">
         {STAGES.map((stage) => {
           const stageLeads = byStage[stage] ?? [];
           const stageValue = stageLeads.reduce((s, l) => s + (l.loan_amount ?? 0), 0);
