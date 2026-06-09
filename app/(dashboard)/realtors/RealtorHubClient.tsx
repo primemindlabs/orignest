@@ -2,6 +2,7 @@
 
 /** Phase 40.4/40.7 — Realtor Intelligence hub: stats + tiered partners + add + log touch. */
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -100,7 +101,7 @@ export function RealtorHubClient() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="text-[14px] font-semibold text-[var(--c-text)]">{r.first_name} {r.last_name}</p>
+                  <Link href={`/realtors/${r.id}`} className="text-[14px] font-semibold text-[var(--c-text)] hover:text-[var(--c-gold-deep)] hover:underline">{r.first_name} {r.last_name}</Link>
                   <span className="text-[9px] uppercase tracking-wide font-bold px-1.5 py-0.5 rounded-full text-white" style={{ background: TIER_COLORS[r.partnership_tier] }}>{TIER_LABELS[r.partnership_tier]}</span>
                 </div>
                 <p className="text-[11px] text-[var(--c-label2)] flex items-center gap-1.5"><Building2 size={11} /> {r.brokerage_name ?? '—'}{r.primary_city ? ` · ${r.primary_city}` : ''}</p>

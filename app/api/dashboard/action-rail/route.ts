@@ -74,6 +74,12 @@ export async function GET() {
     }
   }
 
+  // Phase 40 — dormant realtor partners needing re-engagement.
+  const { data: dormant } = await sb.from('realtors').select('id, first_name, last_name').eq('org_id', orgId).eq('partnership_tier', 'dormant').eq('is_archived', false).limit(3);
+  for (const d of dormant ?? []) {
+    items.push({ id: `dormant-${d.id}`, type: 'follow_up', label: `${name(d)} — dormant partner`, href: `/realtors/${d.id}`, urgency: 'normal', sort: 60 });
+  }
+
   items.sort((a, b) => (a.urgency === b.urgency ? a.sort - b.sort : a.urgency === 'high' ? -1 : 1));
   return NextResponse.json({ items: items.slice(0, 8) });
 }
