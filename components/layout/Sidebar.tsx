@@ -38,6 +38,7 @@ import {
   GraduationCap,
   Building2,
   Repeat,
+  Home,
 } from 'lucide-react';
 
 interface NavItem {
@@ -72,6 +73,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/ai-coach', label: 'AI Coach', icon: Bot },
       { href: '/campaigns', label: 'Marketing', icon: Megaphone },
+      { href: '/co-marketing/listings', label: 'Listings', icon: Home },
       { href: '/dialer', label: 'Dialer', icon: Phone },
       { href: '/pricing', label: 'Pricing', icon: TrendingUp },
       { href: '/pre-approval', label: 'Pre-Approval', icon: FileCheck },

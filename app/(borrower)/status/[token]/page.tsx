@@ -62,12 +62,41 @@ export default async function BorrowerPortalPage({ params }: { params: { token: 
   // Lead data — NO financial PII, credit score, SSN, income
   const { data: lead } = await sb
     .from('leads')
-    .select('id,first_name,stage,trid_status,le_sent_date,cd_sent_date,closing_date,assigned_to')
+    .select('id,first_name,email,stage,trid_status,le_sent_date,cd_sent_date,closing_date,assigned_to')
     .eq('id', portalToken.lead_id)
     .eq('org_id', portalToken.org_id)
     .single();
 
   if (!lead) notFound();
+
+  // Phase 28.7 — borrower's loan history with this LO (auto-linked by email).
+  const { data: relationship } = await sb
+    .from('borrower_relationships')
+    .select('lead_ids, estimated_equity, last_known_avm, current_loan_balance, rate_delta, original_rate, current_market_rate, monthly_savings_if_refi, refi_alert_threshold')
+    .eq('org_id', portalToken.org_id)
+    .eq('email', (lead.email ?? '').toLowerCase())
+    .maybeSingle();
+
+  const historyIds = (relationship?.lead_ids ?? []).filter((id: string) => id !== lead.id);
+  const { data: otherLoans } = historyIds.length
+    ? await sb.from('leads').select('id, stage, loan_purpose, loan_amount, closing_date, property_city, property_state').in('id', historyIds).order('created_at', { ascending: false })
+    : { data: [] };
+
+  const loanHistory = (otherLoans ?? []).map((l: any) => ({
+    id: l.id,
+    label: [l.property_city, l.property_state].filter(Boolean).join(', ') || 'Loan',
+    purpose: l.loan_purpose as string | null,
+    amount: l.loan_amount as number | null,
+    stage: l.stage as string,
+    closingDate: l.closing_date as string | null,
+  }));
+
+  const refiAlert = relationship?.rate_delta != null && relationship.rate_delta >= Number(relationship.refi_alert_threshold ?? 0.75)
+    ? { originalRate: Number(relationship.original_rate), currentRate: Number(relationship.current_market_rate), monthlySavings: relationship.monthly_savings_if_refi != null ? Number(relationship.monthly_savings_if_refi) : null }
+    : null;
+  const equityInfo = relationship?.estimated_equity != null
+    ? { equity: Number(relationship.estimated_equity), avm: relationship.last_known_avm != null ? Number(relationship.last_known_avm) : null, balance: relationship.current_loan_balance != null ? Number(relationship.current_loan_balance) : null }
+    : null;
 
   const lo = lead.assigned_to
     ? await sb
@@ -138,6 +167,9 @@ export default async function BorrowerPortalPage({ params }: { params: { token: 
       lo={lo ? { name: `${lo.first_name} ${lo.last_name}`, phone: lo.phone, nmls: lo.nmls_id, avatarUrl: lo.avatar_url, title: lo.title } : null}
       org={org ? { name: org.name, logoUrl: org.logo_url } : null}
       creditRepair={creditEnrollment ?? null}
+      loanHistory={loanHistory}
+      refiAlert={refiAlert}
+      equityInfo={equityInfo}
     />
   );
 }

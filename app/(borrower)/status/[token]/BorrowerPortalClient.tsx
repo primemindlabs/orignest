@@ -30,6 +30,9 @@ interface Props {
   lo: { name: string; phone: string | null; nmls: string | null; avatarUrl: string | null; title: string | null } | null;
   org: { name: string; logoUrl: string | null } | null;
   creditRepair: CreditRepairEnrollment | null;
+  loanHistory?: Array<{ id: string; label: string; purpose: string | null; amount: number | null; stage: string; closingDate: string | null }>;
+  refiAlert?: { originalRate: number; currentRate: number; monthlySavings: number | null } | null;
+  equityInfo?: { equity: number; avm: number | null; balance: number | null } | null;
 }
 
 const ACCEPTED_MIME = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
@@ -53,6 +56,9 @@ export function BorrowerPortalClient({
   lo,
   org,
   creditRepair,
+  loanHistory = [],
+  refiAlert = null,
+  equityInfo = null,
 }: Props) {
   const [docs, setDocs] = useState<DocItem[]>(documents);
   const [activeTab, setActiveTab] = useState<'status' | 'credit-repair'>('status');
@@ -228,6 +234,48 @@ export function BorrowerPortalClient({
           currentStage={currentStage}
           closingDate={trid?.closingDate ?? null}
         />
+
+        {/* Phase 28.7 — refi opportunity */}
+        {refiAlert && (
+          <div className="bg-gold/10 border border-gold/30 rounded-[10px] p-4">
+            <p className="text-xs font-semibold text-navy mb-1">💡 Potential savings opportunity</p>
+            <p className="text-sm text-label leading-relaxed">
+              Your rate {refiAlert.originalRate?.toFixed(3)}% vs today&apos;s {refiAlert.currentRate?.toFixed(3)}%.
+              {refiAlert.monthlySavings ? ` Estimated savings ~$${Math.round(refiAlert.monthlySavings).toLocaleString()}/mo.` : ''}
+            </p>
+            {lo?.phone && <a href={`tel:${lo.phone}`} className="inline-block mt-2 text-xs font-semibold text-navy">Speak with {lo.name} →</a>}
+          </div>
+        )}
+
+        {/* Phase 28.7 — equity */}
+        {equityInfo && (
+          <div className="bg-white rounded-[10px] border border-[rgba(60,60,67,0.06)] p-5 shadow-card">
+            <p className="text-xs font-semibold text-label mb-2">📈 Your home equity</p>
+            <div className="space-y-1 text-sm">
+              {equityInfo.avm != null && <div className="flex justify-between"><span className="text-label-2">Estimated value</span><span className="font-medium text-label">${equityInfo.avm.toLocaleString()}</span></div>}
+              {equityInfo.balance != null && <div className="flex justify-between"><span className="text-label-2">Remaining balance</span><span className="font-medium text-label">${equityInfo.balance.toLocaleString()}</span></div>}
+              <div className="flex justify-between border-t border-black/[0.06] pt-1 mt-1"><span className="text-label-2">Estimated equity</span><span className="font-semibold text-navy">${equityInfo.equity.toLocaleString()}</span></div>
+            </div>
+          </div>
+        )}
+
+        {/* Phase 28.7 — loan history with this LO */}
+        {loanHistory.length > 0 && (
+          <div className="bg-white rounded-[10px] border border-[rgba(60,60,67,0.06)] p-5 shadow-card">
+            <h2 className="text-sm font-semibold text-label mb-3">My loans with {lo?.name ?? 'your loan officer'}</h2>
+            <div className="space-y-2">
+              {loanHistory.map((h) => (
+                <div key={h.id} className="flex items-center justify-between gap-3 border-b border-black/[0.04] pb-2 last:border-0 last:pb-0">
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-medium text-label truncate">{h.label}</p>
+                    <p className="text-[11px] text-label-2">{h.purpose ? h.purpose.replace(/_/g, ' ') : ''}{h.closingDate ? ` · Closed ${new Date(h.closingDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}` : ''}</p>
+                  </div>
+                  {h.amount ? <span className="text-[12px] font-mono text-label flex-shrink-0">${Number(h.amount).toLocaleString()}</span> : null}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Two-way messaging with the loan officer (Phase 4.2) */}
         <PortalMessages token={token} loName={lo?.name ?? 'your loan officer'} />
