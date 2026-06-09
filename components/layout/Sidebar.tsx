@@ -34,6 +34,7 @@ import {
   LayoutGrid,
   Wallet,
   Calculator,
+  Gift,
 } from 'lucide-react';
 
 interface NavItem {
@@ -83,6 +84,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/reports', label: 'Reports', icon: BarChart3 },
       { href: '/referral-attribution', label: 'Attribution', icon: GitBranch },
+      { href: '/buyer-referrals', label: 'Buyer Referrals', icon: Gift },
       { href: '/commissions', label: 'Commissions', icon: DollarSign },
       { href: '/nmls', label: 'Compliance', icon: ShieldCheck, adminOnly: true },
       { href: '/team', label: 'Team', icon: Users2, adminOnly: true },
