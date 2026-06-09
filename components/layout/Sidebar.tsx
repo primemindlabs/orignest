@@ -31,6 +31,7 @@ const NAV: NavGroup[] = [
       { href: '/tasks', label: 'Tasks' },
       { href: '/calendar', label: 'Calendar' },
       { href: '/applications', label: 'Documents' },
+      { href: '/dscr-calculator', label: 'DSCR Calculator' },
     ],
   },
   {
