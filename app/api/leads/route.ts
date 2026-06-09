@@ -124,6 +124,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     stage,
   };
 
+  // Phase 39.1 — data ownership (defaults to company_generated at the DB level).
+  if (['lo_personal', 'company_generated', 'company_referral'].includes(String(body.data_ownership))) {
+    insert.data_ownership = body.data_ownership;
+  }
+  if (str(body.ownership_notes)) insert.ownership_notes = str(body.ownership_notes);
+
   // TCPA — only record consent when the user affirmatively granted it.
   if (body.sms_consent === true && phone) {
     const ip =

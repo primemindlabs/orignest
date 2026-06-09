@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { AlertTriangle, Users } from 'lucide-react';
+import { OwnershipSelector } from '@/components/leads/OwnershipSelector';
 
 interface DuplicateLead {
   id: string;
@@ -72,6 +73,7 @@ export function NewLeadForm() {
     lead_source: '',
     stage: 'new_inquiry',
     sms_consent: false,
+    data_ownership: 'company_generated' as 'lo_personal' | 'company_generated' | 'company_referral',
   });
   const [dupes, setDupes] = useState<DuplicateLead[]>([]);
   const [checkingDupes, setCheckingDupes] = useState(false);
@@ -322,6 +324,9 @@ export function NewLeadForm() {
           onChange={(e) => set('stage', e.target.value)}
         />
       </div>
+
+      {/* Phase 39.1 — data ownership */}
+      <OwnershipSelector value={form.data_ownership} onChange={(v) => set('data_ownership', v)} />
 
       {/* TCPA consent */}
       <label
