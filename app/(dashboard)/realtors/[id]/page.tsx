@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Building2, Mail, Phone, Gift, StickyNote, PhoneCall, Users } from 'lucide-react';
 import { computePartnershipScore, TIER_LABELS, TIER_COLORS, type PartnershipTier } from '@/lib/realtors/partnershipScore';
 import { NotesEditor } from './NotesEditor';
+import { RealtorEngagement } from './RealtorEngagement';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Realtor' };
@@ -93,6 +94,12 @@ export default async function RealtorDetailPage({ params }: { params: { id: stri
             })}
           </div>
         )}
+      </div>
+
+      {/* Meetings & cadence (Phase 48) */}
+      <div>
+        <h2 className="text-[14px] font-semibold text-[var(--c-text)] mb-2">Meetings &amp; co-marketing</h2>
+        <RealtorEngagement realtorId={r.id} initialCadence={(r as { comarketing_cadence?: string }).comarketing_cadence ?? 'monthly'} />
       </div>
 
       {/* Notes */}

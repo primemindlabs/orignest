@@ -93,6 +93,13 @@ export async function GET() {
     items.push({ id: `dormant-${d.id}`, type: 'follow_up', label: `${name(d)} — dormant partner`, href: `/realtors/${d.id}`, urgency: 'normal', sort: 60 });
   }
 
+  // Phase 48.9 — co-marketing cadence due.
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const { data: comktg } = await sb.from('realtors').select('id, first_name, last_name').eq('org_id', orgId).eq('is_archived', false).neq('comarketing_cadence', 'none').not('next_comarketing_due_at', 'is', null).lte('next_comarketing_due_at', todayStr).limit(3);
+  for (const c of comktg ?? []) {
+    items.push({ id: `comktg-${c.id}`, type: 'follow_up', label: `${name(c)} — co-marketing due`, href: `/realtors/${c.id}`, urgency: 'normal', sort: 65 });
+  }
+
   items.sort((a, b) => (a.urgency === b.urgency ? a.sort - b.sort : a.urgency === 'high' ? -1 : 1));
   return NextResponse.json({ items: items.slice(0, 8) });
 }
