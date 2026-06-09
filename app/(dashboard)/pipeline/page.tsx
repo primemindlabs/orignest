@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/Badge';
 import { AlertTriangle, Plus, Clock, Lock } from 'lucide-react';
+import { DemoControls } from '@/components/pipeline/DemoControls';
 import Link from 'next/link';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { formatDistanceToNow } from 'date-fns';
@@ -64,7 +65,7 @@ export default async function PipelinePage() {
     sb
       .from('leads')
       .select(
-        'id, first_name, last_name, stage, loan_type, loan_amount, lead_source, ai_score, created_at, stage_changed_at, application_submitted_at, loan_estimate_sent_at, closing_disclosure_sent_at, closing_date, data_ownership'
+        'id, first_name, last_name, stage, loan_type, loan_amount, lead_source, ai_score, created_at, stage_changed_at, application_submitted_at, loan_estimate_sent_at, closing_disclosure_sent_at, closing_date, data_ownership, is_demo'
       )
       .eq('org_id', orgId)
       .in('stage', [...STAGES])
@@ -157,6 +158,9 @@ export default async function PipelinePage() {
           Add Lead
         </Link>
       </div>
+
+      {/* ── Demo Mode (Phase 42.4) ───────────────────────────────────── */}
+      <DemoControls leadCount={allLeads.length} demoCount={allLeads.filter((l) => (l as { is_demo?: boolean }).is_demo).length} />
 
       {/* ── Stalled-lead SLA banner (Phase 1.4) ──────────────────────── */}
       {stalled.length > 0 && (

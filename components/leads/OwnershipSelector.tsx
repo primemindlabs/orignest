@@ -6,9 +6,9 @@ import { User, Building2, Handshake } from 'lucide-react';
 export type Ownership = 'lo_personal' | 'company_generated' | 'company_referral';
 
 const OPTIONS: { key: Ownership; label: string; desc: string; Icon: typeof User }[] = [
-  { key: 'lo_personal', label: 'My contact', desc: 'Personal referral or past client I brought in', Icon: User },
-  { key: 'company_generated', label: 'Company lead', desc: 'Came through company marketing or website', Icon: Building2 },
-  { key: 'company_referral', label: 'Branch referral', desc: 'Referred by a colleague', Icon: Handshake },
+  { key: 'lo_personal', label: 'My personal contact', desc: 'Someone I know — past client or personal referral I brought in. Stays in my book if I change companies.', Icon: User },
+  { key: 'company_generated', label: 'Company lead', desc: 'Came through the company website, marketing, or a purchased list. Stays with the branch.', Icon: Building2 },
+  { key: 'company_referral', label: 'Colleague referral', desc: 'Referred to me by another team member or the branch pipeline.', Icon: Handshake },
 ];
 
 export function OwnershipSelector({ value, onChange }: { value: Ownership; onChange: (v: Ownership) => void }) {
