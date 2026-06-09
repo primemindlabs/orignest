@@ -25,6 +25,18 @@ export async function resolveOrgTier(orgId: string): Promise<EffectiveTier> {
 }
 
 export async function requireFeature(orgId: string, feature: FeatureKey): Promise<void> {
+  const sb = createAdminClient();
+
+  // Phase 37 — per-org feature-flag override (set by platform admin) wins over plan.
+  const { data: flag } = await sb
+    .from('tenant_feature_flags')
+    .select('enabled')
+    .eq('org_id', orgId)
+    .eq('flag', feature)
+    .maybeSingle();
+  if (flag?.enabled === true) return;
+  if (flag?.enabled === false) throw new FeatureGateError(feature, 'starter', 'disabled by platform admin');
+
   const tier = await resolveOrgTier(orgId);
   if (!hasFeature(tier, feature)) {
     throw new FeatureGateError(feature, tier, minimumPlanFor(feature));
