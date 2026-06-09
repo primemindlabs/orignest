@@ -63,5 +63,14 @@ export async function evaluateStageTransitions(params: {
     metadata: { from: lead.stage, to, triggerEvent, agent: 'stage_automation' },
   });
 
+  // Phase 46.7 — proactively notify the referring realtor (best-effort; never
+  // blocks the transition). Dedup + Twilio-gating handled inside.
+  try {
+    const { notifyRealtorOfStage } = await import('@/lib/realtors/notifications');
+    await notifyRealtorOfStage(leadId, to, orgId);
+  } catch {
+    /* notifications are best-effort */
+  }
+
   return { transitioned: true, from: lead.stage as string, to, triggerEvent };
 }
