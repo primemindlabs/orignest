@@ -8,6 +8,7 @@ import { SpeedTicker } from '@/components/dashboard/SpeedTicker';
 import { ClosingCelebrationListener } from '@/components/ui/ClosingCelebrationListener';
 import { AskAshleyWidget } from '@/components/dashboard/AskAshleyWidget';
 import { TrialBanner } from '@/components/billing/TrialBanner';
+import { ActionRail } from '@/components/dashboard/ActionRail';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,6 +61,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <Topbar />
           <main className="flex-1 overflow-auto pt-14 animate-fade-in">
             <TrialBanner />
+            <ActionRail />
             <div className="p-6">{children}</div>
           </main>
         </div>

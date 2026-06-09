@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/Badge';
-import { AlertTriangle, Plus, Clock } from 'lucide-react';
+import { AlertTriangle, Plus, Clock, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { formatDistanceToNow } from 'date-fns';
@@ -64,7 +64,7 @@ export default async function PipelinePage() {
     sb
       .from('leads')
       .select(
-        'id, first_name, last_name, stage, loan_type, loan_amount, lead_source, ai_score, created_at, stage_changed_at, application_submitted_at, loan_estimate_sent_at, closing_disclosure_sent_at, closing_date'
+        'id, first_name, last_name, stage, loan_type, loan_amount, lead_source, ai_score, created_at, stage_changed_at, application_submitted_at, loan_estimate_sent_at, closing_disclosure_sent_at, closing_date, data_ownership'
       )
       .eq('org_id', orgId)
       .in('stage', [...STAGES])
@@ -258,6 +258,9 @@ export default async function PipelinePage() {
                           {lead.first_name} {lead.last_name}
                         </p>
                         <div className="flex items-center gap-1 flex-shrink-0 mt-0.5">
+                          {(lead as { data_ownership?: string }).data_ownership === 'lo_personal' && (
+                            <Lock size={11} className="text-gold-600" aria-label="Your personal contact" />
+                          )}
                           {stallByLead[lead.id] && (
                             <Clock
                               size={12}
