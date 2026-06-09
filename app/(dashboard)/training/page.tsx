@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { Metadata } from 'next';
 import TrainingClient, { type Course, type Enrollment } from './TrainingClient';
+import Link from 'next/link';
+import { BookOpen, ShieldCheck } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Training' };
@@ -46,5 +48,19 @@ export default async function TrainingPage() {
     certificate_code: e.certificate_code as string | null,
   }));
 
-  return <TrainingClient courses={flatCourses} enrollments={myEnrollments} isAdmin={isAdmin} />;
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <Link href="/training/guidelines" className="inline-flex items-center gap-1.5 h-8 px-3 rounded-btn text-[12px] font-medium border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
+          <BookOpen size={13} className="text-[var(--c-gold-deep)]" /> Product Guidelines
+        </Link>
+        {isAdmin && (
+          <Link href="/training/compliance" className="inline-flex items-center gap-1.5 h-8 px-3 rounded-btn text-[12px] font-medium border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
+            <ShieldCheck size={13} className="text-[var(--c-gold-deep)]" /> Training Compliance
+          </Link>
+        )}
+      </div>
+      <TrainingClient courses={flatCourses} enrollments={myEnrollments} isAdmin={isAdmin} />
+    </div>
+  );
 }
