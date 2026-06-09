@@ -1,0 +1,4 @@
+-- Phase 64.2 — HOA/condo warrantability. Real schema: loans=leads, users=profiles.
+-- (Full DDL applied via MCP migration phase64_hoa_warrantability.) hoa_questionnaires
+-- (project/occupancy/financials/insurance/litigation/commercial + warrantability_status
+-- + disqualifying_factors/conditions, UNIQUE per loan). org_id RLS.
