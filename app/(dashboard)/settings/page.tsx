@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
-import { CreditCard, Users, Building2, Shield, Bell, ChevronRight, Sparkles } from 'lucide-react';
+import { CreditCard, Users, Building2, Shield, Bell, ChevronRight, Sparkles, Plug } from 'lucide-react';
 import { CreditRepairSettingsCard } from './CreditRepairSettingsCard';
 
 export const dynamic = 'force-dynamic';
@@ -48,6 +48,12 @@ const SETTINGS_SECTIONS = [
     icon: Sparkles,
     label: 'AI Intelligence',
     description: 'Underwriting pattern model status and learning history',
+  },
+  {
+    href: '/settings/integrations',
+    icon: Plug,
+    label: 'Integrations',
+    description: 'Connect your LOS (LendingPad, Arive) for loan status sync',
   },
 ] as const;
 
