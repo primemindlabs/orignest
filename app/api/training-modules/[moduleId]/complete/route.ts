@@ -1,5 +1,7 @@
 /**
  * Phase 30.10 — record a training module completion (INSERT-only audit).
+ * Path is /api/training-modules/* (the existing /api/training/[courseId] LMS
+ * route fixes that dynamic slug to courseId, so this lives on a separate path).
  */
 import { NextResponse } from 'next/server';
 import { getOrgContext } from '@/lib/auth/orgContext';
@@ -20,7 +22,6 @@ export async function POST(req: Request, { params }: { params: { moduleId: strin
   const { data: profile } = await sb.from('profiles').select('id').eq('clerk_user_id', userId).maybeSingle();
   if (!profile) return NextResponse.json({ error: 'No profile' }, { status: 403 });
 
-  // Validate the module belongs to this org.
   const { data: mod } = await sb.from('training_modules').select('id').eq('id', params.moduleId).eq('org_id', orgId).maybeSingle();
   if (!mod) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
