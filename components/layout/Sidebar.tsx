@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useClerk, useUser } from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/brand/Logo';
+import { isGroupVisible } from '@/lib/navigation/roles';
 import {
   LayoutDashboard, GitBranch, Repeat, Megaphone, Sparkles, BarChart3, ShieldCheck, Settings,
   ChevronDown, PanelLeftClose, PanelLeftOpen, LogOut,
@@ -30,7 +31,6 @@ const NAV: NavGroup[] = [
       { href: '/credit-alerts', label: 'Credit Alerts' },
       { href: '/my-book', label: 'My Book' },
       { href: '/inbox', label: 'Conversations' },
-      { href: '/tasks', label: 'Tasks' },
       { href: '/calendar', label: 'Calendar' },
       { href: '/applications', label: 'Documents' },
       { href: '/dscr-calculator', label: 'DSCR Calculator' },
@@ -59,13 +59,13 @@ const NAV: NavGroup[] = [
   {
     key: 'tools', label: 'Tools', icon: Sparkles, items: [
       { href: '/ai-coach', label: 'AI Coach' },
-      { href: '/pricing', label: 'Pricing' },
-      { href: '/dialer', label: 'Dialer' },
+      { href: '/pricing', label: 'Rate & Pricing' },
       { href: '/dialer/power', label: 'Power Dialer' },
       { href: '/pre-approval', label: 'Pre-Approval' },
-      { href: '/scenarios', label: 'Scenarios' },
-      { href: '/income', label: 'Income Calc' },
-      { href: '/training', label: 'Training' },
+      { href: '/scenarios', label: 'Scenario AI' },
+      { href: '/income', label: 'Income Calculators' },
+      { href: '/dscr', label: 'DSCR / Non-QM' },
+      { href: '/training', label: 'Training Center' },
       { href: '/training/ask', label: 'Ask Ashley' },
       { href: '/refi-watch', label: 'Refi Watch' },
       { href: '/equity', label: 'Equity Tracker' },
@@ -115,8 +115,9 @@ export function Sidebar({ userRole, orgName }: SidebarProps) {
   const { signOut } = useClerk();
   const { user } = useUser();
 
-  const isAdmin = userRole === 'admin' || userRole === 'branch_manager';
-  const groups = NAV.filter((g) => !g.adminOnly || isAdmin);
+  // Phase 57.1 — role-filtered nav. Generalists (lo / branch_manager / admin) keep
+  // the full nav exactly as before; specialized roles get a tailored subset.
+  const groups = NAV.filter((g) => isGroupVisible(g.key, g.adminOnly, userRole));
 
   // ── Active group via longest-prefix match across all items ──────────────────
   function prefixLen(href: string): number {
