@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import type { Metadata } from 'next';
 import BuyerReferralsClient, { type Referral, type ReferrerOption } from './BuyerReferralsClient';
 import { ReferralLinkCard } from '@/components/referrals/ReferralLinkCard';
+import { RewardsPanel } from '@/components/referrals/RewardsPanel';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Buyer Referrals' };
@@ -51,6 +52,7 @@ export default async function BuyerReferralsPage() {
   return (
     <div>
       <ReferralLinkCard />
+      <RewardsPanel />
       <BuyerReferralsClient referrals={flat} referrers={referrers} />
     </div>
   );
