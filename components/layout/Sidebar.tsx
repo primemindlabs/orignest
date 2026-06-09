@@ -88,6 +88,7 @@ const NAV: NavGroup[] = [
       { href: '/branch', label: 'Branch Dashboard' },
       { href: '/branch/team', label: 'Team Performance' },
       { href: '/ae-book', label: 'AE Book of Business' },
+      { href: '/ae-management', label: 'Wholesale Team' },
     ],
   },
   {
