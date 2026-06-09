@@ -162,6 +162,9 @@ export default async function LeadDetailPage({
             <AssignTaskButton leadId={lead.id} />
             <CreditMonitoringButton leadId={lead.id} />
             <PreApprovalCertButton leadId={lead.id} defaultAmount={lead.loan_amount} defaultLoanType={lead.loan_type} />
+            <Link href={`/loans/${lead.id}/income`} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-[13px] font-medium border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
+              <FileText size={14} className="text-[var(--c-gold-deep)]" /> Income
+            </Link>
             <ScenarioAIPanel
               leadId={lead.id}
               initial={{
