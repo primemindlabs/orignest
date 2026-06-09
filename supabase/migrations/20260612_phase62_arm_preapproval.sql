@@ -1,0 +1,4 @@
+-- Phase 62.3 ARM Reset Watch + 62.2 Pre-Approval expiration. Real schema:
+-- organizations/profiles/leads. (Full DDL applied via MCP migration phase62_arm_preapproval.)
+-- arm_watches (alert_status flow, worst-case cols) + preapproval_letters (versioned,
+-- voidable) + credit_pulls (soft/hard/supplement, expiry) + preapproval_alerts (INSERT-only).
