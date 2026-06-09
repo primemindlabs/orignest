@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/Badge';
-import { AlertTriangle, Plus } from 'lucide-react';
+import { AlertTriangle, Plus, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { formatDistanceToNow } from 'date-fns';
@@ -60,16 +60,54 @@ export default async function PipelinePage() {
   if (!orgId) redirect('/onboarding');
 
   const sb = createAdminClient();
-  const { data: leads } = await sb
-    .from('leads')
-    .select(
-      'id, first_name, last_name, stage, loan_type, loan_amount, lead_source, ai_score, created_at, application_submitted_at, loan_estimate_sent_at, closing_disclosure_sent_at, closing_date'
-    )
-    .eq('org_id', orgId)
-    .in('stage', [...STAGES])
-    .order('created_at', { ascending: false });
+  const [{ data: leads }, { data: slaRows }] = await Promise.all([
+    sb
+      .from('leads')
+      .select(
+        'id, first_name, last_name, stage, loan_type, loan_amount, lead_source, ai_score, created_at, stage_changed_at, application_submitted_at, loan_estimate_sent_at, closing_disclosure_sent_at, closing_date'
+      )
+      .eq('org_id', orgId)
+      .in('stage', [...STAGES])
+      .order('created_at', { ascending: false }),
+    sb
+      .from('stage_sla_config')
+      .select('stage, warning_days, critical_days, org_id')
+      .or(`org_id.eq.${orgId},org_id.is.null`),
+  ]);
 
   const allLeads = leads ?? [];
+
+  // Resolve SLA per stage — an org-specific row overrides the platform default.
+  const slaByStage: Record<string, { warning: number; critical: number }> = {};
+  for (const row of slaRows ?? []) {
+    const existing = slaByStage[row.stage];
+    // org_id !== null wins; otherwise keep the platform default we already have.
+    if (!existing || row.org_id) {
+      slaByStage[row.stage] = { warning: row.warning_days, critical: row.critical_days };
+    }
+  }
+
+  const now = Date.now();
+  function stallLevel(lead: { stage: string; stage_changed_at: string | null; created_at: string }):
+    | 'critical'
+    | 'warning'
+    | null {
+    const sla = slaByStage[lead.stage];
+    if (!sla) return null;
+    const since = lead.stage_changed_at ?? lead.created_at;
+    const days = (now - new Date(since).getTime()) / 86_400_000;
+    if (days >= sla.critical) return 'critical';
+    if (days >= sla.warning) return 'warning';
+    return null;
+  }
+
+  const stalled = allLeads
+    .map((l) => ({ lead: l, level: stallLevel(l) }))
+    .filter((x): x is { lead: (typeof allLeads)[number]; level: 'critical' | 'warning' } => x.level !== null);
+  const criticalCount = stalled.filter((s) => s.level === 'critical').length;
+  const warningCount = stalled.filter((s) => s.level === 'warning').length;
+  const stallByLead: Record<string, 'critical' | 'warning'> = {};
+  for (const s of stalled) stallByLead[s.lead.id] = s.level;
 
   // Group by stage
   const byStage: Record<string, typeof allLeads> = {};
@@ -103,6 +141,62 @@ export default async function PipelinePage() {
           Add Lead
         </Link>
       </div>
+
+      {/* ── Stalled-lead SLA banner (Phase 1.4) ──────────────────────── */}
+      {stalled.length > 0 && (
+        <div
+          className={`rounded-card border p-4 ${
+            criticalCount > 0
+              ? 'bg-red/5 border-red/30'
+              : 'bg-orange/5 border-orange/30'
+          }`}
+        >
+          <div className="flex items-start gap-2.5">
+            <Clock
+              size={16}
+              className={`flex-shrink-0 mt-0.5 ${criticalCount > 0 ? 'text-red' : 'text-orange'}`}
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-semibold text-black">
+                {stalled.length} loan{stalled.length > 1 ? 's' : ''} stalled past SLA
+                {criticalCount > 0 && (
+                  <span className="text-red font-medium"> · {criticalCount} critical</span>
+                )}
+                {warningCount > 0 && (
+                  <span className="text-orange font-medium"> · {warningCount} approaching</span>
+                )}
+              </p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {stalled
+                  .sort((a, b) => (a.level === 'critical' ? -1 : 1) - (b.level === 'critical' ? -1 : 1))
+                  .slice(0, 6)
+                  .map(({ lead, level }) => (
+                    <Link
+                      key={lead.id}
+                      href={`/leads/${lead.id}`}
+                      className="inline-flex items-center gap-1.5 bg-surface rounded-full border border-border px-2.5 py-1 text-[11px] hover:shadow-card transition-shadow"
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          level === 'critical' ? 'bg-red' : 'bg-orange'
+                        }`}
+                      />
+                      <span className="font-medium text-black">
+                        {lead.first_name} {lead.last_name}
+                      </span>
+                      <span className="text-label-3">{STAGE_LABELS[lead.stage]}</span>
+                    </Link>
+                  ))}
+                {stalled.length > 6 && (
+                  <span className="inline-flex items-center text-[11px] text-label-2 px-1">
+                    +{stalled.length - 6} more
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Kanban board ─────────────────────────────────────────────── */}
       <div className="flex gap-4 overflow-x-auto pb-4">
@@ -147,9 +241,15 @@ export default async function PipelinePage() {
                         <p className="text-[13px] font-medium text-black leading-tight truncate">
                           {lead.first_name} {lead.last_name}
                         </p>
-                        {hasTridAlert && (
-                          <AlertTriangle size={12} className="text-red flex-shrink-0 mt-0.5" />
-                        )}
+                        <div className="flex items-center gap-1 flex-shrink-0 mt-0.5">
+                          {stallByLead[lead.id] && (
+                            <Clock
+                              size={12}
+                              className={stallByLead[lead.id] === 'critical' ? 'text-red' : 'text-orange'}
+                            />
+                          )}
+                          {hasTridAlert && <AlertTriangle size={12} className="text-red" />}
+                        </div>
                       </div>
 
                       <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
