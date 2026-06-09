@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Plus, Check, Circle } from 'lucide-react';
+import { ConditionDocuments } from '@/components/conditions/ConditionDocuments';
+import { SubmissionPackageButton } from '@/components/conditions/SubmissionPackageButton';
 
 export interface Condition {
   id: string;
@@ -87,6 +89,8 @@ export function ConditionsManager({ loanId, initial }: { loanId: string; initial
         </div>
       )}
 
+      {conditions.length > 0 && <SubmissionPackageButton loanId={loanId} />}
+
       <div className="bg-[var(--c-surface)] border border-[var(--c-border)] rounded-[14px] overflow-hidden divide-y divide-[var(--c-border)]">
         {conditions.length === 0 && <p className="text-[13px] text-[var(--c-label3)] text-center py-8">No conditions yet.</p>}
         {conditions.map((c) => (
@@ -103,6 +107,7 @@ export function ConditionsManager({ loanId, initial }: { loanId: string; initial
                 <span className="text-[10px] text-[var(--c-label2)] bg-[var(--c-fill)] px-1.5 py-0.5 rounded-full">{c.priority.replace(/_/g, ' ')}</span>
                 <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ color: STATUS_TONE[c.status] ?? 'var(--c-label2)', backgroundColor: 'var(--c-fill)' }}>{c.status.replace(/_/g, ' ')}</span>
               </div>
+              <ConditionDocuments conditionId={c.id} />
             </div>
           </div>
         ))}
