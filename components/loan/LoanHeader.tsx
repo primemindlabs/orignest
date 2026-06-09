@@ -116,7 +116,7 @@ export function LoanHeader({ loan }: { loan: LoanSummary }) {
         <Pill href={`${base}/underwriting/dti`} label={`DTI ${kpis.dti != null ? kpis.dti + '%' : '—'}`} tone={dtiTone} />
         <Pill href={`${base}/underwriting/risk`} label={`Risk ${kpis.riskScore ?? '—'}`} tone={riskTone} />
         <Pill href={`${base}/disclosures`} label={`Lock ${lockDays != null && kpis.lockStatus !== 'floating' ? lockDays + 'd' : '—'}`} tone={lockTone} />
-        <Pill href={`${base}/conditions`} label={`Conditions ${kpis.openConditions}`} tone={condTone} />
+        <Pill href={`${base}/docs-compliance/conditions`} label={`Conditions ${kpis.openConditions}`} tone={condTone} />
         <span className="inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-full bg-[var(--c-gold-light)] text-[var(--c-gold-deep)]">
           {STAGE_LABELS[kpis.stage] ?? kpis.stage}
         </span>

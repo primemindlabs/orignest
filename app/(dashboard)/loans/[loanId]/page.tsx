@@ -16,10 +16,10 @@ export default async function LoanOverviewPage({ params }: { params: { loanId: s
   const base = `/loans/${loan.id}`;
 
   const quickLinks = [
-    { href: `${base}/1003`, label: '1003 Application', icon: FileText },
+    { href: `${base}/application`, label: '1003 Application', icon: FileText },
     { href: `${base}/underwriting`, label: 'Underwriting', icon: Shield },
     { href: `${base}/disclosures`, label: 'Disclosures', icon: FileCheck },
-    { href: `${base}/conditions`, label: 'Conditions', icon: CheckSquare },
+    { href: `${base}/docs-compliance/conditions`, label: 'Conditions', icon: CheckSquare },
     { href: `${base}/relationships`, label: 'Relationships', icon: Users },
   ];
 

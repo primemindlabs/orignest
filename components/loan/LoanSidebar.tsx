@@ -1,44 +1,51 @@
 'use client';
 
 /**
- * Phase 28.1 — Contextual loan sidebar. Top-level sections always visible;
- * a section's sub-items expand when it's active. `showIf` predicates take the
+ * Phase 29.1 — Loan file sidebar, 8 top-level groups. Top-level sections always
+ * visible; a section's sub-items expand when active. `showIf` predicates take the
  * LoanContext, hiding sub-items that don't apply to this loan entirely.
  */
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, FileText, Shield, FileCheck, CheckSquare, Folder, MessageSquare, Clock, Users,
+  LayoutDashboard, FileText, DollarSign, Home, Shield, FileCheck, FolderCheck, MessageSquare,
 } from 'lucide-react';
 import type { LoanContext } from '@/lib/ui/fieldAdapter';
 
-interface SubItem {
-  label: string;
-  href: string;
-  showIf?: (ctx: LoanContext) => boolean;
-}
-interface NavSection {
-  key: string;
-  label: string;
-  href: string;
-  icon: React.ElementType;
-  sub?: SubItem[];
-}
+interface SubItem { label: string; href: string; showIf?: (ctx: LoanContext) => boolean }
+interface NavSection { key: string; label: string; href: string; icon: React.ElementType; sub?: SubItem[] }
 
 const LOAN_NAV: NavSection[] = [
   { key: 'overview', label: 'Overview', href: '', icon: LayoutDashboard },
   {
-    key: '1003', label: '1003', href: '/1003', icon: FileText,
+    key: 'application', label: 'Application', href: '/application', icon: FileText,
     sub: [
-      { label: 'Borrower Info', href: '/1003/borrower' },
-      { label: 'Co-Borrower', href: '/1003/co-borrower', showIf: (c) => c.has_co_borrower },
-      { label: 'Employment', href: '/1003/employment' },
-      { label: 'Income', href: '/1003/income' },
-      { label: 'Assets', href: '/1003/assets' },
-      { label: 'Real Estate Owned', href: '/1003/real-estate', showIf: (c) => c.has_reo },
-      { label: 'Loan & Property', href: '/1003/loan-property' },
-      { label: 'Declarations', href: '/1003/declarations' },
-      { label: 'HMDA Data', href: '/1003/hmda' },
+      { label: '1003 — Borrower', href: '/application/borrower' },
+      { label: '1003 — Co-Borrower', href: '/application/co-borrower', showIf: (c) => c.has_co_borrower },
+      { label: '1003 — Employment', href: '/application/employment' },
+      { label: '1003 — Income', href: '/application/income' },
+      { label: '1003 — Assets', href: '/application/assets' },
+      { label: '1003 — Real Estate Owned', href: '/application/real-estate', showIf: (c) => c.has_reo },
+      { label: '1003 — Loan & Property', href: '/application/loan-property' },
+      { label: '1003 — Declarations', href: '/application/declarations' },
+      { label: 'HMDA Data', href: '/application/hmda' },
+    ],
+  },
+  {
+    key: 'pricing', label: 'Pricing', href: '/pricing', icon: DollarSign,
+    sub: [
+      { label: 'Rate Options', href: '/pricing/rate-options' },
+      { label: 'Rate Lock', href: '/pricing/rate-lock' },
+      { label: 'Break-Even Analysis', href: '/pricing/break-even' },
+    ],
+  },
+  {
+    key: 'property', label: 'Property', href: '/property', icon: Home,
+    sub: [
+      { label: 'Property Details', href: '/property/details' },
+      { label: 'Appraisal', href: '/property/appraisal' },
+      { label: 'Flood Zone', href: '/property/flood-zone' },
+      { label: 'HOA Certification', href: '/property/hoa', showIf: (c) => ['Condo', 'PUD'].includes(c.property_type) },
     ],
   },
   {
@@ -48,10 +55,9 @@ const LOAN_NAV: NavSection[] = [
       { label: 'Income Analysis', href: '/underwriting/income' },
       { label: 'Assets & Reserves', href: '/underwriting/assets' },
       { label: 'Credit Analysis', href: '/underwriting/credit' },
-      { label: 'HOA', href: '/underwriting/hoa', showIf: (c) => ['Condo', 'PUD'].includes(c.property_type) },
       { label: 'Risk Score', href: '/underwriting/risk' },
       { label: 'Conditions', href: '/underwriting/conditions' },
-      { label: 'Decision', href: '/underwriting/decision' },
+      { label: 'UW Decision', href: '/underwriting/decision' },
     ],
   },
   {
@@ -59,16 +65,32 @@ const LOAN_NAV: NavSection[] = [
     sub: [
       { label: 'Loan Estimates', href: '/disclosures/loan-estimates' },
       { label: 'CD Balancer', href: '/disclosures/cd-balancer' },
-      { label: 'Changed Circs', href: '/disclosures/changed-circumstances' },
+      { label: 'Changed Circumstances', href: '/disclosures/changed-circumstances' },
       { label: 'Wire Safety', href: '/disclosures/wire-safety' },
       { label: 'Audit Export', href: '/disclosures/audit' },
     ],
   },
-  { key: 'conditions', label: 'Conditions', href: '/conditions', icon: CheckSquare },
-  { key: 'documents', label: 'Documents', href: '/documents', icon: Folder },
-  { key: 'portal', label: 'Portal & Comms', href: '/portal', icon: MessageSquare },
-  { key: 'timeline', label: 'Timeline', href: '/timeline', icon: Clock },
-  { key: 'relationships', label: 'Relationships', href: '/relationships', icon: Users },
+  {
+    key: 'docs-compliance', label: 'Docs & Compliance', href: '/docs-compliance', icon: FolderCheck,
+    sub: [
+      { label: 'Documents', href: '/docs-compliance/documents' },
+      { label: 'Conditions', href: '/docs-compliance/conditions' },
+      { label: 'Expirations', href: '/docs-compliance/expirations' },
+      { label: 'Dual Role Check', href: '/docs-compliance/dual-role-check' },
+      { label: 'Adverse Action', href: '/docs-compliance/adverse-action' },
+      { label: 'Fair Lending Flags', href: '/docs-compliance/fair-lending-flags' },
+    ],
+  },
+  {
+    key: 'portal-comms', label: 'Portal & Comms', href: '/portal-comms', icon: MessageSquare,
+    sub: [
+      { label: 'Borrower Portal', href: '/portal-comms/borrower-portal' },
+      { label: 'Realtor Access', href: '/portal-comms/realtor-access' },
+      { label: 'Education Suite', href: '/portal-comms/education-suite' },
+      { label: 'Milestone Communications', href: '/portal-comms/milestone-communications' },
+      { label: 'Rate Alerts & Monitoring', href: '/portal-comms/rate-alerts' },
+    ],
+  },
 ];
 
 export function LoanSidebar({ loanId, loanContext }: { loanId: string; loanContext: LoanContext }) {
@@ -81,7 +103,7 @@ export function LoanSidebar({ loanId, loanContext }: { loanId: string; loanConte
   }
 
   return (
-    <aside className="flex-shrink-0 w-[208px] border-r border-[var(--c-border)] bg-[var(--c-surface)] overflow-y-auto py-3">
+    <aside className="flex-shrink-0 w-[212px] border-r border-[var(--c-border)] bg-[var(--c-surface)] overflow-y-auto py-3">
       <nav className="px-2.5 space-y-0.5">
         {LOAN_NAV.map((section) => {
           const href = base + section.href;
@@ -92,8 +114,10 @@ export function LoanSidebar({ loanId, loanContext }: { loanId: string; loanConte
             <div key={section.key}>
               <Link
                 href={href}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-[10px] text-[13px] font-medium transition-colors ${
-                  active ? 'bg-[var(--c-gold-light)] text-[var(--c-gold-deep)]' : 'text-[var(--c-label2)] hover:bg-[var(--c-fill)] hover:text-[var(--c-text)]'
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-[10px] text-[13px] font-medium transition-colors border-l-[3px] ${
+                  active
+                    ? 'bg-[var(--c-gold-light)] text-[var(--c-gold-deep)] border-[var(--c-gold)]'
+                    : 'text-[var(--c-label2)] hover:bg-[var(--c-fill)] hover:text-[var(--c-text)] border-transparent'
                 }`}
               >
                 <Icon size={15} className={active ? 'text-[var(--c-gold)]' : 'text-[var(--c-label3)]'} />
@@ -109,7 +133,9 @@ export function LoanSidebar({ loanId, loanContext }: { loanId: string; loanConte
                         key={s.href}
                         href={subHref}
                         className={`block px-2.5 py-1.5 rounded-[8px] text-[12px] transition-colors ${
-                          subActive ? 'text-[var(--c-gold-deep)] font-medium bg-[var(--c-gold-light)]' : 'text-[var(--c-label2)] hover:text-[var(--c-text)] hover:bg-[var(--c-fill)]'
+                          subActive
+                            ? 'text-[var(--c-gold-deep)] font-medium bg-[var(--c-gold-light)]'
+                            : 'text-[var(--c-label2)] hover:text-[var(--c-text)] hover:bg-[var(--c-fill)]'
                         }`}
                       >
                         {s.label}

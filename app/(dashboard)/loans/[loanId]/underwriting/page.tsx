@@ -18,7 +18,7 @@ export default async function UnderwritingIndexPage({ params }: { params: { loan
     { href: `${base}/credit`, label: 'Credit Analysis', desc: 'Tradelines & tier', icon: CreditCard },
     ...(isCondoPud ? [{ href: `${base}/hoa`, label: 'HOA', desc: 'Dues & certification', icon: Home }] : []),
     { href: `${base}/risk`, label: 'Risk Score', desc: 'Layered risk', icon: Gauge },
-    { href: `${base}/conditions`, label: 'Conditions', desc: 'UW conditions', icon: CheckSquare },
+    { href: `${base}/conditions`, label: 'UW Conditions', desc: 'Underwriting conditions', icon: CheckSquare },
     { href: `${base}/decision`, label: 'Decision', desc: 'Approve / suspend / deny', icon: Gavel },
   ];
 

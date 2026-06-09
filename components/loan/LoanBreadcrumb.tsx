@@ -9,13 +9,20 @@ import { usePathname } from 'next/navigation';
 import { ChevronRight } from 'lucide-react';
 
 const SEGMENT_LABELS: Record<string, string> = {
-  '1003': '1003', borrower: 'Borrower', 'co-borrower': 'Co-Borrower', employment: 'Employment',
+  application: 'Application', borrower: 'Borrower', 'co-borrower': 'Co-Borrower', employment: 'Employment',
   income: 'Income', assets: 'Assets', 'real-estate': 'Real Estate Owned', 'loan-property': 'Loan & Property',
-  declarations: 'Declarations', hmda: 'HMDA Data', underwriting: 'Underwriting', dti: 'DTI Worksheet',
-  credit: 'Credit Analysis', hoa: 'HOA', risk: 'Risk Score', conditions: 'Conditions', decision: 'Decision',
+  declarations: 'Declarations', hmda: 'HMDA Data',
+  pricing: 'Pricing', 'rate-options': 'Rate Options', 'rate-lock': 'Rate Lock', 'break-even': 'Break-Even',
+  property: 'Property', details: 'Property Details', appraisal: 'Appraisal', 'flood-zone': 'Flood Zone',
+  underwriting: 'Underwriting', dti: 'DTI Worksheet',
+  credit: 'Credit Analysis', hoa: 'HOA Certification', risk: 'Risk Score', conditions: 'Conditions', decision: 'UW Decision',
   disclosures: 'Disclosures', 'loan-estimates': 'Loan Estimates', 'cd-balancer': 'CD Balancer',
   'changed-circumstances': 'Changed Circumstances', 'wire-safety': 'Wire Safety', audit: 'Audit Export',
-  documents: 'Documents', portal: 'Portal & Comms', timeline: 'Timeline', relationships: 'Relationships',
+  'docs-compliance': 'Docs & Compliance', documents: 'Documents', expirations: 'Expirations',
+  'dual-role-check': 'Dual Role Check', 'adverse-action': 'Adverse Action', 'fair-lending-flags': 'Fair Lending Flags',
+  'portal-comms': 'Portal & Comms', 'borrower-portal': 'Borrower Portal', 'realtor-access': 'Realtor Access',
+  'education-suite': 'Education Suite', 'milestone-communications': 'Milestone Communications', 'rate-alerts': 'Rate Alerts',
+  timeline: 'Timeline', relationships: 'Relationships',
 };
 
 export function LoanBreadcrumb({ loanId, loanName }: { loanId: string; loanName: string }) {

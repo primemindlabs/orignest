@@ -2,7 +2,7 @@ import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect, notFound } from 'next/navigation';
 import { ConditionsManager } from '@/components/loan/ConditionsManager';
-import { loadConditions } from '../../conditions/page';
+import { loadConditions } from '../../docs-compliance/conditions/page';
 
 export const dynamic = 'force-dynamic';
 
