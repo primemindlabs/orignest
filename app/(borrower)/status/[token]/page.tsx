@@ -91,6 +91,27 @@ export default async function BorrowerPortalPage({ params }: { params: { token: 
     closingDate: l.closing_date as string | null,
   }));
 
+  // Phase 29.3 — borrower portfolio (visible after 1+ closed loans).
+  const { data: relRow } = await sb
+    .from('borrower_relationships')
+    .select('id, total_loans_closed')
+    .eq('org_id', portalToken.org_id)
+    .eq('email', (lead.email ?? '').toLowerCase())
+    .maybeSingle();
+
+  let portfolio: { properties: any[]; totals: { avm: number; balance: number; equity: number }; snapshots: any[] } | null = null;
+  if (relRow && (relRow.total_loans_closed ?? 0) >= 1) {
+    const [{ data: props }, { data: snaps }] = await Promise.all([
+      sb.from('portfolio_properties').select('*').eq('relationship_id', relRow.id).eq('org_id', portalToken.org_id).eq('is_active', true).order('purchase_date', { ascending: false }),
+      sb.from('portfolio_snapshots').select('snapshot_date, total_avm, total_balance, total_equity').eq('relationship_id', relRow.id).eq('org_id', portalToken.org_id).order('snapshot_date', { ascending: true }).limit(24),
+    ]);
+    const properties = props ?? [];
+    const totals = properties.reduce((s: any, p: any) => ({ avm: s.avm + (Number(p.current_avm) || 0), balance: s.balance + (Number(p.current_balance) || 0), equity: s.equity + (Number(p.estimated_equity) || 0) }), { avm: 0, balance: 0, equity: 0 });
+    portfolio = { properties, totals, snapshots: (snaps ?? []).map((s) => ({ date: s.snapshot_date, avm: Number(s.total_avm), balance: Number(s.total_balance), equity: Number(s.total_equity) })) };
+    // Log the portfolio view as a retention event.
+    await sb.from('retention_events').insert({ relationship_id: relRow.id, org_id: portalToken.org_id, event_type: 'portfolio_viewed' });
+  }
+
   const refiAlert = relationship?.rate_delta != null && relationship.rate_delta >= Number(relationship.refi_alert_threshold ?? 0.75)
     ? { originalRate: Number(relationship.original_rate), currentRate: Number(relationship.current_market_rate), monthlySavings: relationship.monthly_savings_if_refi != null ? Number(relationship.monthly_savings_if_refi) : null }
     : null;
@@ -170,6 +191,7 @@ export default async function BorrowerPortalPage({ params }: { params: { token: 
       loanHistory={loanHistory}
       refiAlert={refiAlert}
       equityInfo={equityInfo}
+      portfolio={portfolio}
     />
   );
 }

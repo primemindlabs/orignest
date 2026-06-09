@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { CheckCircle, Circle, Clock, Phone, FileText, ShieldCheck, UploadCloud, LayoutDashboard } from 'lucide-react';
 import { PortalMessages } from '@/components/borrower/PortalMessages';
 import { BorrowerJourneyWidgets } from '@/components/borrower/BorrowerJourneyWidgets';
+import { PortfolioPanel } from '@/components/relationships/PortfolioPanel';
+import { EquityChart } from '@/components/relationships/EquityChart';
+import { Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CreditRepairTab, type CreditRepairEnrollment } from './CreditRepairTab';
 
@@ -33,6 +36,7 @@ interface Props {
   loanHistory?: Array<{ id: string; label: string; purpose: string | null; amount: number | null; stage: string; closingDate: string | null }>;
   refiAlert?: { originalRate: number; currentRate: number; monthlySavings: number | null } | null;
   equityInfo?: { equity: number; avm: number | null; balance: number | null } | null;
+  portfolio?: { properties: any[]; totals: { avm: number; balance: number; equity: number }; snapshots: { date: string; avm: number; balance: number; equity: number }[] } | null;
 }
 
 const ACCEPTED_MIME = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
@@ -59,9 +63,10 @@ export function BorrowerPortalClient({
   loanHistory = [],
   refiAlert = null,
   equityInfo = null,
+  portfolio = null,
 }: Props) {
   const [docs, setDocs] = useState<DocItem[]>(documents);
-  const [activeTab, setActiveTab] = useState<'status' | 'credit-repair'>('status');
+  const [activeTab, setActiveTab] = useState<'status' | 'portfolio' | 'credit-repair'>('status');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -164,6 +169,17 @@ export function BorrowerPortalClient({
           >
             <LayoutDashboard size={14} /> Loan Status
           </button>
+          {portfolio && (
+            <button
+              onClick={() => setActiveTab('portfolio')}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-[9px] text-[13px] font-medium transition-all',
+                activeTab === 'portfolio' ? 'bg-white text-label shadow-sm' : 'text-label-2'
+              )}
+            >
+              <Building2 size={14} /> My Portfolio
+            </button>
+          )}
           <button
             onClick={() => setActiveTab('credit-repair')}
             className={cn(
@@ -177,6 +193,15 @@ export function BorrowerPortalClient({
 
         {activeTab === 'credit-repair' ? (
           <CreditRepairTab token={token} initial={creditRepair} borrowerFirstName={borrowerFirstName} />
+        ) : activeTab === 'portfolio' && portfolio ? (
+          <div className="space-y-4">
+            <div className="bg-white rounded-[10px] border border-[rgba(60,60,67,0.06)] p-5 shadow-card">
+              <h2 className="text-sm font-semibold text-label mb-1">Your Real Estate Portfolio</h2>
+              <p className="text-xs text-label-2">All properties, total value, and equity — refreshed as the market moves.</p>
+            </div>
+            {portfolio.snapshots.length >= 2 && <EquityChart points={portfolio.snapshots} />}
+            <PortfolioPanel properties={portfolio.properties} totals={portfolio.totals} />
+          </div>
         ) : (
         <>
         {/* Welcome */}
