@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect, notFound } from 'next/navigation';
 import { RealtorAccessManager, type RealtorRow } from './RealtorAccessManager';
 import { MessageSquare } from 'lucide-react';
+import { BorrowerJourneyGuide } from '@/components/portal/BorrowerJourneyGuide';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,8 +13,12 @@ export default async function PortalCommsPage({ params }: { params: { loanId: st
   if (!orgId) redirect('/onboarding');
 
   const sb = createAdminClient();
-  const { data: lead } = await sb.from('leads').select('id, first_name, last_name').eq('id', params.loanId).eq('org_id', orgId).maybeSingle();
+  const { data: lead } = await sb.from('leads').select('id, first_name, last_name, stage, assigned_to').eq('id', params.loanId).eq('org_id', orgId).maybeSingle();
   if (!lead) notFound();
+
+  const { data: loProfile } = lead.assigned_to
+    ? await sb.from('profiles').select('first_name').eq('id', lead.assigned_to).maybeSingle()
+    : { data: null };
 
   const [{ data: realtors }, { data: borrowerToken }] = await Promise.all([
     sb.from('portal_realtors').select('id, realtor_name, realtor_email, realtor_phone, permission_tier, added_by, approved_by_lo, revoked, token').eq('lead_id', params.loanId).eq('org_id', orgId).order('created_at', { ascending: false }),
@@ -42,6 +47,12 @@ export default async function PortalCommsPage({ params }: { params: { loanId: st
       </div>
 
       <RealtorAccessManager loanId={params.loanId} initial={(realtors ?? []) as RealtorRow[]} />
+
+      {/* Phase 46.2/46.3 — what the borrower sees at this stage (LO preview) */}
+      <div>
+        <p className="text-[12px] font-semibold uppercase tracking-wide text-[var(--c-label2)] mb-2">What {lead.first_name} sees at this stage</p>
+        <BorrowerJourneyGuide stage={lead.stage} loFirstName={(loProfile as { first_name?: string } | null)?.first_name ?? ''} />
+      </div>
     </div>
   );
 }
