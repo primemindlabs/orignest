@@ -74,6 +74,19 @@ export async function GET() {
     }
   }
 
+  // Phase 47 — unactioned credit alerts on the LO's loans: always top priority.
+  if (myLeadIds.size) {
+    const { data: alerts } = await sb.from('credit_alerts').select('id, lead_id, alert_type, score_delta').eq('org_id', orgId).is('actioned_at', null).in('lead_id', Array.from(myLeadIds)).order('received_at', { ascending: false }).limit(5);
+    for (const al of alerts ?? []) {
+      const lead = (leads ?? []).find((l) => l.id === al.lead_id);
+      const label = al.alert_type === 'inquiry' ? `🚨 ${name(lead ?? {})} — credit pulled, respond now`
+        : al.alert_type === 'score_increase' ? `📈 ${name(lead ?? {})} — score up ${Math.abs(al.score_delta ?? 0)}, better rate`
+        : al.alert_type === 'score_decrease' ? `📉 ${name(lead ?? {})} — score down ${Math.abs(al.score_delta ?? 0)}`
+        : `📊 ${name(lead ?? {})} — credit update`;
+      items.push({ id: `credit-${al.id}`, type: 'credit_alert', label, href: `/credit-alerts`, urgency: 'high', sort: -100 });
+    }
+  }
+
   // Phase 40 — dormant realtor partners needing re-engagement.
   const { data: dormant } = await sb.from('realtors').select('id, first_name, last_name').eq('org_id', orgId).eq('partnership_tier', 'dormant').eq('is_archived', false).limit(3);
   for (const d of dormant ?? []) {
