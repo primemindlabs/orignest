@@ -37,6 +37,7 @@ const NAV: NavGroup[] = [
     key: 'relationships', label: 'Relationships', icon: Repeat, items: [
       { href: '/relationships', label: 'Borrowers' },
       { href: '/partners', label: 'Realtors & Partners' },
+      { href: '/realtors', label: 'Realtor Intelligence' },
     ],
   },
   {
