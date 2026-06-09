@@ -77,6 +77,12 @@ const NAV: NavGroup[] = [
     ],
   },
   {
+    key: 'management', label: 'Management', icon: BarChart3, adminOnly: true, items: [
+      { href: '/branch', label: 'Branch Dashboard' },
+      { href: '/branch/team', label: 'Team Performance' },
+    ],
+  },
+  {
     key: 'compliance', label: 'Compliance', icon: ShieldCheck, adminOnly: true, items: [
       { href: '/settings/compliance', label: 'Compliance & Templates' },
     ],
