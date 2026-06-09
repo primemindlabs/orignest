@@ -37,6 +37,7 @@ import {
   Gift,
   GraduationCap,
   Building2,
+  Repeat,
 } from 'lucide-react';
 
 interface NavItem {
@@ -88,6 +89,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/reports', label: 'Reports', icon: BarChart3 },
       { href: '/referral-attribution', label: 'Attribution', icon: GitBranch },
       { href: '/buyer-referrals', label: 'Buyer Referrals', icon: Gift },
+      { href: '/relationships', label: 'Relationships', icon: Repeat },
       { href: '/investors', label: 'Investors', icon: Building2 },
       { href: '/commissions', label: 'Commissions', icon: DollarSign },
       { href: '/settings/compliance', label: 'Compliance', icon: ShieldCheck, adminOnly: true },

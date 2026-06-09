@@ -14,6 +14,7 @@ const isPublicRoute = createRouteMatcher([
   '/status/(.*)',           // Borrower status pages
   '/cert/(.*)',             // Shareable pre-approval certificate — token-gated
   '/(partner)(.*)',         // Partner portal — token-authenticated
+  '/portal/realtor/(.*)',   // Realtor portal — token-authenticated, permission-walled
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
