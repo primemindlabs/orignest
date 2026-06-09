@@ -80,6 +80,7 @@ const NAV: NavGroup[] = [
       { href: '/investors', label: 'Investors' },
       { href: '/reviews', label: 'Reviews' },
       { href: '/leaderboard', label: 'Leaderboard' },
+      { href: '/scorecard', label: 'My Scorecard' },
     ],
   },
   {
