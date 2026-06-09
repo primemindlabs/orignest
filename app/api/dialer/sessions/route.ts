@@ -7,6 +7,7 @@ import { NextResponse } from 'next/server';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { checkTcpaCompliance } from '@/lib/dialer/tcpaGuard';
+import { requireFeature, FeatureGateError, featureLockedResponse } from '@/lib/billing/featureGate';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -24,6 +25,14 @@ export async function POST(req: Request) {
   const { userId, orgId } = await getOrgContext();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (!orgId) return NextResponse.json({ error: 'No org' }, { status: 403 });
+
+  // Phase 35 — Power Dialer is a Growth+ feature.
+  try {
+    await requireFeature(orgId, 'power_dialer');
+  } catch (err) {
+    if (err instanceof FeatureGateError) return NextResponse.json(featureLockedResponse(err), { status: 403 });
+    throw err;
+  }
 
   const body = (await req.json().catch(() => ({}))) as { lead_ids?: string[]; voicemail_template_id?: string };
   const leadIds = Array.isArray(body.lead_ids) ? body.lead_ids.slice(0, 100) : [];

@@ -7,6 +7,7 @@ import { CommandPaletteProvider } from '@/components/providers/CommandPalettePro
 import { SpeedTicker } from '@/components/dashboard/SpeedTicker';
 import { ClosingCelebrationListener } from '@/components/ui/ClosingCelebrationListener';
 import { AskAshleyWidget } from '@/components/dashboard/AskAshleyWidget';
+import { TrialBanner } from '@/components/billing/TrialBanner';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,8 +58,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
           style={{ marginLeft: 'var(--sidebar-w, 220px)' }}
         >
           <Topbar />
-          <main className="flex-1 overflow-auto pt-14 p-6 animate-fade-in">
-            {children}
+          <main className="flex-1 overflow-auto pt-14 animate-fade-in">
+            <TrialBanner />
+            <div className="p-6">{children}</div>
           </main>
         </div>
       </div>

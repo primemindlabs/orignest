@@ -2,6 +2,7 @@ import { getOrgContext } from '@/lib/auth/orgContext';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { CampaignManagerClient } from './CampaignManagerClient';
+import { FeatureGate } from '@/components/billing/FeatureGate';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Campaign Manager' };
@@ -19,7 +20,9 @@ export default async function CampaignManagerPage() {
           A library of ready-to-use mortgage campaigns. Every message is AI-personalized per borrower. Rate Drop and Market Updates now live here as campaign types.
         </p>
       </div>
-      <CampaignManagerClient />
+      <FeatureGate feature="campaign_manager">
+        <CampaignManagerClient />
+      </FeatureGate>
     </div>
   );
 }

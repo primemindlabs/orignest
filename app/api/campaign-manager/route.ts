@@ -5,6 +5,7 @@
 import { NextResponse } from 'next/server';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { requireFeature, FeatureGateError, featureLockedResponse } from '@/lib/billing/featureGate';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -13,6 +14,14 @@ export async function GET() {
   const { userId, orgId } = await getOrgContext();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (!orgId) return NextResponse.json({ error: 'No org' }, { status: 403 });
+
+  // Phase 35 — Campaign Manager is a Growth+ feature.
+  try {
+    await requireFeature(orgId, 'campaign_manager');
+  } catch (err) {
+    if (err instanceof FeatureGateError) return NextResponse.json(featureLockedResponse(err), { status: 403 });
+    throw err;
+  }
 
   const sb = createAdminClient();
   const [{ data: library }, { data: mine }, { count: enrolledActive }, { count: sendsMonth }] = await Promise.all([

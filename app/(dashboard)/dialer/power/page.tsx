@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { PowerDialerSession } from './PowerDialerSession';
+import { FeatureGate } from '@/components/billing/FeatureGate';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Power Dialer' };
@@ -41,7 +42,9 @@ export default async function PowerDialerPage() {
           Work a lead queue as one focused session — TCPA-checked, with live AI coaching and auto-summarized calls.
         </p>
       </div>
-      <PowerDialerSession candidates={(leads ?? []) as any} webrtcReady={webrtcReady()} />
+      <FeatureGate feature="power_dialer">
+        <PowerDialerSession candidates={(leads ?? []) as any} webrtcReady={webrtcReady()} />
+      </FeatureGate>
     </div>
   );
 }
