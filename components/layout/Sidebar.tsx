@@ -27,6 +27,7 @@ const NAV: NavGroup[] = [
       { href: '/pipeline', label: 'Pipeline Board' },
       { href: '/leads', label: 'Leads' },
       { href: '/my-tasks', label: 'My Tasks' },
+      { href: '/credit-alerts', label: 'Credit Alerts' },
       { href: '/my-book', label: 'My Book' },
       { href: '/inbox', label: 'Conversations' },
       { href: '/tasks', label: 'Tasks' },

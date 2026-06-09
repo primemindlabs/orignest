@@ -11,6 +11,7 @@ import { EnrollCreditRepairButton } from './EnrollCreditRepairButton';
 import { AIDraftsPanel } from '@/components/loanFile/AIDraftsPanel';
 import { ScenarioAIPanel } from '@/components/scenarioAI/ScenarioAIPanel';
 import { AssignTaskButton } from '@/components/loanFile/AssignTaskButton';
+import { CreditMonitoringButton } from '@/components/leads/CreditMonitoringButton';
 import { TRIDTimeline } from '@/components/compliance/TRIDTimeline';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { maskSSN, maskIncome } from '@/lib/compliance/encryption';
@@ -156,6 +157,7 @@ export default async function LeadDetailPage({
           <div className="flex items-center gap-2 flex-shrink-0">
             <AIDraftsPanel leadId={lead.id} />
             <AssignTaskButton leadId={lead.id} />
+            <CreditMonitoringButton leadId={lead.id} />
             <ScenarioAIPanel
               leadId={lead.id}
               initial={{
