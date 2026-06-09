@@ -87,6 +87,7 @@ const NAV: NavGroup[] = [
     key: 'management', label: 'Management', icon: BarChart3, adminOnly: true, items: [
       { href: '/branch', label: 'Branch Dashboard' },
       { href: '/branch/team', label: 'Team Performance' },
+      { href: '/ae-book', label: 'AE Book of Business' },
     ],
   },
   {
