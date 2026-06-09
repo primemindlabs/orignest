@@ -46,6 +46,7 @@ const NAV: NavGroup[] = [
       { href: '/co-marketing/listings', label: 'Listings' },
       { href: '/campaigns', label: 'Campaigns' },
       { href: '/campaigns/rate-drop', label: 'Rate Drop' },
+      { href: '/ads', label: 'Ad Center' },
     ],
   },
   {
@@ -53,6 +54,7 @@ const NAV: NavGroup[] = [
       { href: '/ai-coach', label: 'AI Coach' },
       { href: '/pricing', label: 'Pricing' },
       { href: '/dialer', label: 'Dialer' },
+      { href: '/dialer/power', label: 'Power Dialer' },
       { href: '/pre-approval', label: 'Pre-Approval' },
       { href: '/scenarios', label: 'Scenarios' },
       { href: '/income', label: 'Income Calc' },
