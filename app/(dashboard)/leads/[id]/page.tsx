@@ -13,6 +13,7 @@ import { ScenarioAIPanel } from '@/components/scenarioAI/ScenarioAIPanel';
 import { AssignTaskButton } from '@/components/loanFile/AssignTaskButton';
 import { CreditMonitoringButton } from '@/components/leads/CreditMonitoringButton';
 import { PreApprovalCertButton } from '@/components/loan/PreApprovalCertButton';
+import { LoanOpsPanel } from '@/components/loan/LoanOpsPanel';
 import { TRIDTimeline } from '@/components/compliance/TRIDTimeline';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { maskSSN, maskIncome } from '@/lib/compliance/encryption';
@@ -91,6 +92,7 @@ export default async function LeadDetailPage({
   const activeTab = searchParams.tab ?? 'overview';
 
   const trid = getTRIDStatus(lead as Parameters<typeof getTRIDStatus>[0]);
+  const { data: orgRow } = await sb.from('organizations').select('channel').eq('id', orgId).maybeSingle();
   const hasTridIssue =
     trid.le === 'overdue' || trid.le === 'due_today' || trid.cd === 'overdue' || trid.cd === 'blocked';
 
@@ -467,6 +469,23 @@ export default async function LeadDetailPage({
             cdSentAt={lead.closing_disclosure_sent_at}
             canEdit={role === 'admin' || role === 'branch_manager' || role === 'loan_officer'}
           />
+          <div className="mt-4">
+            <p className="text-[12px] font-semibold uppercase tracking-wide text-[var(--c-label2)] mb-2">Closing &amp; operations</p>
+            <LoanOpsPanel
+              leadId={lead.id}
+              channel={(orgRow as { channel?: string } | null)?.channel ?? null}
+              initial={{
+                emd_amount: (lead as { emd_amount?: number }).emd_amount ?? null,
+                emd_due_date: (lead as { emd_due_date?: string }).emd_due_date ?? null,
+                emd_received_date: (lead as { emd_received_date?: string }).emd_received_date ?? null,
+                mers_min: (lead as { mers_min?: string }).mers_min ?? null,
+                mers_status: (lead as { mers_status?: string }).mers_status ?? null,
+                first_payment_date: (lead as { first_payment_date?: string }).first_payment_date ?? null,
+                monthly_payment_amount: (lead as { monthly_payment_amount?: number }).monthly_payment_amount ?? null,
+                loan_servicer_name: (lead as { loan_servicer_name?: string }).loan_servicer_name ?? null,
+              }}
+            />
+          </div>
         </div>
       )}
     </div>
