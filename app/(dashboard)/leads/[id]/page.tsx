@@ -14,6 +14,7 @@ import { AssignTaskButton } from '@/components/loanFile/AssignTaskButton';
 import { CreditMonitoringButton } from '@/components/leads/CreditMonitoringButton';
 import { PreApprovalCertButton } from '@/components/loan/PreApprovalCertButton';
 import { LoanOpsPanel } from '@/components/loan/LoanOpsPanel';
+import { InvestorEntityPanel } from '@/components/loan/InvestorEntityPanel';
 import { TRIDTimeline } from '@/components/compliance/TRIDTimeline';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { maskSSN, maskIncome } from '@/lib/compliance/encryption';
@@ -93,6 +94,7 @@ export default async function LeadDetailPage({
 
   const trid = getTRIDStatus(lead as Parameters<typeof getTRIDStatus>[0]);
   const { data: orgRow } = await sb.from('organizations').select('channel').eq('id', orgId).maybeSingle();
+  const isInvestorLoan = ['dscr', 'commercial', 'bridge', 'construction'].some((t) => (lead.loan_type ?? '').toLowerCase().includes(t));
   const hasTridIssue =
     trid.le === 'overdue' || trid.le === 'due_today' || trid.cd === 'overdue' || trid.cd === 'blocked';
 
@@ -246,6 +248,11 @@ export default async function LeadDetailPage({
       {/* ── Tab content ──────────────────────────────────────────────── */}
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {isInvestorLoan && (
+            <div className="lg:col-span-2">
+              <InvestorEntityPanel leadId={lead.id} />
+            </div>
+          )}
           {/* Contact info */}
           <div className="bg-surface rounded-card shadow-card border border-border p-5">
             <h3 className="text-sm font-semibold text-label-2 uppercase tracking-wide mb-4">
