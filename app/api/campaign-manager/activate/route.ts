@@ -27,6 +27,14 @@ export async function POST(req: Request) {
 
   const { data: profile } = await sb.from('profiles').select('id').eq('clerk_user_id', userId).maybeSingle();
 
+  // Milestone campaigns fire from a lead stage change — infer the trigger stage
+  // from the template so the milestone DB trigger can enroll automatically.
+  let triggerStage: string | null = null;
+  if (tpl.type === 'milestone') {
+    const n = tpl.name.toLowerCase();
+    triggerStage = n.includes('clear to close') ? 'clear_to_close' : n.includes('post-close') || n.includes('welcome home') ? 'closed' : n.includes('under contract') ? 'application' : null;
+  }
+
   const { data: created, error } = await sb
     .from('campaigns')
     .insert({
@@ -42,6 +50,7 @@ export async function POST(req: Request) {
       audience_criteria: tpl.audience_criteria,
       exit_conditions: tpl.exit_conditions,
       total_steps: tpl.total_steps,
+      trigger_stage: triggerStage,
     })
     .select('id')
     .single();
