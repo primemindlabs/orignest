@@ -20,10 +20,10 @@ const SETTINGS_SECTIONS = [
     description: 'Manage your subscription, seats, and payment method',
   },
   {
-    href: '/team',
+    href: '/settings/team',
     icon: Users,
     label: 'Team',
-    description: 'Invite and manage your loan officers and staff',
+    description: 'Invite loan officers, manage roles and seats',
   },
   {
     href: '/settings/organization',
