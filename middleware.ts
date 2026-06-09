@@ -9,6 +9,8 @@ const isPublicRoute = createRouteMatcher([
   '/terms',
   '/api/webhooks(.*)',      // Stripe / Twilio — verified by signature
   '/api/integrations/closa(.*)', // CLOSA partner bridge — Bearer token verified in-handler
+  '/apply(.*)',             // Public referral landing page
+  '/api/referrals/apply(.*)', // Public referral form submit — service-role, no PII enumeration
   '/api/v1(.*)',            // REST API — verified by API key
   '/api/cron(.*)',          // Scheduled jobs — verified by Bearer CRON_SECRET
   '/api/unsubscribe(.*)',   // CAN-SPAM one-click unsubscribe — signed token, no login

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { Metadata } from 'next';
 import BuyerReferralsClient, { type Referral, type ReferrerOption } from './BuyerReferralsClient';
+import { ReferralLinkCard } from '@/components/referrals/ReferralLinkCard';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Buyer Referrals' };
@@ -47,5 +48,10 @@ export default async function BuyerReferralsPage() {
     name: `${l.first_name ?? ''} ${l.last_name ?? ''}`.trim() || '(unnamed)',
   }));
 
-  return <BuyerReferralsClient referrals={flat} referrers={referrers} />;
+  return (
+    <div>
+      <ReferralLinkCard />
+      <BuyerReferralsClient referrals={flat} referrers={referrers} />
+    </div>
+  );
 }
