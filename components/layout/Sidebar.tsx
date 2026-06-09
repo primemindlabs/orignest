@@ -36,6 +36,7 @@ import {
   Calculator,
   Gift,
   GraduationCap,
+  Building2,
 } from 'lucide-react';
 
 interface NavItem {
@@ -87,6 +88,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/reports', label: 'Reports', icon: BarChart3 },
       { href: '/referral-attribution', label: 'Attribution', icon: GitBranch },
       { href: '/buyer-referrals', label: 'Buyer Referrals', icon: Gift },
+      { href: '/investors', label: 'Investors', icon: Building2 },
       { href: '/commissions', label: 'Commissions', icon: DollarSign },
       { href: '/nmls', label: 'Compliance', icon: ShieldCheck, adminOnly: true },
       { href: '/team', label: 'Team', icon: Users2, adminOnly: true },
