@@ -10,6 +10,7 @@ const isPublicRoute = createRouteMatcher([
   '/api/webhooks(.*)',      // Stripe / Twilio — verified by signature
   '/api/v1(.*)',            // REST API — verified by API key
   '/api/cron(.*)',          // Scheduled jobs — verified by Bearer CRON_SECRET
+  '/api/unsubscribe(.*)',   // CAN-SPAM one-click unsubscribe — signed token, no login
   '/api/borrower-portal(.*)', // Borrower/co-borrower portal APIs — token-gated
   '/api/partner-portal(.*)',  // Partner portal APIs — token-gated
   '/api/portal(.*)',          // Realtor + title-agent portal APIs — token-gated

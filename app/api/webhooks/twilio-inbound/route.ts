@@ -63,6 +63,25 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const leadId: string | null = matchedLead?.id ?? null;
   const loId: string | null = matchedLead?.assigned_to ?? null;
 
+  // ── Phase 38.3 — SMS compliance keywords (STOP / HELP) ──────────────────────
+  const keyword = body.trim().toUpperCase();
+  const STOP = ['STOP', 'STOPALL', 'UNSUBSCRIBE', 'CANCEL', 'END', 'QUIT'];
+  const HELP = ['HELP', 'INFO'];
+  if (STOP.includes(keyword)) {
+    if (leadId) {
+      await sb.from('leads').update({ sms_opt_out: true }).eq('id', leadId).then(() => undefined, () => undefined);
+      const { data: lr } = await sb.from('leads').select('email').eq('id', leadId).maybeSingle();
+      if (lr?.email && orgId) {
+        await sb.from('email_unsubscribes').upsert({ org_id: orgId, email: lr.email.toLowerCase(), lead_id: leadId, source: 'sms_stop' }, { onConflict: 'org_id,email', ignoreDuplicates: true }).then(() => undefined, () => undefined);
+      }
+    }
+    // Twilio's Advanced Opt-Out sends the standard confirmation; return empty TwiML.
+    return twimlResponse();
+  }
+  if (HELP.includes(keyword)) {
+    return new NextResponse('<Response><Message>Reply STOP to unsubscribe. For help, contact your loan officer.</Message></Response>', { status: 200, headers: { 'Content-Type': 'text/xml' } });
+  }
+
   if (!orgId) {
     // Unmatched number — still log with null org is not allowed by schema.
     // Return TwiML and skip DB insert.

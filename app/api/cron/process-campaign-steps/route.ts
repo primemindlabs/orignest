@@ -46,7 +46,7 @@ export async function POST(req: Request) {
   for (const e of due ?? []) {
     const [{ data: campaign }, { data: lead }] = await Promise.all([
       sb.from('campaigns').select('exit_conditions').eq('id', e.campaign_id).maybeSingle(),
-      sb.from('leads').select('first_name, last_name, email, phone, stage, loan_type, closed_date, sms_consent, assigned_to').eq('id', e.lead_id).maybeSingle(),
+      sb.from('leads').select('first_name, last_name, email, phone, stage, loan_type, closed_date, sms_consent, email_opt_out, email_bounced, sms_opt_out, assigned_to').eq('id', e.lead_id).maybeSingle(),
     ]);
     if (!lead) { await sb.from('campaign_enrollments').update({ status: 'exited', exited_at: new Date().toISOString(), exit_reason: 'lead_missing' }).eq('id', e.id); exited++; continue; }
 
@@ -82,13 +82,15 @@ export async function POST(req: Request) {
       delivery = 'recorded';
     } else if (step.channel === 'sms') {
       if (!lead.phone) delivery = 'skipped_no_contact';
+      else if (lead.sms_opt_out) delivery = 'skipped_unsubscribed';
       else if (!lead.sms_consent) delivery = 'skipped_tcpa';
       else delivery = LIVE ? 'sent' : 'recorded';
       // TODO(delivery): when LIVE + consent, send via Twilio here.
     } else {
       if (!lead.email) delivery = 'skipped_no_contact';
+      else if (lead.email_opt_out || lead.email_bounced) delivery = 'skipped_unsubscribed';
       else delivery = LIVE ? 'sent' : 'recorded';
-      // TODO(delivery): when LIVE, send via Resend here.
+      // TODO(delivery): when LIVE, append emailFooter() (CAN-SPAM) + send via Resend.
     }
     if (delivery.startsWith('skipped')) skipped++; else sent++;
 
