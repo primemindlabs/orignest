@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/Badge';
 import { EnrollCreditRepairButton } from './EnrollCreditRepairButton';
 import { AIDraftsPanel } from '@/components/loanFile/AIDraftsPanel';
+import { ScenarioAIPanel } from '@/components/scenarioAI/ScenarioAIPanel';
 import { TRIDTimeline } from '@/components/compliance/TRIDTimeline';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { maskSSN, maskIncome } from '@/lib/compliance/encryption';
@@ -153,6 +154,15 @@ export default async function LeadDetailPage({
           {/* Quick action buttons — TCPA gated */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <AIDraftsPanel leadId={lead.id} />
+            <ScenarioAIPanel
+              leadId={lead.id}
+              initial={{
+                loan_type: lead.loan_type ?? undefined,
+                loan_amount: lead.loan_amount ?? undefined,
+                purpose: lead.loan_purpose ?? undefined,
+                dscr_ratio: (lead.loan_file_data as { dscr_calc?: { dscr?: number } } | null)?.dscr_calc?.dscr ?? undefined,
+              }}
+            />
             {lead.phone && lead.sms_consent ? (
               <button className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-sm font-medium bg-green/10 text-green border border-green/20 hover:bg-green/15 transition-colors">
                 <MessageSquare size={14} />
