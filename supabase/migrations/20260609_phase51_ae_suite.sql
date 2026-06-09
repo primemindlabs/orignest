@@ -1,0 +1,6 @@
+-- Phase 51 — Direct Lender AE Suite + notifications. Real schema:
+-- tenants->organizations, users->profiles. roles are TEXT (no enum).
+-- broker_accounts (assigned_ae→profiles, health/production), broker_contacts,
+-- rate_exception_requests (no DELETE), ae_activities (INSERT-only),
+-- notifications. org_id + get_org_id() RLS. (Full DDL applied via MCP migration
+-- phase51_ae_suite — see that for exact columns.)
