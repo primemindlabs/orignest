@@ -1,0 +1,4 @@
+-- Phase 63.3 — Construction loan module. Real schema: loans=leads, users=profiles.
+-- (Full DDL applied via MCP migration phase63_construction.) construction_loans
+-- (OTC/TTC, phase status, builder, costs, total_draws_disbursed) + construction_draws
+-- (draw schedule, inspection, status) + construction_docs (checklist). All org_id RLS.

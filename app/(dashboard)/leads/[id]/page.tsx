@@ -96,6 +96,7 @@ export default async function LeadDetailPage({
   const trid = getTRIDStatus(lead as Parameters<typeof getTRIDStatus>[0]);
   const { data: orgRow } = await sb.from('organizations').select('channel').eq('id', orgId).maybeSingle();
   const isInvestorLoan = ['dscr', 'commercial', 'bridge', 'construction'].some((t) => (lead.loan_type ?? '').toLowerCase().includes(t));
+  const isConstructionLoan = (lead.loan_type ?? '').toLowerCase().includes('construction');
   const hasTridIssue =
     trid.le === 'overdue' || trid.le === 'due_today' || trid.cd === 'overdue' || trid.cd === 'blocked';
 
@@ -181,6 +182,11 @@ export default async function LeadDetailPage({
             <Link href={`/loans/${lead.id}/waiver-check`} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-[13px] font-medium border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
               <FileText size={14} className="text-[var(--c-gold-deep)]" /> Waiver
             </Link>
+            {isConstructionLoan && (
+              <Link href={`/loans/${lead.id}/construction`} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-[13px] font-medium border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
+                <FileText size={14} className="text-[var(--c-gold-deep)]" /> Construction
+              </Link>
+            )}
             <ScenarioAIPanel
               leadId={lead.id}
               initial={{
