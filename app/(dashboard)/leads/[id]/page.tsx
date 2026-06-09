@@ -184,6 +184,13 @@ export default async function LeadDetailPage({
                 Email
               </a>
             )}
+            <Link
+              href={`/leads/${lead.id}/application`}
+              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-sm font-medium bg-fill hover:bg-border text-black border border-border transition-colors"
+            >
+              <FileText size={14} />
+              1003
+            </Link>
             <EnrollCreditRepairButton leadId={lead.id} />
           </div>
         </div>

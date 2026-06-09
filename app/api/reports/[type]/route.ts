@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { runReport, ALLOWED_REPORT_TYPES, type ReportType } from '@/lib/reports';
+import { runReport, runReportWithComparison, ALLOWED_REPORT_TYPES, type ReportType } from '@/lib/reports';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,6 +30,12 @@ export async function GET(req: NextRequest, { params }: { params: { type: string
   const start = searchParams.get('start') ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const end = searchParams.get('end') ?? new Date().toISOString().slice(0, 10);
   const loId = isLO ? (profile.id as string) : searchParams.get('lo_id');
+  const compare = searchParams.get('compare') === '1';
+
+  if (compare) {
+    const { data, comparison } = await runReportWithComparison(sb, type, org.id as string, start, end, loId);
+    return NextResponse.json({ report: type, start, end, data, comparison });
+  }
 
   const data = await runReport(sb, type, org.id as string, start, end, loId);
   return NextResponse.json({ report: type, start, end, data });

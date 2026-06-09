@@ -249,3 +249,109 @@ export async function runReport(sb: SB, type: ReportType, orgId: string, start: 
     }
   }
 }
+
+// ── Period-over-period comparison (Phase 9: compare-periods) ─────────────────
+
+export type MetricFormat = 'currency' | 'number' | 'percent';
+export interface HeadlineMetric {
+  key: string;
+  label: string;
+  value: number;
+  format: MetricFormat;
+  /** when true a DROP is good (days-to-close, fallout, flags) */
+  lowerIsBetter?: boolean;
+}
+
+/** The immediately-preceding window of equal length (inclusive day math). */
+export function priorPeriod(start: string, end: string): { start: string; end: string } {
+  const s = new Date(`${start}T00:00:00Z`);
+  const e = new Date(`${end}T00:00:00Z`);
+  const days = Math.max(0, Math.round((e.getTime() - s.getTime()) / 86400000));
+  const prevEnd = new Date(s.getTime() - 86400000);
+  const prevStart = new Date(prevEnd.getTime() - days * 86400000);
+  return { start: prevStart.toISOString().slice(0, 10), end: prevEnd.toISOString().slice(0, 10) };
+}
+
+/** Headline scalar metrics per report type — the values worth trending. */
+export function headlineMetrics(type: ReportType, data: any): HeadlineMetric[] {
+  if (!data) return [];
+  switch (type) {
+    case 'production':
+      return [
+        { key: 'volume', label: 'Volume', value: data.totals?.volume ?? 0, format: 'currency' },
+        { key: 'units', label: 'Units', value: data.totals?.units ?? 0, format: 'number' },
+        { key: 'avgLoanSize', label: 'Avg Loan', value: data.totals?.avgLoanSize ?? 0, format: 'currency' },
+      ];
+    case 'velocity':
+      return [
+        { key: 'avgDaysToClose', label: 'Avg Days to Close', value: data.avgDaysToClose ?? 0, format: 'number', lowerIsBetter: true },
+        { key: 'medianDaysToClose', label: 'Median Days', value: data.medianDaysToClose ?? 0, format: 'number', lowerIsBetter: true },
+        { key: 'sample', label: 'Loans Closed', value: data.sample ?? 0, format: 'number' },
+      ];
+    case 'referral': {
+      const rows = data.rows ?? [];
+      return [
+        { key: 'closed', label: 'Closed', value: rows.reduce((s: number, r: any) => s + (r.closed ?? 0), 0), format: 'number' },
+        { key: 'volume', label: 'Volume', value: rows.reduce((s: number, r: any) => s + (r.volume ?? 0), 0), format: 'currency' },
+      ];
+    }
+    case 'scorecard': {
+      const rows = data.rows ?? [];
+      return [
+        { key: 'loansClosed', label: 'Loans Closed', value: rows.reduce((s: number, r: any) => s + (r.loansClosed ?? 0), 0), format: 'number' },
+        { key: 'appsReceived', label: 'Apps', value: rows.reduce((s: number, r: any) => s + (r.appsReceived ?? 0), 0), format: 'number' },
+      ];
+    }
+    case 'compliance':
+      return [{ key: 'flagCount', label: 'Compliance Flags', value: data.flagCount ?? 0, format: 'number', lowerIsBetter: true }];
+    case 'fallout':
+      return [
+        { key: 'pullThroughRate', label: 'Pull-Through', value: data.totals?.pullThroughRate ?? 0, format: 'percent' },
+        { key: 'falloutRate', label: 'Fallout Rate', value: data.totals?.falloutRate ?? 0, format: 'percent', lowerIsBetter: true },
+        { key: 'closed', label: 'Closed', value: data.totals?.closed ?? 0, format: 'number' },
+      ];
+    case 'pl':
+      if (!data.available) return [];
+      return [
+        { key: 'grossRevenue', label: 'Gross Revenue', value: data.totals?.grossRevenue ?? 0, format: 'currency' },
+        { key: 'branchProfit', label: 'Branch Profit', value: data.totals?.branchProfit ?? 0, format: 'currency' },
+        { key: 'marginPct', label: 'Margin', value: data.totals?.marginPct ?? 0, format: 'percent' },
+      ];
+    case 'hmda':
+      if (!data.available) return [];
+      return [{ key: 'total', label: 'Applications', value: data.total ?? 0, format: 'number' }];
+    default:
+      return [];
+  }
+}
+
+export interface MetricDelta extends HeadlineMetric {
+  previous: number;
+  delta: number;
+  pct: number | null;
+}
+
+/** Run the report for `[start,end]` and its prior window, returning headline deltas. */
+export async function runReportWithComparison(
+  sb: SB, type: ReportType, orgId: string, start: string, end: string, loId: string | null
+): Promise<{ data: any; comparison: { start: string; end: string; deltas: MetricDelta[] } }> {
+  const prior = priorPeriod(start, end);
+  const [data, prevData] = await Promise.all([
+    runReport(sb, type, orgId, start, end, loId),
+    runReport(sb, type, orgId, prior.start, prior.end, loId),
+  ]);
+
+  const cur = headlineMetrics(type, data);
+  const prev = headlineMetrics(type, prevData);
+  const prevByKey: Record<string, number> = {};
+  for (const m of prev) prevByKey[m.key] = m.value;
+
+  const deltas: MetricDelta[] = cur.map((m) => {
+    const previous = prevByKey[m.key] ?? 0;
+    const delta = m.value - previous;
+    const pct = previous !== 0 ? Math.round((delta / Math.abs(previous)) * 100) : null;
+    return { ...m, previous, delta, pct };
+  });
+
+  return { data, comparison: { start: prior.start, end: prior.end, deltas } };
+}
