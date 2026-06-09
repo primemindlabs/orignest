@@ -1,0 +1,5 @@
+-- Phase 56.1/56.3/56.2 — GATED integrations. Single combined AES cols (lib/crypto/encrypt).
+-- ppe_connections + ppe_rate_quotes (Optimal Blue PPE). plaid_connections (raw bank
+-- data NEVER stored — only processed result). los_connections += encompass_* cols
+-- (los_type already supports 'encompass' from Phase 41). All org_id RLS. All inert
+-- without credentials. (Full DDL applied via MCP migration phase56_ppe_plaid_encompass.)
