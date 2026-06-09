@@ -185,6 +185,9 @@ export default async function LeadDetailPage({
             <Link href={`/loans/${lead.id}/hoa`} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-[13px] font-medium border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
               <FileText size={14} className="text-[var(--c-gold-deep)]" /> HOA
             </Link>
+            <Link href={`/loans/${lead.id}/title`} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-[13px] font-medium border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
+              <FileText size={14} className="text-[var(--c-gold-deep)]" /> Title
+            </Link>
             {isConstructionLoan && (
               <Link href={`/loans/${lead.id}/construction`} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-[13px] font-medium border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
                 <FileText size={14} className="text-[var(--c-gold-deep)]" /> Construction

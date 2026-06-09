@@ -22,6 +22,8 @@ const isPublicRoute = createRouteMatcher([
   '/status/(.*)',           // Borrower status pages
   '/cert/(.*)',             // Shareable pre-approval certificate — token-gated
   '/certificate/(.*)',      // Phase 52 pre-approval certificate — public token URL
+  '/title-portal/(.*)',     // Phase 64 title-company portal — token-gated, no login
+  '/api/title/(.*)',        // Title portal API — token-verified in handler
   '/review/(.*)',           // Annual homeownership review — unguessable id, noindex
   '/(partner)(.*)',         // Partner portal — token-authenticated
   '/portal/realtor/(.*)',   // Realtor portal — token-authenticated, permission-walled

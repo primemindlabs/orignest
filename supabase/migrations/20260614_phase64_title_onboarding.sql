@@ -1,0 +1,5 @@
+-- Phase 64.1 Title Portal + 64.3 LO onboarding schema. Real schema: organizations/
+-- profiles/leads. Wire data AES-256-GCM (lib/crypto/encrypt), never plaintext.
+-- (Full DDL applied via MCP migration phase64_title_onboarding.) title_portal_tokens
+-- (30-day, revocable) + title_documents + wire_instructions (enc bank/routing/account
+-- + change_flag fraud guard) + lo_onboarding (NMLS/milestones, latent). All org_id RLS.
