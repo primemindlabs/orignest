@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
-import { CreditCard, Users, Building2, Shield, Bell, ChevronRight } from 'lucide-react';
+import { CreditCard, Users, Building2, Shield, Bell, ChevronRight, Sparkles } from 'lucide-react';
 import { CreditRepairSettingsCard } from './CreditRepairSettingsCard';
 
 export const dynamic = 'force-dynamic';
@@ -42,6 +42,12 @@ const SETTINGS_SECTIONS = [
     icon: Bell,
     label: 'Notifications',
     description: 'TRID alerts, speed-to-contact alerts, team updates',
+  },
+  {
+    href: '/settings/ai-intelligence',
+    icon: Sparkles,
+    label: 'AI Intelligence',
+    description: 'Underwriting pattern model status and learning history',
   },
 ] as const;
 
