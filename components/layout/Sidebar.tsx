@@ -1,226 +1,262 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useClerk, useUser } from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/brand/Logo';
-import { Sparkles } from 'lucide-react';
-import type { UserRole } from '@/types';
 import {
-  LayoutDashboard,
-  MessageSquare,
-  Users,
-  GitBranch,
-  Calendar,
-  CheckSquare,
-  FolderOpen,
-  Megaphone,
-  BarChart3,
-  Settings,
-  LogOut,
-  Bot,
-  FileText,
-  ClipboardList,
-  DollarSign,
-  ShieldCheck,
-  Users2,
-  CreditCard,
-  TrendingUp,
-  TrendingDown,
-  Phone,
-  Handshake,
-  FileCheck,
-  LayoutGrid,
-  Wallet,
-  Calculator,
-  Gift,
-  GraduationCap,
-  Building2,
-  Repeat,
-  Home,
+  LayoutDashboard, GitBranch, Repeat, Megaphone, Sparkles, BarChart3, ShieldCheck, Settings,
+  ChevronDown, PanelLeftClose, PanelLeftOpen, LogOut,
 } from 'lucide-react';
 
-interface NavItem {
-  href: string;
-  label: string;
-  icon: React.ElementType;
-  badge?: number;
-  adminOnly?: boolean;
-  processorOnly?: boolean;
-  hideForProcessor?: boolean;
-}
+/**
+ * Phase 29.1 — Global sidebar consolidation. 8 top-level groups with inner-nav
+ * accordion. Nothing is buried more than 2 levels deep. State (collapsed +
+ * expanded groups) persists to localStorage; auto-collapses on narrow screens.
+ * Gold left border marks the active group; no blue anywhere.
+ */
+interface NavItem { href: string; label: string }
+interface NavGroup { key: string; label: string; icon: React.ElementType; href?: string; items?: NavItem[]; adminOnly?: boolean }
 
-interface NavGroup {
-  label?: string;
-  items: NavItem[];
-}
-
-const NAV_GROUPS: NavGroup[] = [
+const NAV: NavGroup[] = [
+  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
   {
-    items: [
-      { href: '/dashboard', label: 'Command Center', icon: LayoutDashboard },
-      { href: '/inbox', label: 'Conversations', icon: MessageSquare, hideForProcessor: false },
-      { href: '/leads', label: 'Leads', icon: Users, hideForProcessor: true },
-      { href: '/pipeline', label: 'Pipeline', icon: GitBranch, hideForProcessor: true },
-      { href: '/calendar', label: 'Calendar', icon: Calendar },
-      { href: '/tasks', label: 'Tasks', icon: CheckSquare },
-      { href: '/applications', label: 'Documents', icon: FolderOpen },
+    key: 'pipeline', label: 'Pipeline', icon: GitBranch, items: [
+      { href: '/pipeline', label: 'Pipeline Board' },
+      { href: '/leads', label: 'Leads' },
+      { href: '/inbox', label: 'Conversations' },
+      { href: '/tasks', label: 'Tasks' },
+      { href: '/calendar', label: 'Calendar' },
+      { href: '/applications', label: 'Documents' },
     ],
   },
   {
-    label: 'Tools',
-    items: [
-      { href: '/ai-coach', label: 'AI Coach', icon: Bot },
-      { href: '/campaigns', label: 'Marketing', icon: Megaphone },
-      { href: '/co-marketing/listings', label: 'Listings', icon: Home },
-      { href: '/dialer', label: 'Dialer', icon: Phone },
-      { href: '/pricing', label: 'Pricing', icon: TrendingUp },
-      { href: '/pre-approval', label: 'Pre-Approval', icon: FileCheck },
-      { href: '/scenarios', label: 'Scenarios', icon: LayoutGrid },
-      { href: '/income', label: 'Income Calc', icon: Calculator },
-      { href: '/training', label: 'Training', icon: GraduationCap },
-      { href: '/refi-watch', label: 'Refi Watch', icon: TrendingDown },
-      { href: '/equity', label: 'Equity Tracker', icon: Wallet },
-      { href: '/partners', label: 'Partners', icon: Handshake },
+    key: 'relationships', label: 'Relationships', icon: Repeat, items: [
+      { href: '/relationships', label: 'Borrowers' },
+      { href: '/partners', label: 'Realtors & Partners' },
     ],
   },
   {
-    label: 'Business',
-    items: [
-      { href: '/reports', label: 'Reports', icon: BarChart3 },
-      { href: '/referral-attribution', label: 'Attribution', icon: GitBranch },
-      { href: '/buyer-referrals', label: 'Buyer Referrals', icon: Gift },
-      { href: '/relationships', label: 'Relationships', icon: Repeat },
-      { href: '/investors', label: 'Investors', icon: Building2 },
-      { href: '/commissions', label: 'Commissions', icon: DollarSign },
-      { href: '/settings/compliance', label: 'Compliance', icon: ShieldCheck, adminOnly: true },
-      { href: '/team', label: 'Team', icon: Users2, adminOnly: true },
-      { href: '/settings', label: 'Settings', icon: Settings, adminOnly: true },
-      { href: '/settings/billing', label: 'Billing', icon: CreditCard, adminOnly: true },
+    key: 'marketing', label: 'Marketing', icon: Megaphone, items: [
+      { href: '/social', label: 'Social Media' },
+      { href: '/co-marketing', label: 'Co-Marketing' },
+      { href: '/co-marketing/listings', label: 'Listings' },
+      { href: '/campaigns', label: 'Campaigns' },
+    ],
+  },
+  {
+    key: 'tools', label: 'Tools', icon: Sparkles, items: [
+      { href: '/ai-coach', label: 'AI Coach' },
+      { href: '/pricing', label: 'Pricing' },
+      { href: '/dialer', label: 'Dialer' },
+      { href: '/pre-approval', label: 'Pre-Approval' },
+      { href: '/scenarios', label: 'Scenarios' },
+      { href: '/income', label: 'Income Calc' },
+      { href: '/training', label: 'Training' },
+      { href: '/refi-watch', label: 'Refi Watch' },
+      { href: '/equity', label: 'Equity Tracker' },
+    ],
+  },
+  {
+    key: 'analytics', label: 'Analytics', icon: BarChart3, items: [
+      { href: '/reports', label: 'Reports' },
+      { href: '/referral-attribution', label: 'Attribution' },
+      { href: '/commissions', label: 'Commissions' },
+      { href: '/buyer-referrals', label: 'Buyer Referrals' },
+      { href: '/investors', label: 'Investors' },
+      { href: '/reviews', label: 'Reviews' },
+      { href: '/leaderboard', label: 'Leaderboard' },
+    ],
+  },
+  {
+    key: 'compliance', label: 'Compliance', icon: ShieldCheck, adminOnly: true, items: [
+      { href: '/settings/compliance', label: 'Compliance & Templates' },
+    ],
+  },
+  {
+    key: 'settings', label: 'Settings', icon: Settings, adminOnly: true, items: [
+      { href: '/settings', label: 'Settings' },
+      { href: '/team', label: 'Team' },
+      { href: '/settings/billing', label: 'Billing' },
     ],
   },
 ];
 
-interface SidebarProps {
-  userRole?: string;
-  orgName?: string;
-}
+const STORAGE_KEY = 'ashley-iq-sidebar-state';
+
+interface SidebarProps { userRole?: string; orgName?: string }
 
 export function Sidebar({ userRole, orgName }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { signOut } = useClerk();
   const { user } = useUser();
 
   const isAdmin = userRole === 'admin' || userRole === 'branch_manager';
-  const isProcessor = userRole === 'processor';
-  const fullName = user
-    ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim()
-    : '';
-  const initials = fullName
-    ? fullName.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
-    : '?';
+  const groups = NAV.filter((g) => !g.adminOnly || isAdmin);
 
-  function isActive(href: string): boolean {
-    if (href === '/dashboard') return pathname === '/dashboard';
-    return pathname.startsWith(href);
+  // ── Active group via longest-prefix match across all items ──────────────────
+  function prefixLen(href: string): number {
+    if (href === '/dashboard') return pathname === href ? href.length : -1;
+    return pathname === href || pathname.startsWith(href + '/') ? href.length : -1;
+  }
+  let activeGroup = '';
+  let activeHref = '';
+  let best = 0;
+  for (const g of groups) {
+    for (const it of g.href ? [{ href: g.href, label: g.label }] : g.items ?? []) {
+      const l = prefixLen(it.href);
+      if (l > best) { best = l; activeGroup = g.key; activeHref = it.href; }
+    }
   }
 
+  const [collapsed, setCollapsed] = useState(false);
+  const [expanded, setExpanded] = useState<string[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Hydrate persisted state; default collapsed on narrow screens.
+  useEffect(() => {
+    let saved: { collapsed?: boolean; expanded?: string[] } | null = null;
+    try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) saved = JSON.parse(raw); } catch { /* ignore */ }
+    const initialCollapsed = saved?.collapsed ?? (typeof window !== 'undefined' && window.innerWidth < 1280);
+    setCollapsed(initialCollapsed);
+    setExpanded(saved?.expanded ?? (activeGroup ? [activeGroup] : []));
+    setHydrated(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Keep the active group expanded as the route changes.
+  useEffect(() => {
+    if (activeGroup) setExpanded((e) => (e.includes(activeGroup) ? e : [...e, activeGroup]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeGroup]);
+
+  // Drive content reflow + persist.
+  useEffect(() => {
+    if (!hydrated) return;
+    document.documentElement.style.setProperty('--sidebar-w', collapsed ? '64px' : '220px');
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ collapsed, expanded })); } catch { /* ignore */ }
+  }, [collapsed, expanded, hydrated]);
+
+  function toggleGroup(key: string) {
+    setExpanded((e) => (e.includes(key) ? e.filter((k) => k !== key) : [...e, key]));
+  }
+
+  const fullName = user ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() : '';
+  const initials = fullName ? fullName.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) : '?';
+
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-[220px] z-40 flex flex-col bg-white border-r border-gray-100">
-      {/* Logo */}
-      <div className="h-[60px] flex items-center px-4 border-b border-gray-100 flex-shrink-0">
-        <Logo size={34} />
+    <aside
+      className={cn('fixed left-0 top-0 bottom-0 z-40 flex flex-col bg-white border-r border-gray-100 transition-[width] duration-150', collapsed ? 'w-[64px]' : 'w-[220px]')}
+    >
+      {/* Logo + collapse toggle */}
+      <div className="h-[60px] flex items-center justify-between px-3 border-b border-gray-100 flex-shrink-0">
+        {!collapsed && <Logo size={32} />}
+        <button
+          onClick={() => setCollapsed((c) => !c)}
+          className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+        </button>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-5">
-        {NAV_GROUPS.map((group, gi) => {
-          const visibleItems = group.items.filter((item) => {
-            if (item.adminOnly && !isAdmin) return false;
-            if (item.processorOnly && !isProcessor) return false;
-            if (item.hideForProcessor && isProcessor) return false;
-            return true;
-          });
-          if (visibleItems.length === 0) return null;
+      <nav className="flex-1 overflow-y-auto py-3 px-2.5 space-y-0.5">
+        {groups.map((g) => {
+          const Icon = g.icon;
+          const isActive = activeGroup === g.key;
+          const isExpanded = expanded.includes(g.key);
 
+          // Flat item (Dashboard) or collapsed mode → single clickable row.
+          if (g.href || collapsed) {
+            const target = g.href ?? g.items?.[0]?.href ?? '#';
+            return (
+              <Link
+                key={g.key}
+                href={target}
+                title={g.label}
+                className={cn(
+                  'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium transition-colors border-l-[3px]',
+                  collapsed && 'justify-center px-0',
+                  isActive ? 'bg-gold-50 text-gold-700 border-gold-500' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-transparent'
+                )}
+              >
+                <Icon className={cn('w-4 h-4 flex-shrink-0', isActive ? 'text-gold-600' : 'text-gray-400')} />
+                {!collapsed && <span className="flex-1">{g.label}</span>}
+              </Link>
+            );
+          }
+
+          // Group with inner-nav accordion.
           return (
-            <div key={gi}>
-              {group.label && (
-                <div className="px-2 mb-1.5">
-                  <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-                    {group.label}
-                  </span>
-                </div>
-              )}
-              <ul className="space-y-0.5">
-                {visibleItems.map((item) => {
-                  const active = isActive(item.href);
-                  return (
-                    <li key={item.href}>
-                      <Link
-                        href={item.href}
-                        className={cn(
-                          'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium transition-colors',
-                          active
-                            ? 'bg-gold-50 text-gold-700'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                        )}
-                      >
-                        <item.icon
+            <div key={g.key}>
+              <button
+                onClick={() => toggleGroup(g.key)}
+                className={cn(
+                  'w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium transition-colors border-l-[3px]',
+                  isActive ? 'bg-gold-50 text-gold-700 border-gold-500' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-transparent'
+                )}
+              >
+                <Icon className={cn('w-4 h-4 flex-shrink-0', isActive ? 'text-gold-600' : 'text-gray-400')} />
+                <span className="flex-1 text-left">{g.label}</span>
+                <ChevronDown className={cn('w-3.5 h-3.5 text-gray-400 transition-transform', isExpanded && 'rotate-180')} />
+              </button>
+              {isExpanded && (
+                <ul className="mt-0.5 mb-1 ml-[26px] pl-2.5 border-l border-gray-100 space-y-0.5">
+                  {(g.items ?? []).map((it) => {
+                    const subActive = activeHref === it.href;
+                    return (
+                      <li key={it.href}>
+                        <Link
+                          href={it.href}
                           className={cn(
-                            'w-4 h-4 flex-shrink-0',
-                            active ? 'text-gold-600' : 'text-gray-400'
+                            'block px-2.5 py-1.5 rounded-lg text-[12px] transition-colors',
+                            subActive ? 'bg-gold-50 text-gold-700 font-medium' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                           )}
-                        />
-                        <span className="flex-1">{item.label}</span>
-                        {item.badge !== undefined && (
-                          <span className={cn(
-                            'text-[11px] font-semibold rounded-full px-1.5 py-0.5 leading-none min-w-[20px] text-center',
-                            active ? 'bg-gold-100 text-gold-700' : 'bg-gray-100 text-gray-600'
-                          )}>
-                            {item.badge}
-                          </span>
-                        )}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
+                        >
+                          {it.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </div>
           );
         })}
       </nav>
 
-      {/* Ashley works 24/7 widget */}
-      <div className="mx-3 mb-3 p-3 rounded-xl bg-gold-50 border border-gold-100">
-        <div className="flex items-center gap-2 mb-1">
-          <Sparkles className="w-4 h-4 text-gold-600" strokeWidth={1.75} />
-          <span className="text-[12px] font-semibold text-gold-800">Ashley works 24/7</span>
+      {/* Ashley works 24/7 widget (hidden when collapsed) */}
+      {!collapsed && (
+        <div className="mx-3 mb-3 p-3 rounded-xl bg-gold-50 border border-gold-100">
+          <div className="flex items-center gap-2 mb-1">
+            <Sparkles className="w-4 h-4 text-gold-600" strokeWidth={1.75} />
+            <span className="text-[12px] font-semibold text-gold-800">Ashley works 24/7</span>
+          </div>
+          <p className="text-[11px] text-gold-600 leading-relaxed">Never misses a lead. Never forgets to follow up.</p>
+          <Link href="/ai-coach" className="text-[11px] font-semibold text-gold-600 hover:text-gold-800 mt-2 flex items-center gap-1">Learn more →</Link>
         </div>
-        <p className="text-[11px] text-gold-600 leading-relaxed">Never misses a lead. Never forgets to follow up.</p>
-        <Link href="/ai-coach" className="text-[11px] font-semibold text-gold-600 hover:text-gold-800 mt-2 flex items-center gap-1">
-          Learn more →
-        </Link>
-      </div>
+      )}
 
       {/* User chip */}
       <div className="border-t border-gray-100 p-3 flex-shrink-0">
-        <div className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-gray-50 transition-colors group cursor-pointer">
-          <div className="w-8 h-8 rounded-full bg-gold-600 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0">
-            {initials}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[12px] font-semibold text-gray-900 truncate">{fullName || 'My Account'}</div>
-            <div className="text-[11px] text-gray-400 truncate capitalize">{orgName ?? userRole ?? 'Loan Officer'}</div>
-          </div>
-          <button
-            onClick={() => signOut()}
-            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg hover:bg-gray-100"
-            title="Sign out"
-          >
-            <LogOut className="w-3.5 h-3.5 text-gray-400" />
-          </button>
+        <div className={cn('flex items-center gap-2.5 p-2 rounded-xl hover:bg-gray-50 transition-colors group', collapsed && 'justify-center p-1')}>
+          <div className="w-8 h-8 rounded-full bg-gold-600 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0">{initials}</div>
+          {!collapsed && (
+            <>
+              <div className="flex-1 min-w-0">
+                <div className="text-[12px] font-semibold text-gray-900 truncate">{fullName || 'My Account'}</div>
+                <div className="text-[11px] text-gray-400 truncate capitalize">{orgName ?? userRole ?? 'Loan Officer'}</div>
+              </div>
+              <button onClick={() => signOut()} className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg hover:bg-gray-100" title="Sign out">
+                <LogOut className="w-3.5 h-3.5 text-gray-400" />
+              </button>
+            </>
+          )}
         </div>
       </div>
     </aside>

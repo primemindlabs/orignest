@@ -52,7 +52,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <CommandPaletteProvider>
       <div className="flex h-screen overflow-hidden bg-bg">
         <Sidebar userRole={userRole} orgName={org?.name ?? undefined} />
-        <div className="flex-1 flex flex-col min-w-0 ml-[220px]">
+        <div
+          className="flex-1 flex flex-col min-w-0 transition-[margin] duration-150"
+          style={{ marginLeft: 'var(--sidebar-w, 220px)' }}
+        >
           <Topbar />
           <main className="flex-1 overflow-auto pt-14 p-6 animate-fade-in">
             {children}

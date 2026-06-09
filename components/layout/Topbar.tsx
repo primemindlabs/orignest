@@ -77,10 +77,10 @@ export function Topbar({ breadcrumbs: propBreadcrumbs, actions }: TopbarProps) {
 
   return (
     <header
+      style={{ left: 'var(--sidebar-w, 220px)' }}
       className={clsx(
         'fixed top-0 right-0 z-30',
-        'left-[220px]',
-        'h-14',
+        'h-14 transition-[left] duration-150',
         'flex items-center justify-between px-5',
         'bg-[rgba(255,255,255,0.85)] backdrop-blur-[20px]',
         'border-b border-[rgba(60,60,67,0.12)]'
