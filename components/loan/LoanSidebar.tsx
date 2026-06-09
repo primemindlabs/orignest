@@ -86,6 +86,7 @@ const LOAN_NAV: NavSection[] = [
   {
     key: 'portal-comms', label: 'Portal & Comms', href: '/portal-comms', icon: MessageSquare,
     sub: [
+      { label: 'Loan Chat', href: '/portal-comms/chat' },
       { label: 'Borrower Portal', href: '/portal-comms/borrower-portal' },
       { label: 'Realtor Access', href: '/portal-comms/realtor-access' },
       { label: 'Education Suite', href: '/portal-comms/education-suite' },

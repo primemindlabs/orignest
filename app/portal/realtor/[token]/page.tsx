@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { CheckCircle, Circle, Phone, CalendarDays, ClipboardCheck, ShieldCheck, Lock } from 'lucide-react';
 import type { RealtorPermissions } from '@/lib/portal/realtorPermissions';
 import { RealtorTransactions } from './RealtorTransactions';
+import { PortalChat } from '@/components/chat/PortalChat';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Loan Status', robots: { index: false, follow: false } };
@@ -109,6 +110,9 @@ export default async function RealtorPortalPage({ params }: { params: { token: s
         </div>
 
         <RealtorTransactions token={params.token} />
+
+        {/* Phase 31.1 — realtor chat (only messages the LO shared; no financial data) */}
+        <PortalChat apiBase={`/api/portal/realtor/${params.token}/chat`} selfType="realtor" loName={loName} />
 
         <p className="text-[11px] text-[var(--c-label3)] text-center pb-4">
           This portal shows loan status only. Financial details are confidential to the borrower.

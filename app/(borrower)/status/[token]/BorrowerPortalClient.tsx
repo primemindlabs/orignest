@@ -9,6 +9,7 @@ import { EquityChart } from '@/components/relationships/EquityChart';
 import { Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CreditRepairTab, type CreditRepairEnrollment } from './CreditRepairTab';
+import { PortalChat } from '@/components/chat/PortalChat';
 
 interface DocItem {
   id: string;
@@ -302,8 +303,8 @@ export function BorrowerPortalClient({
           </div>
         )}
 
-        {/* Two-way messaging with the loan officer (Phase 4.2) */}
-        <PortalMessages token={token} loName={lo?.name ?? 'your loan officer'} />
+        {/* Unified 3-way loan chat (Phase 31.1) — replaces legacy 2-way messaging */}
+        <PortalChat apiBase={`/api/borrower-portal/${token}/chat`} selfType="borrower" loName={lo?.name ?? 'your loan officer'} />
 
         {/* Documents checklist */}
         {docs.length > 0 && (
