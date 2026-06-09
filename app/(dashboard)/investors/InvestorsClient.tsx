@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Building2, Plus, X, Link2, Lock, Home } from 'lucide-react';
+import { Building2, Plus, X, Link2, Lock, Home, Sparkles } from 'lucide-react';
 
 export interface Entity {
   id: string;
@@ -86,9 +86,12 @@ export default function InvestorsClient({ entities, leads, deedmineEnabled }: { 
                   </div>
                   {e.contact_email && <p className="text-[12px] text-label-3">{e.contact_email}</p>}
                 </div>
-                <button onClick={() => setAttachTo(e)} className="inline-flex items-center gap-1.5 text-[12px] font-medium text-gold-700 hover:text-gold-600">
-                  <Link2 className="w-3.5 h-3.5" /> Attach loan
-                </button>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  {deedmineEnabled && <EnrichButton entityId={e.id} />}
+                  <button onClick={() => setAttachTo(e)} className="inline-flex items-center gap-1.5 text-[12px] font-medium text-gold-700 hover:text-gold-600">
+                    <Link2 className="w-3.5 h-3.5" /> Attach loan
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-4 gap-3 mt-3">
@@ -122,6 +125,30 @@ export default function InvestorsClient({ entities, leads, deedmineEnabled }: { 
       {creating && <EntityForm onClose={() => setCreating(false)} onSaved={() => { setCreating(false); router.refresh(); }} />}
       {attachTo && <AttachForm entity={attachTo} leads={leads} onClose={() => setAttachTo(null)} onSaved={() => { setAttachTo(null); router.refresh(); }} />}
     </div>
+  );
+}
+
+function EnrichButton({ entityId }: { entityId: string }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  async function enrich() {
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/investors/${entityId}/enrich`, { method: 'POST' });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error ?? 'Enrichment failed');
+      toast.success(`Found ${json.discovered ?? 0} properties via ATTOM`);
+      router.refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Enrichment failed');
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <button onClick={enrich} disabled={busy} className="inline-flex items-center gap-1.5 text-[12px] font-medium text-gold-700 hover:text-gold-600 disabled:opacity-50">
+      <Sparkles className="w-3.5 h-3.5" /> {busy ? 'Enriching…' : 'Enrich (ATTOM)'}
+    </button>
   );
 }
 

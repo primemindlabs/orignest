@@ -6,7 +6,7 @@ import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { MetricCard } from '@/components/ui/MetricCard';
-import { TrendingUp, TrendingDown, Users, DollarSign, Clock, BarChart3, FileText, ShieldCheck, GitBranch, Gauge, Award, ChevronRight, Download } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, DollarSign, Clock, BarChart3, FileText, ShieldCheck, GitBranch, Gauge, Award, ChevronRight, Download, Mail, Lock } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,6 +45,8 @@ export default async function ReportsPage() {
     if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
     return `$${n}`;
   }
+
+  const emailConfigured = !!process.env.RESEND_API_KEY;
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -122,6 +124,36 @@ export default async function ReportsPage() {
           </div>
           <ChevronRight size={16} className="text-label-3 flex-shrink-0" />
         </a>
+      </div>
+
+      {/* Scheduled email delivery (Phase 9) — credential-gated real disabled state */}
+      <div>
+        <h2 className="text-sm font-semibold text-black mb-3">Scheduled Delivery</h2>
+        <div className="flex items-center gap-3 bg-surface rounded-card shadow-card border border-border px-4 py-3.5">
+          <div className="w-9 h-9 rounded-[10px] bg-fill flex items-center justify-center flex-shrink-0">
+            {emailConfigured ? (
+              <Mail size={16} className="text-gold-700" />
+            ) : (
+              <Lock size={16} className="text-label-3" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-black">Email reports on a schedule</p>
+            <p className="text-xs text-label-2 mt-0.5">
+              Send any call report to your team weekly or monthly.{' '}
+              {!emailConfigured && (
+                <span className="font-mono text-label-3">TODO: set RESEND_API_KEY</span>
+              )}
+            </p>
+          </div>
+          <span
+            className={`text-[11px] font-semibold rounded-full px-2.5 py-1 flex-shrink-0 ${
+              emailConfigured ? 'bg-green/10 text-green' : 'text-label-3 border border-border'
+            }`}
+          >
+            {emailConfigured ? 'Available' : 'Not connected'}
+          </span>
+        </div>
       </div>
     </div>
   );

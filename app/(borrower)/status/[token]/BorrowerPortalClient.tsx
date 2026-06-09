@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle, Circle, Clock, Phone, FileText, ShieldCheck, UploadCloud, LayoutDashboard } from 'lucide-react';
 import { PortalMessages } from '@/components/borrower/PortalMessages';
+import { BorrowerJourneyWidgets } from '@/components/borrower/BorrowerJourneyWidgets';
 import { cn } from '@/lib/utils';
 import { CreditRepairTab, type CreditRepairEnrollment } from './CreditRepairTab';
 
@@ -43,6 +44,7 @@ function formatBytes(bytes: number): string {
 export function BorrowerPortalClient({
   token,
   borrowerFirstName,
+  currentStage,
   currentStageLabel,
   nextStep,
   pipelineSteps,
@@ -219,6 +221,13 @@ export function BorrowerPortalClient({
           <p className="text-xs font-semibold text-blue mb-1">What happens next</p>
           <p className="text-sm text-blue/90 leading-relaxed">{nextStep}</p>
         </div>
+
+        {/* Buyer-experience widgets (Phase 19): countdown, first payment, moving, cert */}
+        <BorrowerJourneyWidgets
+          token={token}
+          currentStage={currentStage}
+          closingDate={trid?.closingDate ?? null}
+        />
 
         {/* Two-way messaging with the loan officer (Phase 4.2) */}
         <PortalMessages token={token} loName={lo?.name ?? 'your loan officer'} />

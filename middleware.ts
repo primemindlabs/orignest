@@ -5,11 +5,14 @@ const isPublicRoute = createRouteMatcher([
   '/',
   '/sign-in(.*)',
   '/sign-up(.*)',
+  '/privacy',
+  '/terms',
   '/api/webhooks(.*)',      // Stripe / Twilio — verified by signature
   '/api/v1(.*)',            // REST API — verified by API key
   '/icon(.*)', '/apple-icon(.*)', '/favicon(.*)',  // app icons
   '/(borrower)(.*)',        // Borrower portal — token-authenticated
   '/status/(.*)',           // Borrower status pages
+  '/cert/(.*)',             // Shareable pre-approval certificate — token-gated
   '/(partner)(.*)',         // Partner portal — token-authenticated
 ]);
 

@@ -90,7 +90,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/buyer-referrals', label: 'Buyer Referrals', icon: Gift },
       { href: '/investors', label: 'Investors', icon: Building2 },
       { href: '/commissions', label: 'Commissions', icon: DollarSign },
-      { href: '/nmls', label: 'Compliance', icon: ShieldCheck, adminOnly: true },
+      { href: '/settings/compliance', label: 'Compliance', icon: ShieldCheck, adminOnly: true },
       { href: '/team', label: 'Team', icon: Users2, adminOnly: true },
       { href: '/settings', label: 'Settings', icon: Settings, adminOnly: true },
       { href: '/settings/billing', label: 'Billing', icon: CreditCard, adminOnly: true },
