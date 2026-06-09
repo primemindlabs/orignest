@@ -40,13 +40,14 @@ const NAV: NavGroup[] = [
   },
   {
     key: 'marketing', label: 'Marketing', icon: Megaphone, items: [
+      // Phase 34: Campaigns is the primary entry; Rate Drop + Market Updates are
+      // now campaign types inside it (their pages remain, just not standalone nav).
+      { href: '/campaigns/manager', label: 'Campaigns' },
       { href: '/social', label: 'Social Media' },
-      { href: '/market-updates', label: 'Market Updates' },
       { href: '/co-marketing', label: 'Co-Marketing' },
       { href: '/co-marketing/listings', label: 'Listings' },
-      { href: '/campaigns', label: 'Campaigns' },
-      { href: '/campaigns/rate-drop', label: 'Rate Drop' },
       { href: '/ads', label: 'Ad Center' },
+      { href: '/dialer/power', label: 'Power Dialer' },
     ],
   },
   {

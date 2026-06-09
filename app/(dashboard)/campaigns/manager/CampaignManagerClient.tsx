@@ -2,6 +2,7 @@
 
 /** Phase 34.5 — Campaign Manager: stats + library + the org's campaigns. */
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Sparkles, Check, Library, Layers } from 'lucide-react';
 
@@ -72,12 +73,12 @@ export function CampaignManagerClient() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {mine.map((c) => (
-              <div key={c.id} className="bg-[var(--c-surface)] border border-[var(--c-border)] rounded-[12px] px-4 py-3 flex items-center justify-between gap-3">
+              <Link key={c.id} href={`/campaigns/manager/${c.id}`} className="bg-[var(--c-surface)] border border-[var(--c-border)] rounded-[12px] px-4 py-3 flex items-center justify-between gap-3 hover:bg-[var(--c-fill)] transition-colors">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full" style={{ background: badge(c.type) }} /><p className="text-[13px] font-medium text-[var(--c-text)] truncate">{c.name}</p></div>
                   <p className="text-[11px] text-[var(--c-label2)]">{c.total_steps ?? 0} steps · {c.enrolled_count ?? 0} enrolled · {c.status}</p>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
