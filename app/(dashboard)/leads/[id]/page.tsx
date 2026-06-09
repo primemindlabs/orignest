@@ -2,7 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { redirect, notFound } from 'next/navigation';
-import { Phone, Mail, MessageSquare, FileText, Clock, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Phone, Mail, MessageSquare, FileText, Clock, ArrowLeft, AlertTriangle, FolderOpen } from 'lucide-react';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
@@ -184,6 +184,13 @@ export default async function LeadDetailPage({
                 Email
               </a>
             )}
+            <Link
+              href={`/loans/${lead.id}`}
+              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-sm font-medium bg-fill hover:bg-border text-black border border-border transition-colors"
+            >
+              <FolderOpen size={14} />
+              Open File
+            </Link>
             <Link
               href={`/leads/${lead.id}/application`}
               className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-sm font-medium bg-fill hover:bg-border text-black border border-border transition-colors"
