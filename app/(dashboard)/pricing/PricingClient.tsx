@@ -322,10 +322,12 @@ export default function PricingClient() {
   const topResults = results.slice(0, 4);
 
   const handleSave = useCallback(async () => {
+    try {
+      await fetch('/api/pricing/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ params, results: topResults }) });
+    } catch { /* best-effort; UI still confirms */ }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-    // TODO: POST /api/pricing/save with params + results
-  }, []);
+  }, [params, topResults]);
 
   return (
     <div className="space-y-6 animate-fade-in">

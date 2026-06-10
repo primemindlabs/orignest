@@ -19,7 +19,7 @@ export function ScenarioAIPrompt({ trigger }: { trigger: keyof typeof MESSAGES }
         <div>
           <p className="text-[13px] font-semibold text-[var(--c-text)]">{MESSAGES[trigger]}</p>
           <p className="text-[12px] text-[var(--c-label2)] mt-0.5">Scenario AI analyzes the borrower&apos;s actual numbers and matches them to lenders whose overlays fit this deal.</p>
-          <Link href="/ask-ashley" className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--c-gold-deep)] hover:underline">Open Scenario AI <ArrowRight size={13} /></Link>
+          <Link href="/scenarios" className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--c-gold-deep)] hover:underline">Open Scenario AI <ArrowRight size={13} /></Link>
         </div>
       </div>
     </div>
