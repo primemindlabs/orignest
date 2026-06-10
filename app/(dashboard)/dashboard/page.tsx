@@ -11,6 +11,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { CommandCenterClient } from './CommandCenterClient';
 import { AttentionPanel } from '@/components/dashboard/AttentionPanel';
 import { GettingStartedCard } from '@/components/dashboard/GettingStartedCard';
+import { MorningBriefingCard } from '@/components/dashboard/MorningBriefingCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -133,6 +134,7 @@ export default async function DashboardPage() {
   return (
     <>
       <GettingStartedCard orgId={orgId} clerkUserId={userId} />
+      <MorningBriefingCard />
       <AttentionPanel orgId={orgId} />
       <CommandCenterClient
       firstName={firstName}

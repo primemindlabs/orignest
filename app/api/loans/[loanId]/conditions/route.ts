@@ -22,7 +22,7 @@ export async function GET(_req: NextRequest, { params }: { params: { loanId: str
   const sb = createAdminClient();
   const { data } = await sb
     .from('loan_conditions')
-    .select('id, condition_text, category, priority, status, due_date, created_at')
+    .select('id, condition_text, category, priority, status, due_date, created_at, is_agent_visible')
     .eq('lead_id', params.loanId).eq('org_id', orgId)
     .order('created_at', { ascending: true });
   return NextResponse.json({ conditions: data ?? [] });
@@ -54,18 +54,24 @@ export async function PATCH(req: NextRequest, { params }: { params: { loanId: st
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (!orgId) return NextResponse.json({ error: 'No organization context' }, { status: 403 });
 
-  let body: { id?: string; status?: string };
+  let body: { id?: string; status?: string; agent_visible?: boolean };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
-  if (!body.id || !STATUSES.includes(body.status ?? '')) {
-    return NextResponse.json({ error: 'id + valid status required' }, { status: 422 });
-  }
+  if (!body.id) return NextResponse.json({ error: 'id required' }, { status: 422 });
 
   const sb = createAdminClient();
-  const update: Record<string, unknown> = { status: body.status, updated_at: new Date().toISOString() };
-  if (body.status === 'cleared') update.cleared_at = new Date().toISOString();
+  const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (typeof body.agent_visible === 'boolean') {
+    // A4 — agent/borrower-portal visibility toggle.
+    update.is_agent_visible = body.agent_visible;
+  } else if (STATUSES.includes(body.status ?? '')) {
+    update.status = body.status;
+    if (body.status === 'cleared') update.cleared_at = new Date().toISOString();
+  } else {
+    return NextResponse.json({ error: 'valid status or agent_visible required' }, { status: 422 });
+  }
   const { data, error } = await sb.from('loan_conditions')
     .update(update).eq('id', body.id).eq('lead_id', params.loanId).eq('org_id', orgId)
-    .select('id, status').single();
+    .select('id, status, is_agent_visible').single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ condition: data });
 }

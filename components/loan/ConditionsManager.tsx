@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
-import { Plus, Check, Circle } from 'lucide-react';
+import { Plus, Check, Circle, Eye, EyeOff } from 'lucide-react';
 import { ConditionDocuments } from '@/components/conditions/ConditionDocuments';
 import { SubmissionPackageButton } from '@/components/conditions/SubmissionPackageButton';
 
@@ -15,6 +15,7 @@ export interface Condition {
   priority: string;
   status: string;
   due_date: string | null;
+  is_agent_visible?: boolean;
 }
 
 const CATEGORY_OPTIONS = ['income', 'credit', 'assets', 'property', 'title', 'insurance', 'other'].map((v) => ({ value: v, label: v[0].toUpperCase() + v.slice(1) }));
@@ -66,6 +67,19 @@ export function ConditionsManager({ loanId, initial }: { loanId: string; initial
     }
   }
 
+  // A4 — toggle whether the borrower/realtor portal can see this condition.
+  async function toggleVisibility(c: Condition) {
+    const next = !c.is_agent_visible;
+    setConditions((cur) => cur.map((x) => (x.id === c.id ? { ...x, is_agent_visible: next } : x)));
+    try {
+      await fetch(`/api/loans/${loanId}/conditions`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: c.id, agent_visible: next }),
+      });
+    } catch {
+      setConditions((cur) => cur.map((x) => (x.id === c.id ? { ...x, is_agent_visible: c.is_agent_visible } : x)));
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -106,6 +120,10 @@ export function ConditionsManager({ loanId, initial }: { loanId: string; initial
                 <span className="text-[10px] text-[var(--c-label2)] bg-[var(--c-fill)] px-1.5 py-0.5 rounded-full">{c.category}</span>
                 <span className="text-[10px] text-[var(--c-label2)] bg-[var(--c-fill)] px-1.5 py-0.5 rounded-full">{c.priority.replace(/_/g, ' ')}</span>
                 <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ color: STATUS_TONE[c.status] ?? 'var(--c-label2)', backgroundColor: 'var(--c-fill)' }}>{c.status.replace(/_/g, ' ')}</span>
+                <button onClick={() => toggleVisibility(c)} className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[var(--c-fill)]" title={c.is_agent_visible ? 'Visible to borrower/agent portal' : 'Hidden from borrower/agent portal'}>
+                  {c.is_agent_visible ? <Eye size={11} className="text-[var(--c-success)]" /> : <EyeOff size={11} className="text-[var(--c-label3)]" />}
+                  <span className="text-[var(--c-label2)]">{c.is_agent_visible ? 'Shared' : 'Internal'}</span>
+                </button>
               </div>
               <ConditionDocuments conditionId={c.id} />
             </div>
