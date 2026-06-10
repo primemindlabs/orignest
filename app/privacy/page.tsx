@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-export const metadata: Metadata = { title: 'Privacy Policy · Ashley AI' };
+export const metadata: Metadata = { title: 'Privacy Policy · Ashley IQ' };
 
 const LAST_UPDATED = 'June 8, 2026';
 
@@ -10,7 +10,7 @@ export default function PrivacyPage() {
   return (
     <LegalShell title="Privacy Policy" updated={LAST_UPDATED}>
       <p>
-        Ashley AI (&ldquo;Ashley AI&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;) provides software
+        Ashley IQ (&ldquo;Ashley IQ&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;) provides software
         for licensed mortgage loan originators and their teams. This policy explains what we
         collect, how we use it, and the choices you have. It applies to our web application and
         related services.

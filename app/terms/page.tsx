@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-export const metadata: Metadata = { title: 'Terms of Service · Ashley AI' };
+export const metadata: Metadata = { title: 'Terms of Service · Ashley IQ' };
 
 const LAST_UPDATED = 'June 8, 2026';
 
@@ -22,7 +22,7 @@ export default function TermsPage() {
 
         <div className="mt-6 space-y-5 text-[14px] leading-relaxed text-label-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1.5">
           <p>
-            These Terms govern your access to and use of the Ashley AI application and services
+            These Terms govern your access to and use of the Ashley IQ application and services
             (the &ldquo;Service&rdquo;). By using the Service you agree to these Terms on behalf of
             yourself and your organization.
           </p>
