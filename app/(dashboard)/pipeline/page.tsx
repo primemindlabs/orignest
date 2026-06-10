@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { formatDistanceToNow, isThisMonth } from 'date-fns';
 import { PipelineCommissionMetric } from './PipelineCommissionMetric';
+import { PipelineTabsView } from './PipelineTabsView';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,7 +68,7 @@ export default async function PipelinePage() {
     sb
       .from('leads')
       .select(
-        'id, first_name, last_name, stage, loan_type, loan_amount, lead_source, ai_score, created_at, stage_changed_at, application_submitted_at, loan_estimate_sent_at, closing_disclosure_sent_at, closing_date, data_ownership, is_demo'
+        'id, first_name, last_name, stage, loan_type, loan_amount, loan_purpose, lead_source, ai_score, created_at, stage_changed_at, last_contacted_at, application_submitted_at, loan_estimate_sent_at, closing_disclosure_sent_at, closing_date, data_ownership, is_demo'
       )
       .eq('org_id', orgId)
       .in('stage', [...STAGES])
@@ -146,6 +147,23 @@ export default async function PipelinePage() {
   function fullCurrency(n: number): string {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
   }
+
+  // Phase 74 tabs — closed leads + outstanding-condition counts.
+  const [{ data: closedRows }, { data: condRows }] = await Promise.all([
+    sb.from('leads').select('id, first_name, last_name, stage, loan_type, loan_amount, loan_purpose, lead_source, created_at, stage_changed_at, last_contacted_at, closing_date')
+      .eq('org_id', orgId).in('stage', ['closed', 'funded']).order('closing_date', { ascending: false }).limit(120),
+    sb.from('loan_conditions').select('lead_id, status').eq('org_id', orgId).neq('status', 'cleared'),
+  ]);
+  const condCount: Record<string, number> = {};
+  for (const c of condRows ?? []) condCount[c.lead_id] = (condCount[c.lead_id] ?? 0) + 1;
+  const toPipelineLead = (l: Record<string, unknown>) => ({
+    id: l.id as string, first_name: l.first_name as string, last_name: l.last_name as string, stage: l.stage as string,
+    loan_type: (l.loan_type as string) ?? null, loan_amount: (l.loan_amount as number) ?? null, loan_purpose: (l.loan_purpose as string) ?? null, lead_source: (l.lead_source as string) ?? null,
+    closing_date: (l.closing_date as string) ?? null, stage_changed_at: (l.stage_changed_at as string) ?? null, last_contacted_at: (l.last_contacted_at as string) ?? null, created_at: l.created_at as string,
+    outstanding_conditions_count: condCount[l.id as string] ?? 0,
+  });
+  const activePipelineLeads = allLeads.map(toPipelineLead);
+  const closedPipelineLeads = (closedRows ?? []).map(toPipelineLead);
 
   function formatCurrency(n: number): string {
     if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
@@ -254,8 +272,11 @@ export default async function PipelinePage() {
       {/* ── Mobile list view (Phase 42.6) — kanban is desktop-only ───── */}
       <MobilePipelineView leads={allLeads as never} className="md:hidden" />
 
-      {/* ── Kanban board ─────────────────────────────────────────────── */}
-      <div className="hidden md:flex gap-4 overflow-x-auto pb-4">
+      {/* ── Pipeline tabs (Phase 74) — primary desktop view ──────────── */}
+      <PipelineTabsView active={activePipelineLeads} closed={closedPipelineLeads} compRate={compRate} />
+
+      {/* ── Kanban board (retained, hidden — superseded by tabs view) ── */}
+      <div className="hidden gap-4 overflow-x-auto pb-4">
         {STAGES.map((stage) => {
           const stageLeads = byStage[stage] ?? [];
           const stageValue = stageLeads.reduce((s, l) => s + (l.loan_amount ?? 0), 0);
