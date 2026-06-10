@@ -245,3 +245,27 @@ a:hover { color: #C9A95C; }
   .shimmer { animation: none; }
   .lift { transition: none; }
 }
+
+/* ── Spec token aliases (APPEND-ONLY) ──────────────────────────────────────
+   Build specs reference a `--color-*` token system; this codebase's canonical
+   tokens are `--c-*`. These aliases map the spec names onto the real values so
+   spec-authored markup renders correctly without editing existing rules. */
+:root {
+  --color-background-primary: var(--c-surface);   /* #FFFFFF — cards, panels */
+  --color-background-secondary: var(--c-bg);       /* #F5F5F7 — insets, ghost btns */
+  --color-background-tertiary: var(--c-surface2);  /* #FBFBFD — secondary panels */
+
+  --color-border-primary: rgba(0, 0, 0, 0.16);     /* strong hairline */
+  --color-border-secondary: var(--c-border);       /* 0.10 — default border / hover */
+  --color-border-tertiary: rgba(0, 0, 0, 0.06);    /* lightest — card borders */
+
+  --color-text-primary: var(--c-text);             /* #1D1D1F */
+  --color-text-secondary: var(--c-label2);         /* #6E6E73 */
+  --color-text-tertiary: var(--c-label3);          /* #86868B */
+
+  --color-accent: var(--c-gold);                   /* #C9A95C Meridian Gold */
+  --color-accent-deep: var(--c-gold-deep);         /* #876830 accessible gold text */
+  --color-danger: var(--c-danger);                 /* #C4724A Terra Signal */
+  --color-success: var(--c-success);
+  --color-warning: var(--c-warning);
+}
