@@ -28,6 +28,7 @@ import { InboxPreviewCard } from '@/components/dashboard/InboxPreviewCard';
 import { GettingStartedCard } from '@/components/dashboard/GettingStartedCard';
 import { MorningBriefingCard } from '@/components/dashboard/MorningBriefingCard';
 import { QuickActions } from '@/components/dashboard/QuickActions';
+import { ensureApplicationSlug } from '@/lib/auth/slug';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Command Center' };
@@ -52,12 +53,26 @@ export default async function DashboardPage() {
   // ── Profile (id needed for personal scope; comp_rate + goal for the money bar) ──
   const { data: profile } = await sb
     .from('profiles')
-    .select('id, first_name, comp_rate, monthly_volume_goal')
+    .select('id, first_name, last_name, nmls_id, application_slug, comp_rate, monthly_volume_goal')
     .eq('clerk_user_id', userId)
     .maybeSingle();
   const profileId = (profile?.id as string | undefined) ?? null;
   const compRate = Number(profile?.comp_rate ?? 0.5);
   const personalOk = isPersonal && !!profileId;
+
+  // LO shareable application link, surfaced in the dashboard quick actions.
+  const applySlug =
+    isFinancial && profile
+      ? await ensureApplicationSlug(sb, {
+          id: profile.id,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          nmls_id: profile.nmls_id,
+          application_slug: profile.application_slug,
+        })
+      : null;
+  const appBase = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://ashleyiq.com').replace(/\/$/, '');
+  const applyUrl = applySlug ? `${appBase}/apply/${applySlug}` : null;
 
   // ── Active + recent-terminal leads (org-scoped, optionally narrowed to my book) ──
   let activeQ = sb
@@ -174,7 +189,7 @@ export default async function DashboardPage() {
 
       <div style={{ padding: '11px 13px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         <GettingStartedCard orgId={orgId} clerkUserId={userId} />
-        {isFinancial && <QuickActions />}
+        {isFinancial && <QuickActions applyUrl={applyUrl} />}
         {isFinancial && <MorningBriefingCard />}
 
         {isFinancial ? (
