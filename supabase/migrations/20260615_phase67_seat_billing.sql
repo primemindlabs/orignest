@@ -1,0 +1,6 @@
+-- Phase 67 — seat billing delegation + usage metering. Real schema: organizations/
+-- profiles/leads. usage_events = NEW immutable usage ledger (distinct from P35
+-- billing_events Stripe webhook log). AES on stored Stripe customer IDs.
+-- (Full DDL applied via MCP migration phase67_seat_billing_usage.) organizations +=
+-- seat_billing_mode/usage cols. lo_billing (AES stripe cust, comp flags) + usage_events
+-- (INSERT-only, source manual|automated + billed_to) + lo_seat_invites (SHA-256). org_id RLS.
