@@ -56,8 +56,8 @@ export function TeamBillingClient() {
       <div>
         <p className="text-[12px] font-semibold uppercase tracking-wide text-[var(--c-label2)] mb-2">LO billing status</p>
         {los.length === 0 ? <p className="text-[13px] text-[var(--c-label2)]">No LO billing records yet.</p> : (
-          <div className="bg-[var(--c-surface)] border border-[var(--c-border)] rounded-[14px] overflow-hidden">
-            <table className="w-full text-[13px]">
+          <div className="bg-[var(--c-surface)] border border-[var(--c-border)] rounded-[14px] overflow-x-auto">
+            <table className="w-full text-[13px] min-w-[420px]">
               <thead><tr className="text-[10px] uppercase text-[var(--c-label2)] border-b border-[var(--c-border)]"><th className="text-left px-4 py-2">LO</th><th className="text-left px-4 py-2">Status</th><th className="text-right px-4 py-2">SMS</th><th className="text-right px-4 py-2">Voice</th><th className="text-right px-4 py-2"></th></tr></thead>
               <tbody>
                 {los.map((lo) => { const s = STATUS[lo.status] ?? { label: lo.status, color: 'var(--c-label2)' }; return (
