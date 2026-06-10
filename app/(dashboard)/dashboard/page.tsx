@@ -1,165 +1,231 @@
-import { auth } from '@clerk/nextjs/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { redirect } from 'next/navigation';
-import { AlertTriangle } from 'lucide-react';
 import type { Metadata } from 'next';
-import { createClient } from '@/lib/supabase/server';
-import { getTRIDStatus } from '@/lib/compliance/trid';
-import type { Lead } from '@/types';
-import { format, formatDistanceToNow } from 'date-fns';
-import { CommandCenterClient } from './CommandCenterClient';
-import { AttentionPanel } from '@/components/dashboard/AttentionPanel';
+import { isThisMonth, subDays, formatDistanceToNow } from 'date-fns';
+
+import { resolveDashboardPersona } from '@/lib/dashboard/persona';
+import {
+  ACTIVE_STAGES,
+  TERMINAL_STAGES,
+  derivePipelineByStage,
+  deriveAlertedLeads,
+  deriveWeeklyVolume,
+  deriveMetrics,
+  deriveOperationsStats,
+  type DashLead,
+} from '@/lib/dashboard/queries';
+
+import { GreetingBar } from '@/components/dashboard/GreetingBar';
+import { MoneyBar } from '@/components/shared/MoneyBar';
+import { OperationsStatBar } from '@/components/dashboard/OperationsStatBar';
+import { PipelineDonut } from '@/components/dashboard/PipelineDonut';
+import { GoalRing } from '@/components/dashboard/GoalRing';
+import { VolumeSparkline } from '@/components/dashboard/VolumeSparkline';
+import { NeedsAttentionCard } from '@/components/dashboard/NeedsAttentionCard';
+import { TasksCard } from '@/components/dashboard/TasksCard';
+import { InboxPreviewCard } from '@/components/dashboard/InboxPreviewCard';
 import { GettingStartedCard } from '@/components/dashboard/GettingStartedCard';
 import { MorningBriefingCard } from '@/components/dashboard/MorningBriefingCard';
 
 export const dynamic = 'force-dynamic';
-
 export const metadata: Metadata = { title: 'Command Center' };
 
-function formatCurrency(amount: number): string {
-  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
-  if (amount >= 1_000) return `$${(amount / 1_000).toFixed(0)}K`;
-  return `$${amount.toFixed(0)}`;
-}
-
-const STAGE_LABELS: Record<string, string> = {
-  new_inquiry: 'New Inquiry',
-  pre_qual: 'Pre-Approval',
-  application: 'Application',
-  processing: 'Processing',
-  underwriting: 'Underwriting',
-  conditional_approval: 'Cond. Approval',
-  clear_to_close: 'Closing',
-  closed: 'Closed',
-  declined: 'Declined',
-  withdrawn: 'Withdrawn',
-};
-
-const STAGE_COLORS: Record<string, string> = {
-  pre_qual: '#2563EB',
-  application: '#10B981',
-  processing: '#F59E0B',
-  underwriting: '#8B5CF6',
-  conditional_approval: '#EC4899',
-  clear_to_close: '#6B7280',
-};
+const TASK_ACTIVE = ['open', 'in_progress', 'waiting_on_borrower'];
 
 export default async function DashboardPage() {
-  const { userId, orgId } = await getOrgContext();
+  const { userId, orgId, role } = await getOrgContext();
   if (!userId) redirect('/sign-in');
   if (!orgId) redirect('/onboarding');
 
   const sb = createAdminClient();
+  const { persona, scope } = resolveDashboardPersona(role);
+  const isPersonal = scope === 'personal';
+  const isFinancial = persona === 'producer' || persona === 'leadership';
 
-  const [
-    { data: profile },
-    { data: allLeads },
-    { data: recentLeads },
-    { data: tasks },
-  ] = await Promise.all([
-    sb.from('profiles').select('first_name, last_name, role').eq('clerk_user_id', userId).maybeSingle(),
-    sb.from('leads').select('id, stage, loan_amount, created_at, first_contacted_at').eq('org_id', orgId),
-    sb.from('leads')
-      .select('id, first_name, last_name, stage, loan_type, loan_amount, lead_source, ai_score, created_at, application_submitted_at, loan_estimate_sent_at, closing_disclosure_sent_at, closing_date, updated_at')
-      .eq('org_id', orgId)
-      .order('updated_at', { ascending: false })
-      .limit(4),
-    sb.from('tasks')
-      .select('id, title, priority, due_date, status')
-      .eq('org_id', orgId)
-      .eq('status', 'pending')
-      .order('due_date', { ascending: true })
-      .limit(5)
-      .then((r) => r.error ? { data: [] as any[], error: r.error } : r),
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
+  const cutoff90 = subDays(now, 90);
+  const cutoff120 = subDays(now, 120).toISOString();
+
+  // ── Profile (id needed for personal scope; comp_rate + goal for the money bar) ──
+  const { data: profile } = await sb
+    .from('profiles')
+    .select('id, first_name, comp_rate, monthly_volume_goal')
+    .eq('clerk_user_id', userId)
+    .maybeSingle();
+  const profileId = (profile?.id as string | undefined) ?? null;
+  const compRate = Number(profile?.comp_rate ?? 0.5);
+  const personalOk = isPersonal && !!profileId;
+
+  // ── Active + recent-terminal leads (org-scoped, optionally narrowed to my book) ──
+  let activeQ = sb
+    .from('leads')
+    .select('id, first_name, last_name, stage, loan_amount, closing_date, last_contacted_at, stage_changed_at, created_at')
+    .eq('org_id', orgId)
+    .in('stage', ACTIVE_STAGES);
+  if (personalOk) activeQ = activeQ.eq('assigned_to', profileId);
+
+  let termQ = sb
+    .from('leads')
+    .select('id, first_name, last_name, stage, loan_amount, closing_date, last_contacted_at, stage_changed_at, created_at')
+    .eq('org_id', orgId)
+    .in('stage', TERMINAL_STAGES)
+    .or(`closing_date.gte.${cutoff120},stage_changed_at.gte.${cutoff120}`)
+    .order('closing_date', { ascending: false })
+    .limit(300);
+  if (personalOk) termQ = termQ.eq('assigned_to', profileId);
+
+  const [{ data: activeRows }, { data: termRows }] = await Promise.all([activeQ, termQ]);
+  const activeLeads = (activeRows ?? []) as DashLead[];
+  const terminalLeads = (termRows ?? []) as DashLead[];
+
+  const activeIds = activeLeads.map((l) => l.id);
+  const myLeadIds = [...activeIds, ...terminalLeads.map((l) => l.id)];
+
+  // ── Conditions (on my active files), tasks, unread inbox, leadership goal sum ──
+  const condQ = activeIds.length
+    ? sb.from('loan_conditions').select('lead_id, status').in('lead_id', activeIds).neq('status', 'cleared')
+    : Promise.resolve({ data: [] as { lead_id: string; status: string }[] });
+
+  let taskQ = sb
+    .from('loan_tasks')
+    .select('id, title, priority, due_date, status, lead_id')
+    .eq('org_id', orgId)
+    .in('status', TASK_ACTIVE)
+    .order('due_date', { ascending: true, nullsFirst: false })
+    .limit(12);
+  if (personalOk) taskQ = taskQ.eq('assigned_to', profileId);
+
+  let inboxQ = sb
+    .from('inbound_messages')
+    .select('id, lead_id, channel, from_address, body, created_at, read_at')
+    .eq('org_id', orgId)
+    .is('read_at', null)
+    .order('created_at', { ascending: false })
+    .limit(2);
+  if (personalOk && myLeadIds.length) inboxQ = inboxQ.in('lead_id', myLeadIds);
+  else if (personalOk) inboxQ = inboxQ.eq('lead_id', '00000000-0000-0000-0000-000000000000'); // my book is empty → no messages
+
+  const goalSumQ =
+    persona === 'leadership'
+      ? sb.from('profiles').select('monthly_volume_goal').eq('org_id', orgId)
+      : Promise.resolve({ data: null as { monthly_volume_goal: number | null }[] | null });
+
+  const [{ data: condRows }, { data: taskRows }, { data: inboxRows }, { data: goalRows }] = await Promise.all([
+    condQ,
+    taskQ,
+    inboxQ,
+    goalSumQ,
   ]);
 
-  const leads = allLeads ?? [];
-  const recent = recentLeads ?? [];
+  const condByLead: Record<string, number> = {};
+  for (const c of condRows ?? []) condByLead[c.lead_id] = (condByLead[c.lead_id] ?? 0) + 1;
 
-  const today = new Date();
-  const todayStr = today.toISOString().slice(0, 10);
+  // ── Derive ──────────────────────────────────────────────────────────────────
+  const closedThisMonth = terminalLeads.filter((l) => l.stage === 'closed' && l.closing_date && isThisMonth(new Date(l.closing_date)));
+  const closedLeads = terminalLeads.filter((l) => l.stage === 'closed');
+  const terminal90 = terminalLeads.filter((l) => {
+    const d = l.closing_date ?? l.stage_changed_at ?? l.created_at;
+    return d ? new Date(d) >= cutoff90 : false;
+  });
 
-  // Stats
-  const newTodayCount = leads.filter((l) => l.created_at?.slice(0, 10) === todayStr).length;
-  const activeStages = ['new_inquiry', 'pre_qual', 'application', 'processing', 'underwriting', 'conditional_approval', 'clear_to_close'];
-  const activeLeads = leads.filter((l) => activeStages.includes(l.stage));
-  const pipelineValue = activeLeads.reduce((sum, l) => sum + (l.loan_amount ?? 0), 0);
+  const pipelineByStage = derivePipelineByStage(activeLeads);
+  const weeklyVolume = deriveWeeklyVolume(closedLeads, now, 8);
+  const alertedLeads = deriveAlertedLeads(activeLeads, condByLead, now, 3);
+  const metrics = deriveMetrics({ activeLeads, closedThisMonth, terminal90, conditionCountByLead: condByLead, compRate, now });
 
-  // Contact leads today for "conversations started"
-  const contactedToday = leads.filter((l) => l.first_contacted_at?.slice(0, 10) === todayStr).length;
+  const activeTasks = (taskRows ?? []) as { id: string; title: string; priority: string; due_date: string | null; lead_id: string | null }[];
+  const dueTodayTasks = activeTasks.filter((t) => t.due_date && t.due_date <= todayStr);
+  const tasksDueToday = dueTodayTasks.length;
 
-  // Applications this month
-  const applicationsThisMonth = leads.filter((l) => {
-    const d = new Date(l.created_at);
-    return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear() && l.stage !== 'new_inquiry';
-  }).length;
+  // Goal: producer = own; leadership = team rollup (falls back to own / 4M).
+  const ownGoal = Number(profile?.monthly_volume_goal ?? 4_000_000);
+  const teamGoal = (goalRows ?? []).reduce((s, g) => s + Number(g.monthly_volume_goal ?? 0), 0);
+  const goal = persona === 'leadership' ? teamGoal || ownGoal : ownGoal;
 
-  // Pipeline by stage for donut
-  const pipelineStages = ['pre_qual', 'application', 'processing', 'underwriting', 'conditional_approval', 'clear_to_close'];
-  const pipelineData = pipelineStages
-    .map((stage) => ({
-      stage,
-      label: STAGE_LABELS[stage],
-      count: activeLeads.filter((l) => l.stage === stage).length,
-      color: STAGE_COLORS[stage] ?? '#6B7280',
-    }))
-    .filter((d) => d.count > 0);
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const daysLeft = daysInMonth - now.getDate();
 
-  const totalActive = activeLeads.length;
+  const firstName = (profile?.first_name as string | undefined) ?? 'there';
 
-  // Lead sources
-  const sourceCounts: Record<string, number> = {};
-  for (const lead of leads) {
-    const src = lead.lead_source ?? 'Other';
-    sourceCounts[src] = (sourceCounts[src] ?? 0) + 1;
-  }
-  const topSources = Object.entries(sourceCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([label, count]) => ({ label, count }));
-  const maxSource = topSources[0]?.count ?? 1;
+  const taskCards = activeTasks.slice(0, 4).map((t) => ({
+    id: t.id,
+    title: t.title,
+    priority: t.priority,
+    leadId: t.lead_id,
+    dueLabel: !t.due_date ? null : t.due_date < todayStr ? 'Overdue' : t.due_date === todayStr ? 'Today' : new Date(t.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+  }));
 
-  const firstName = profile?.first_name ?? 'there';
-  const hour = today.getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const inboxCards = ((inboxRows ?? []) as { id: string; channel: string | null; from_address: string | null; body: string | null; created_at: string }[]).map((m) => ({
+    id: m.id,
+    from: m.from_address || 'Unknown sender',
+    channel: m.channel ?? 'sms',
+    snippet: (m.body ?? '').slice(0, 80),
+    timeLabel: formatDistanceToNow(new Date(m.created_at), { addSuffix: false }),
+  }));
 
-  const stats = [
-    { icon: 'conversations', label: 'Conversations Started', value: contactedToday + newTodayCount, trend: '+18%' },
-    { icon: 'appointments', label: 'Appointments Booked', value: Math.max(0, Math.floor(newTodayCount * 0.3)), trend: '+33%' },
-    { icon: 'applications', label: 'Applications Started', value: applicationsThisMonth, trend: '+14%' },
-    { icon: 'leads', label: 'Leads Followed Up', value: contactedToday, trend: '+27%' },
-  ];
+  const opsStats = deriveOperationsStats({ activeLeads, conditionCountByLead: condByLead, tasksDueToday, now });
 
   return (
-    <>
-      <GettingStartedCard orgId={orgId} clerkUserId={userId} />
-      <MorningBriefingCard />
-      <AttentionPanel orgId={orgId} />
-      <CommandCenterClient
-      firstName={firstName}
-      greeting={greeting}
-      dateStr={format(today, 'EEEE, MMMM d, yyyy')}
-      stats={stats}
-      pipelineData={pipelineData}
-      totalActive={totalActive}
-      pipelineValue={formatCurrency(pipelineValue)}
-      recentLeads={recent.map((l) => ({
-        id: l.id,
-        name: `${l.first_name} ${l.last_name}`,
-        message: l.lead_source ? `Source: ${l.lead_source}` : 'Direct inquiry',
-        time: formatDistanceToNow(new Date(l.updated_at ?? l.created_at), { addSuffix: true }),
-        stage: STAGE_LABELS[l.stage] ?? l.stage,
-        initials: `${l.first_name?.[0] ?? ''}${l.last_name?.[0] ?? ''}`.toUpperCase(),
-      }))}
-      tasks={(tasks ?? []).map((t) => ({
-        id: t.id,
-        title: t.title,
-        priority: t.priority,
-      }))}
-      topSources={topSources}
-      maxSource={maxSource}
-      />
-    </>
+    <div style={{ display: 'flex', flexDirection: 'column', margin: '0 -1.5rem -1.5rem', minHeight: 0 }}>
+      <GreetingBar name={firstName} alertCount={metrics.alertCount} tasksDueToday={tasksDueToday} />
+
+      <div style={{ padding: '11px 13px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <GettingStartedCard orgId={orgId} clerkUserId={userId} />
+        {isFinancial && <MorningBriefingCard />}
+
+        {isFinancial ? (
+          <MoneyBar
+            mtdVolume={metrics.mtdVolume}
+            mtdLoanCount={metrics.mtdLoanCount}
+            closingVolume={metrics.closingVolume}
+            closingCount={metrics.closingCount}
+            estimatedCommission={metrics.estimatedCommission}
+            compRate={metrics.compRate}
+            pullThrough={metrics.pullThrough}
+            pullThroughDelta={metrics.pullThroughDelta}
+            alertCount={metrics.alertCount}
+          />
+        ) : (
+          <OperationsStatBar
+            filesInQueue={opsStats.filesInQueue}
+            conditionsOutstanding={opsStats.conditionsOutstanding}
+            tasksDueToday={opsStats.tasksDueToday}
+            closingThisMonth={opsStats.closingThisMonth}
+          />
+        )}
+
+        {isFinancial ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+            <PipelineDonut stages={pipelineByStage} />
+            <GoalRing
+              current={metrics.mtdVolume}
+              goal={goal}
+              daysLeft={daysLeft}
+              label={persona === 'leadership' ? 'Team goal' : 'Monthly goal'}
+            />
+            <VolumeSparkline weeks={weeklyVolume} />
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <PipelineDonut stages={pipelineByStage} />
+            <NeedsAttentionCard leads={alertedLeads} />
+          </div>
+        )}
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          {isFinancial ? (
+            <NeedsAttentionCard leads={alertedLeads} />
+          ) : (
+            <TasksCard tasks={taskCards} />
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            {isFinancial && <TasksCard tasks={taskCards} />}
+            <InboxPreviewCard messages={inboxCards} />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
