@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { X, Maximize2, Send, MessageSquare } from 'lucide-react';
+import { IconFilePlus } from '@tabler/icons-react';
 import { AshleyAvatar } from '@/components/brand/AshleyAvatar';
 
 interface Message {
@@ -17,6 +19,7 @@ const QUICK_PROMPTS = [
 ];
 
 export function AskAshleyWidget() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -115,6 +118,16 @@ export function AskAshleyWidget() {
 
           {/* Input */}
           <div className="px-3 pb-3 pt-2 border-t border-gray-100">
+            {/* Persistent quick actions (Phase 90) */}
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              <button
+                onClick={() => router.push('/leads/new?type=application')}
+                className="inline-flex items-center gap-1 text-[11px] font-medium text-[#876830] bg-[#fdf8ee] border border-[#C9A95C]/30 rounded-full px-2.5 py-1 hover:bg-[#f9f1dd] transition-colors"
+              >
+                <IconFilePlus size={12} />
+                New Loan Application
+              </button>
+            </div>
             <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 border border-gray-200 focus-within:border-gold-300 focus-within:ring-2 focus-within:ring-gold-100 transition-all">
               <input
                 value={input}

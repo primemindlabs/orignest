@@ -27,6 +27,7 @@ import { TasksCard } from '@/components/dashboard/TasksCard';
 import { InboxPreviewCard } from '@/components/dashboard/InboxPreviewCard';
 import { GettingStartedCard } from '@/components/dashboard/GettingStartedCard';
 import { MorningBriefingCard } from '@/components/dashboard/MorningBriefingCard';
+import { QuickActions } from '@/components/dashboard/QuickActions';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Command Center' };
@@ -173,6 +174,7 @@ export default async function DashboardPage() {
 
       <div style={{ padding: '11px 13px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         <GettingStartedCard orgId={orgId} clerkUserId={userId} />
+        {isFinancial && <QuickActions />}
         {isFinancial && <MorningBriefingCard />}
 
         {isFinancial ? (

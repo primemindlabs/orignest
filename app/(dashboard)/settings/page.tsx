@@ -7,6 +7,8 @@ import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { CreditCard, Users, Building2, Shield, Bell, ChevronRight, Sparkles, Plug } from 'lucide-react';
 import { CreditRepairSettingsCard } from './CreditRepairSettingsCard';
+import { ensureApplicationSlug } from '@/lib/auth/slug';
+import { ApplicationLink } from '@/components/settings/ApplicationLink';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,9 +67,20 @@ export default async function SettingsPage() {
   const sb = createAdminClient();
   const { data: profile } = await sb
     .from('profiles')
-    .select('first_name, last_name, email, role, nmls_id')
+    .select('id, first_name, last_name, email, role, nmls_id, application_slug')
     .eq('clerk_user_id', userId)
     .maybeSingle();
+
+  // Phase 90 — lazily mint the LO's shareable application slug on first settings view.
+  const applicationSlug = profile
+    ? await ensureApplicationSlug(sb, {
+        id: profile.id,
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        nmls_id: profile.nmls_id,
+        application_slug: profile.application_slug,
+      })
+    : null;
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -100,6 +113,8 @@ export default async function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {applicationSlug && <ApplicationLink slug={applicationSlug} />}
 
       {/* Settings sections */}
       <div className="bg-surface rounded-card shadow-card border border-border overflow-hidden divide-y divide-border">

@@ -60,7 +60,7 @@ const STAGE_LABELS: Record<string, string> = {
   withdrawn: 'Withdrawn',
 };
 
-export function NewLeadForm() {
+export function NewLeadForm({ initialStage = 'new_inquiry' }: { initialStage?: string }) {
   const router = useRouter();
   const [form, setForm] = useState({
     first_name: '',
@@ -71,7 +71,7 @@ export function NewLeadForm() {
     loan_purpose: '',
     loan_amount: '',
     lead_source: '',
-    stage: 'new_inquiry',
+    stage: initialStage,
     sms_consent: false,
     data_ownership: 'company_generated' as 'lo_personal' | 'company_generated' | 'company_referral',
   });

@@ -9,10 +9,12 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = { title: 'New Lead' };
 
-export default async function NewLeadPage() {
+export default async function NewLeadPage({ searchParams }: { searchParams: { type?: string } }) {
   const { userId, orgId } = await getOrgContext();
   if (!userId) redirect('/sign-in');
   if (!orgId) redirect('/onboarding');
+
+  const isApplication = searchParams.type === 'application';
 
   return (
     <div className="max-w-xl space-y-5">
@@ -24,13 +26,17 @@ export default async function NewLeadPage() {
           <ArrowLeft size={14} />
           Back to leads
         </Link>
-        <h1 className="text-[22px] font-bold text-black tracking-tight mt-2">Add Lead</h1>
+        <h1 className="text-[22px] font-bold text-black tracking-tight mt-2">
+          {isApplication ? 'New Loan Application' : 'Add Lead'}
+        </h1>
         <p className="text-label-2 text-sm mt-0.5">
-          We&apos;ll check for possible duplicates as you type.
+          {isApplication
+            ? 'Starts at the application stage. We’ll check for possible duplicates as you type.'
+            : 'We’ll check for possible duplicates as you type.'}
         </p>
       </div>
 
-      <NewLeadForm />
+      <NewLeadForm initialStage={isApplication ? 'application' : 'new_inquiry'} />
     </div>
   );
 }
