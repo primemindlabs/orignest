@@ -4,6 +4,8 @@ import { HTMLAttributes } from 'react';
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   padding?: 'none' | 'sm' | 'md' | 'lg';
   hoverable?: boolean;
+  /** Phase 65: visual variant. 'default' is unchanged for backward compatibility. */
+  variant?: 'default' | 'elevated' | 'gold' | 'inset' | 'ghost';
 }
 
 const paddingClasses = {
@@ -13,9 +15,19 @@ const paddingClasses = {
   lg: 'p-6',
 };
 
+// 'default' = the original look (no caller is affected unless they opt into a variant).
+const variantClasses = {
+  default: 'bg-surface rounded-card border border-[rgba(60,60,67,0.12)] shadow-card',
+  elevated: 'bg-white rounded-card border border-[rgba(15,29,46,0.06)] shadow-[var(--shadow-md)]',
+  gold: 'bg-white rounded-card border border-[var(--gold-300)] shadow-[var(--shadow-gold)]',
+  inset: 'bg-[var(--surface-2)] rounded-card border border-[rgba(15,29,46,0.06)]',
+  ghost: 'bg-transparent rounded-card border border-[rgba(15,29,46,0.08)]',
+};
+
 export function Card({
   padding = 'md',
   hoverable = false,
+  variant = 'default',
   children,
   className,
   ...props
@@ -23,7 +35,7 @@ export function Card({
   return (
     <div
       className={clsx(
-        'bg-surface rounded-card border border-[rgba(60,60,67,0.12)] shadow-card',
+        variantClasses[variant],
         paddingClasses[padding],
         hoverable &&
           'cursor-pointer transition-shadow duration-150 hover:shadow-[0_2px_12px_rgba(0,0,0,0.10)]',
