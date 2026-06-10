@@ -456,7 +456,7 @@ export default async function LeadDetailPage({
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-black truncate">{doc.file_name}</p>
                     <p className="text-xs text-label-2">
-                      {doc.document_type?.replace('_', ' ')} ·{' '}
+                      {formatMortgageEnum(doc.document_type, {})} ·{' '}
                       {(doc.file_size / 1024).toFixed(0)} KB
                     </p>
                   </div>

@@ -10,7 +10,8 @@ import { DemoControls } from '@/components/pipeline/DemoControls';
 import { MobilePipelineView } from '@/components/pipeline/MobilePipelineView';
 import Link from 'next/link';
 import { getTRIDStatus } from '@/lib/compliance/trid';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, isThisMonth } from 'date-fns';
+import { PipelineCommissionMetric } from './PipelineCommissionMetric';
 
 export const dynamic = 'force-dynamic';
 
@@ -135,6 +136,17 @@ export default async function PipelinePage() {
 
   const totalValue = allLeads.reduce((s, l) => s + (l.loan_amount ?? 0), 0);
 
+  // Phase 74 — money bar. Real columns: closing_date (expected close), stage.
+  const { data: profileRow } = await sb.from('profiles').select('comp_rate').eq('clerk_user_id', userId).maybeSingle();
+  const compRate = Number(profileRow?.comp_rate ?? 0.5);
+  const CLOSING_STAGES = ['processing', 'underwriting', 'clear_to_close'];
+  const closingThisMonth = allLeads.filter((l) => l.closing_date && isThisMonth(new Date(l.closing_date)) && CLOSING_STAGES.includes(l.stage));
+  const closingThisMonthVolume = closingThisMonth.reduce((s, l) => s + (l.loan_amount ?? 0), 0);
+  const needsAttentionCount = criticalCount + warningCount;
+  function fullCurrency(n: number): string {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+  }
+
   function formatCurrency(n: number): string {
     if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
     if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
@@ -158,6 +170,26 @@ export default async function PipelinePage() {
           <Plus size={14} />
           Add Lead
         </Link>
+      </div>
+
+      {/* ── Money bar (Phase 74) — money + urgency always visible ─────── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 bg-white border border-[var(--color-border-tertiary)] rounded-[12px] overflow-hidden">
+        <div className="px-5 py-4 border-r border-[var(--color-border-tertiary)]">
+          <p className="text-xs text-[var(--color-text-secondary)] mb-1">Total pipeline</p>
+          <p className="text-[19px] font-medium text-black">{fullCurrency(totalValue)}</p>
+          <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{allLeads.length} active loans</p>
+        </div>
+        <div className="px-5 py-4 border-r border-[var(--color-border-tertiary)]">
+          <p className="text-xs text-[var(--color-text-secondary)] mb-1">Closing this month</p>
+          <p className="text-[19px] font-medium text-[#8A6310]">{fullCurrency(closingThisMonthVolume)}</p>
+          <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{closingThisMonth.length} loans</p>
+        </div>
+        <PipelineCommissionMetric closingVolume={closingThisMonthVolume} initialRate={compRate} />
+        <div className="px-5 py-4">
+          <p className="text-xs text-[var(--color-text-secondary)] mb-1">Needs attention</p>
+          <p className="text-[19px] font-medium text-[#C4724A]">{needsAttentionCount}</p>
+          <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">stalled · {criticalCount} critical</p>
+        </div>
       </div>
 
       {/* ── Demo Mode (Phase 42.4) ───────────────────────────────────── */}
