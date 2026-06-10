@@ -15,7 +15,19 @@ interface BreadcrumbItem {
 interface TopbarProps {
   breadcrumbs?: BreadcrumbItem[];
   actions?: React.ReactNode;
+  role?: string;
 }
+
+const ROLE_LABELS: Record<string, string> = {
+  loan_officer: 'Loan Officer',
+  lo: 'Loan Officer',
+  branch_manager: 'Branch Manager',
+  manager: 'Manager',
+  processor: 'Processor',
+  ae: 'Account Executive',
+  account_executive: 'Account Executive',
+  admin: 'Admin',
+};
 
 function useBreadcrumbs(): BreadcrumbItem[] {
   const pathname = usePathname();
@@ -70,7 +82,7 @@ function useBreadcrumbs(): BreadcrumbItem[] {
   });
 }
 
-export function Topbar({ breadcrumbs: propBreadcrumbs, actions }: TopbarProps) {
+export function Topbar({ breadcrumbs: propBreadcrumbs, actions, role }: TopbarProps) {
   const autoBreadcrumbs = useBreadcrumbs();
   const breadcrumbs = propBreadcrumbs ?? autoBreadcrumbs;
   const { setOpen: openCommandPalette } = useCommandPalette();
@@ -112,6 +124,13 @@ export function Topbar({ breadcrumbs: propBreadcrumbs, actions }: TopbarProps) {
       {/* Right actions */}
       <div className="flex items-center gap-2 flex-shrink-0">
         {actions}
+
+        {/* Role badge */}
+        {role && ROLE_LABELS[role] && (
+          <span className="hidden md:inline text-[11px] font-medium px-2 py-0.5 rounded-full bg-[rgba(201,169,92,0.12)] text-[var(--c-gold-deep)]">
+            {ROLE_LABELS[role]}
+          </span>
+        )}
 
         {/* Search trigger — opens CommandPalette */}
         <button

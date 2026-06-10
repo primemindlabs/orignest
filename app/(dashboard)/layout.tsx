@@ -58,7 +58,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           className="flex-1 flex flex-col min-w-0 transition-[margin] duration-150"
           style={{ marginLeft: 'var(--sidebar-w, 220px)' }}
         >
-          <Topbar />
+          <Topbar role={userRole} />
           <main className="flex-1 overflow-auto pt-14 animate-fade-in">
             <TrialBanner />
             <ActionRail />
