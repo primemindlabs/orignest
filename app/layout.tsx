@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     apple: '/apple-icon.png',
   },
   keywords: ['mortgage CRM', 'AI mortgage assistant', 'loan officer software', 'TRID compliance', 'mortgage pipeline', 'mortgage broker software'],
-  authors: [{ name: 'PrimeMind Labs' }],
+  authors: [{ name: 'Ashley IQ' }],
   // Use `||` (not `??`) so an empty-string env var also falls back — an empty
   // NEXT_PUBLIC_APP_URL would otherwise crash the build with `new URL("")`.
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://ashleyiq.com'),

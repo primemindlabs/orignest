@@ -15,8 +15,8 @@ const supabase = createClient(
 
 const anthropic = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY')! });
 const resend = new Resend(Deno.env.get('RESEND_API_KEY')!);
-const APP_URL = Deno.env.get('NEXT_PUBLIC_APP_URL') ?? 'https://app.orignest.com';
-const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') ?? 'noreply@orignest.com';
+const APP_URL = Deno.env.get('NEXT_PUBLIC_APP_URL') ?? 'https://ashleyiq.com';
+const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') ?? 'noreply@ashleyiq.com';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -305,7 +305,7 @@ function buildEmailHTML(
                   <td>
                     <div style="display:inline-flex;align-items:center;gap:10px;">
                       <div style="width:28px;height:28px;background:#C9A95C;border-radius:7px;display:inline-block;vertical-align:middle;"></div>
-                      <span style="color:#C9A95C;font-size:16px;font-weight:700;vertical-align:middle;margin-left:8px;">Orignest</span>
+                      <span style="color:#C9A95C;font-size:16px;font-weight:700;vertical-align:middle;margin-left:8px;">AshleyIQ</span>
                     </div>
                     <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:6px 0 0;">Your Weekly Snapshot · ${weekLabel}</p>
                   </td>
@@ -390,7 +390,7 @@ function buildEmailHTML(
           <tr>
             <td style="background:#FFFFFF;border-radius:0 0 12px 12px;padding:20px 32px;border-top:1px solid rgba(60,60,67,0.08);">
               <p style="font-size:11px;color:#AEAEB2;margin:0;">
-                Orignest · <a href="${APP_URL}/settings" style="color:#AEAEB2;text-decoration:underline;">Manage email preferences</a>
+                AshleyIQ · <a href="${APP_URL}/settings" style="color:#AEAEB2;text-decoration:underline;">Manage email preferences</a>
               </p>
             </td>
           </tr>
@@ -449,7 +449,7 @@ Deno.serve(async () => {
           );
 
           await resend.emails.send({
-            from: `Orignest <${FROM_EMAIL}>`,
+            from: `AshleyIQ <${FROM_EMAIL}>`,
             to: profile.email,
             subject: `Your week in mortgage, ${profile.first_name ?? 'there'} 📊`,
             html,

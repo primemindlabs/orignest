@@ -39,10 +39,12 @@ export default async function TeamPage({
   const sb = createAdminClient();
   const sbAdmin = createAdminClient();
 
+  // getOrgContext().orgId is already organizations.id (the uuid every org_id column
+  // uses) — look it up by primary key, not clerk_org_id (which left the roster empty).
   const { data: org } = await sb
     .from('organizations')
     .select('id')
-    .eq('clerk_org_id', orgId)
+    .eq('id', orgId)
     .maybeSingle();
 
   const [{ data: currentProfile }, { data: members }] = await Promise.all([
