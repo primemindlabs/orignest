@@ -1,5 +1,6 @@
 import { clsx } from 'clsx';
 import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
+import { AnimatedNumber } from './AnimatedNumber';
 
 interface MetricCardProps {
   label: string;
@@ -13,6 +14,8 @@ interface MetricCardProps {
   suffix?: string;
   prefix?: string;
   loading?: boolean;
+  /** Phase 65: count-up numeric values (default true). Strings always render as-is. */
+  animate?: boolean;
 }
 
 const colorClasses = {
@@ -36,6 +39,7 @@ export function MetricCard({
   suffix,
   prefix,
   loading = false,
+  animate = true,
 }: MetricCardProps) {
   // Determine effective direction
   const effectiveUp =
@@ -74,7 +78,7 @@ export function MetricCard({
               {prefix && (
                 <span className="text-[18px] font-[300] mr-0.5 text-label-2">{prefix}</span>
               )}
-              {value}
+              {animate && typeof value === 'number' ? <AnimatedNumber value={value} /> : value}
               {suffix && (
                 <span className="text-[18px] font-[300] ml-0.5 text-label-2">{suffix}</span>
               )}

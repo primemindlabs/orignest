@@ -27,12 +27,12 @@ const NAV: NavGroup[] = [
     key: 'pipeline', label: 'Pipeline', icon: GitBranch, items: [
       { href: '/pipeline', label: 'Pipeline Board' },
       { href: '/leads', label: 'Leads' },
-      { href: '/my-tasks', label: 'My Tasks' },
+      { href: '/my-tasks', label: 'My Queue' },
       { href: '/credit-alerts', label: 'Credit Alerts' },
       { href: '/my-book', label: 'My Book' },
       { href: '/inbox', label: 'Conversations' },
       { href: '/calendar', label: 'Calendar' },
-      { href: '/applications', label: 'Documents' },
+      { href: '/applications', label: 'File Room' },
       { href: '/dscr-calculator', label: 'DSCR Calculator' },
     ],
   },
@@ -72,7 +72,7 @@ const NAV: NavGroup[] = [
     ],
   },
   {
-    key: 'analytics', label: 'Analytics', icon: BarChart3, items: [
+    key: 'analytics', label: 'Insights', icon: BarChart3, items: [
       { href: '/reports', label: 'Reports' },
       { href: '/referral-attribution', label: 'Attribution' },
       { href: '/commissions', label: 'Commissions' },
