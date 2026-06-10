@@ -1,0 +1,5 @@
+-- Phase 66 — Unified Comms Hub. Real schema: organizations/profiles/leads. OAuth tokens
+-- AES-256-GCM (_enc cols). communication_events INSERT-only (UPD/DEL/TRUNC revoked).
+-- (Full DDL applied via MCP migration phase66_communications.) twilio_numbers +
+-- email_connections + social_connections_v2 (gated; OAuth/provisioning deferred) +
+-- communication_events audit. All org_id RLS.

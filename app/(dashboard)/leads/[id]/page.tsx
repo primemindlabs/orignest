@@ -16,6 +16,7 @@ import { PreApprovalCertButton } from '@/components/loan/PreApprovalCertButton';
 import { LoanOpsPanel } from '@/components/loan/LoanOpsPanel';
 import { InvestorEntityPanel } from '@/components/loan/InvestorEntityPanel';
 import { DNCStatusBadge } from '@/components/loan/DNCStatusBadge';
+import { TcpaWindowBadge } from '@/components/loan/TcpaWindowBadge';
 import { TRIDTimeline } from '@/components/compliance/TRIDTimeline';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { maskSSN, maskIncome } from '@/lib/compliance/encryption';
@@ -149,6 +150,7 @@ export default async function LeadDetailPage({
                   </span>
                 )}
                 <DNCStatusBadge phone={lead.phone} />
+                <TcpaWindowBadge leadId={lead.id} />
               </div>
               <p className="text-sm text-label-2 mt-1">
                 {lead.loan_type?.toUpperCase() ?? 'Loan type TBD'} ·{' '}
