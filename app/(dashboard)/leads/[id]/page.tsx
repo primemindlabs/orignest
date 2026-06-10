@@ -17,6 +17,8 @@ import { LoanOpsPanel } from '@/components/loan/LoanOpsPanel';
 import { InvestorEntityPanel } from '@/components/loan/InvestorEntityPanel';
 import { DNCStatusBadge } from '@/components/loan/DNCStatusBadge';
 import { TcpaWindowBadge } from '@/components/loan/TcpaWindowBadge';
+import { LeadToolsMenu } from './LeadToolsMenu';
+import { formatMortgageEnum, LOAN_TYPE_LABELS, LOAN_PURPOSE_LABELS, LEAD_SOURCE_LABELS, PROPERTY_TYPE_LABELS, OCCUPANCY_LABELS } from '@/lib/formatters/mortgage';
 import { TRIDTimeline } from '@/components/compliance/TRIDTimeline';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { maskSSN, maskIncome } from '@/lib/compliance/encryption';
@@ -153,9 +155,9 @@ export default async function LeadDetailPage({
                 <TcpaWindowBadge leadId={lead.id} />
               </div>
               <p className="text-sm text-label-2 mt-1">
-                {lead.loan_type?.toUpperCase() ?? 'Loan type TBD'} ·{' '}
+                {formatMortgageEnum(lead.loan_type, LOAN_TYPE_LABELS) ?? 'Loan type TBD'} ·{' '}
                 {lead.loan_amount ? `$${lead.loan_amount.toLocaleString()}` : 'Amount TBD'} ·{' '}
-                {lead.lead_source ?? 'Direct'}
+                {formatMortgageEnum(lead.lead_source, LEAD_SOURCE_LABELS) ?? 'Direct'}
               </p>
               <p className="text-xs text-label-3 mt-0.5">
                 Created {formatDistanceToNow(new Date(lead.created_at), { addSuffix: true })}
@@ -169,32 +171,7 @@ export default async function LeadDetailPage({
             <AssignTaskButton leadId={lead.id} />
             <CreditMonitoringButton leadId={lead.id} />
             <PreApprovalCertButton leadId={lead.id} defaultAmount={lead.loan_amount} defaultLoanType={lead.loan_type} />
-            <Link href={`/loans/${lead.id}/income`} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-[13px] font-medium border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
-              <FileText size={14} className="text-[var(--c-gold-deep)]" /> Income
-            </Link>
-            <Link href={`/leads/${lead.id}/content-360`} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-[13px] font-medium border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
-              <Clock size={14} className="text-[var(--c-gold-deep)]" /> Content 360
-            </Link>
-            <Link href={`/loans/${lead.id}/signatures`} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-[13px] font-medium border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
-              <FileText size={14} className="text-[var(--c-gold-deep)]" /> Signatures
-            </Link>
-            <Link href={`/loans/${lead.id}/loe`} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-[13px] font-medium border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
-              <FileText size={14} className="text-[var(--c-gold-deep)]" /> LOE
-            </Link>
-            <Link href={`/loans/${lead.id}/waiver-check`} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-[13px] font-medium border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
-              <FileText size={14} className="text-[var(--c-gold-deep)]" /> Waiver
-            </Link>
-            <Link href={`/loans/${lead.id}/hoa`} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-[13px] font-medium border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
-              <FileText size={14} className="text-[var(--c-gold-deep)]" /> HOA
-            </Link>
-            <Link href={`/loans/${lead.id}/title`} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-[13px] font-medium border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
-              <FileText size={14} className="text-[var(--c-gold-deep)]" /> Title
-            </Link>
-            {isConstructionLoan && (
-              <Link href={`/loans/${lead.id}/construction`} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-[13px] font-medium border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
-                <FileText size={14} className="text-[var(--c-gold-deep)]" /> Construction
-              </Link>
-            )}
+            <LeadToolsMenu loanId={lead.id} isConstruction={isConstructionLoan} />
             <ScenarioAIPanel
               leadId={lead.id}
               initial={{
@@ -335,8 +312,8 @@ export default async function LeadDetailPage({
               Loan Details
             </h3>
             <div className="space-y-3">
-              <InfoRow label="Loan Type" value={lead.loan_type?.toUpperCase()} />
-              <InfoRow label="Loan Purpose" value={lead.loan_purpose?.replace('_', ' ')} />
+              <InfoRow label="Loan Type" value={formatMortgageEnum(lead.loan_type, LOAN_TYPE_LABELS)} />
+              <InfoRow label="Loan Purpose" value={formatMortgageEnum(lead.loan_purpose, LOAN_PURPOSE_LABELS)} />
               <InfoRow
                 label="Loan Amount"
                 value={lead.loan_amount ? `$${lead.loan_amount.toLocaleString()}` : null}
@@ -349,8 +326,8 @@ export default async function LeadDetailPage({
                 label="LTV"
                 value={lead.ltv ? `${lead.ltv.toFixed(1)}%` : null}
               />
-              <InfoRow label="Property Type" value={lead.property_type?.replace('_', ' ')} />
-              <InfoRow label="Occupancy" value={lead.occupancy_type?.replace('_', ' ')} />
+              <InfoRow label="Property Type" value={formatMortgageEnum(lead.property_type, PROPERTY_TYPE_LABELS)} />
+              <InfoRow label="Occupancy" value={formatMortgageEnum(lead.occupancy_type, OCCUPANCY_LABELS)} />
               {lead.closing_date && (
                 <InfoRow
                   label="Closing Date"
