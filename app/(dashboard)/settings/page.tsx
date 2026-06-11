@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
-import { CreditCard, Users, Building2, Shield, Bell, ChevronRight, Sparkles, Plug } from 'lucide-react';
+import { CreditCard, Users, Building2, Shield, Bell, ChevronRight, Sparkles, Plug, UserCircle, Percent } from 'lucide-react';
 import { CreditRepairSettingsCard } from './CreditRepairSettingsCard';
 import { ensureApplicationSlug } from '@/lib/auth/slug';
 import { ApplicationLink } from '@/components/settings/ApplicationLink';
@@ -15,6 +15,18 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Settings' };
 
 const SETTINGS_SECTIONS = [
+  {
+    href: '/settings/profile',
+    icon: UserCircle,
+    label: 'Profile',
+    description: 'Your name, NMLS #, photo, volume goal, and commission rate',
+  },
+  {
+    href: '/settings/compensation',
+    icon: Percent,
+    label: 'Compensation',
+    description: 'Commission rate for dashboard math and your company comp plans',
+  },
   {
     href: '/settings/billing',
     icon: CreditCard,
@@ -67,7 +79,7 @@ export default async function SettingsPage() {
   const sb = createAdminClient();
   const { data: profile } = await sb
     .from('profiles')
-    .select('id, first_name, last_name, email, role, nmls_id, application_slug')
+    .select('id, first_name, last_name, email, role, nmls_id, application_slug, avatar_url')
     .eq('clerk_user_id', userId)
     .maybeSingle();
 
@@ -91,16 +103,25 @@ export default async function SettingsPage() {
         </p>
       </div>
 
-      {/* Profile card */}
-      <div className="bg-surface rounded-card shadow-card border border-border p-5">
-        <h3 className="text-sm font-semibold text-label-2 uppercase tracking-wide mb-4">
-          Your Profile
-        </h3>
+      {/* Profile card — links to the editable profile page */}
+      <Link
+        href="/settings/profile"
+        className="block bg-surface rounded-card shadow-card border border-border p-5 hover:bg-fill transition-colors"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-label-2 uppercase tracking-wide">Your Profile</h3>
+          <span className="text-xs font-semibold" style={{ color: '#876830' }}>Edit →</span>
+        </div>
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-blue/10 flex items-center justify-center flex-shrink-0">
-            <span className="text-[16px] font-semibold text-blue">
-              {profile?.first_name?.[0]}{profile?.last_name?.[0]}
-            </span>
+          <div className="w-12 h-12 rounded-full bg-fill flex items-center justify-center flex-shrink-0 overflow-hidden">
+            {profile?.avatar_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-[16px] font-semibold text-label-2">
+                {profile?.first_name?.[0]}{profile?.last_name?.[0]}
+              </span>
+            )}
           </div>
           <div>
             <p className="text-sm font-semibold text-black">
@@ -112,7 +133,7 @@ export default async function SettingsPage() {
             </p>
           </div>
         </div>
-      </div>
+      </Link>
 
       {applicationSlug && <ApplicationLink slug={applicationSlug} />}
 
