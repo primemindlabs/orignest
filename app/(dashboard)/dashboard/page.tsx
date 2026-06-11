@@ -26,7 +26,7 @@ import { NeedsAttentionCard } from '@/components/dashboard/NeedsAttentionCard';
 import { TasksCard } from '@/components/dashboard/TasksCard';
 import { InboxPreviewCard } from '@/components/dashboard/InboxPreviewCard';
 import { GettingStartedCard } from '@/components/dashboard/GettingStartedCard';
-import { MorningBriefingCard } from '@/components/dashboard/MorningBriefingCard';
+import { MorningBriefPanel } from '@/components/morning-brief/MorningBriefPanel';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { ensureApplicationSlug } from '@/lib/auth/slug';
 
@@ -190,7 +190,7 @@ export default async function DashboardPage() {
       <div style={{ padding: '11px 13px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         <GettingStartedCard orgId={orgId} clerkUserId={userId} />
         {isFinancial && <QuickActions applyUrl={applyUrl} />}
-        {isFinancial && <MorningBriefingCard />}
+        {isFinancial && <MorningBriefPanel />}
 
         {isFinancial ? (
           <MoneyBar

@@ -5,6 +5,7 @@ import { Search, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NotificationCenter } from '@/components/layout/NotificationCenter';
+import { BriefBell } from '@/components/layout/BriefBell';
 import { useCommandPalette } from '@/components/providers/CommandPaletteProvider';
 
 interface BreadcrumbItem {
@@ -148,6 +149,9 @@ export function Topbar({ breadcrumbs: propBreadcrumbs, actions, role }: TopbarPr
             ⌘K
           </kbd>
         </button>
+
+        {/* Morning brief (Phase 81) */}
+        <BriefBell />
 
         {/* Notification Center */}
         <NotificationCenter />
