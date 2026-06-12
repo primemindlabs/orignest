@@ -25,6 +25,7 @@ import { PreApprovalCertButton } from '@/components/loan/PreApprovalCertButton';
 import { LoanOpsPanel } from '@/components/loan/LoanOpsPanel';
 import { InvestorEntityPanel } from '@/components/loan/InvestorEntityPanel';
 import { DNCStatusBadge } from '@/components/loan/DNCStatusBadge';
+import { BorrowerEngagementBanner } from '@/components/ghost/BorrowerEngagementBanner';
 import { TcpaWindowBadge } from '@/components/loan/TcpaWindowBadge';
 import { LeadToolsMenu } from './LeadToolsMenu';
 import { ConditionsManager, type Condition } from '@/components/loan/ConditionsManager';
@@ -328,6 +329,9 @@ export default async function LeadDetailPage({
           </div>
         </div>
       </div>
+
+      {/* ── Borrower going quiet (Phase 85) — self-hides unless ghost score ≥ 5 ── */}
+      <BorrowerEngagementBanner leadId={lead.id} borrowerFirstName={lead.first_name ?? 'there'} />
 
       {/* ── Tabs ─────────────────────────────────────────────────────── */}
       <div className="border-b border-border flex gap-0 overflow-x-auto">
