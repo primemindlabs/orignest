@@ -16,7 +16,7 @@ const DAY = 24 * 60 * 60 * 1000;
 
 // action_type -> href builder. Only verified routes are referenced here.
 export const ACTION_ROUTES: Record<BriefItemActionType, (leadId?: string) => string | null> = {
-  view_loan: (leadId) => (leadId ? `/leads/${leadId}` : '/pipeline'),
+  view_loan: (leadId) => (leadId ? `/loans/${leadId}?focus=ai` : '/pipeline'),
   view_pipeline: () => '/pipeline',
   view_tasks: () => '/my-tasks',
   view_refi: () => '/refi-watch',

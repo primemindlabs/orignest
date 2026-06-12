@@ -4,6 +4,7 @@ import { getLoanSummary } from '@/lib/loans/getLoanSummary';
 import { LoanHeader } from '@/components/loan/LoanHeader';
 import { LoanSidebar } from '@/components/loan/LoanSidebar';
 import { LoanBreadcrumb } from '@/components/loan/LoanBreadcrumb';
+import { LoanFileAIPanel } from '@/components/loan-file-ai/LoanFileAIPanel';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,6 +33,8 @@ export default async function LoanLayout({
         <LoanSidebar loanId={loan.id} loanContext={loan.context} />
         <main className="flex-1 overflow-y-auto bg-[var(--c-bg)] p-6">{children}</main>
       </div>
+      {/* Phase 82 — Loan File AI (Q&A about this loan). Auto-opens on ?focus=ai. */}
+      <LoanFileAIPanel loanId={loan.id} />
     </div>
   );
 }
