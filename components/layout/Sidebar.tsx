@@ -44,6 +44,7 @@ const NAV: NavGroup[] = [
       { href: '/partners', label: 'Realtors & Partners' },
       { href: '/realtors', label: 'Realtor Intelligence' },
       { href: '/discover', label: 'Discover Realtors' },
+      { href: '/ae-connect', label: 'AE Connect' },
     ],
   },
   {
