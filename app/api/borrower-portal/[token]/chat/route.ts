@@ -5,6 +5,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { filterMessages, type ChatMessage, type Viewer } from '@/lib/chat/thread';
+import { notifyLoOfPortalEvent } from '@/lib/portal/notifyLoOfPortalEvent';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -77,6 +78,14 @@ export async function POST(req: Request, { params }: { params: { token: string }
     description: `${senderType === 'coborrower' ? 'Co-borrower' : 'Borrower'} sent a chat message`,
     metadata: { source: 'borrower_portal_chat' },
   }).then(() => undefined, () => undefined);
+
+  // Ping the assigned LO's notification bell (best-effort).
+  await notifyLoOfPortalEvent(sb, {
+    orgId: portal.org_id,
+    leadId: portal.lead_id,
+    kind: 'message_received',
+    detail: content.slice(0, 100),
+  });
 
   return NextResponse.json({ message: data });
 }

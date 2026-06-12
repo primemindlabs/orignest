@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { notifyLoOfPortalEvent } from '@/lib/portal/notifyLoOfPortalEvent';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -108,6 +109,14 @@ export async function POST(
     action: 'document_uploaded',
     description: `Borrower uploaded ${file.name}`,
     metadata: { document_type: documentType, file_path: filePath, source: 'borrower_portal' },
+  });
+
+  // Ping the assigned LO's notification bell (best-effort).
+  await notifyLoOfPortalEvent(sb, {
+    orgId: portal.org_id as string,
+    leadId: portal.lead_id as string,
+    kind: 'doc_uploaded',
+    detail: file.name,
   });
 
   return NextResponse.json({ success: true, file_path: filePath });

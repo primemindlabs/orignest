@@ -23,6 +23,7 @@ const isPublicRoute = createRouteMatcher([
   '/icon(.*)', '/apple-icon(.*)', '/favicon(.*)',  // app icons
   '/(borrower)(.*)',        // Borrower portal — token-authenticated
   '/status/(.*)',           // Borrower status pages
+  '/b/(.*)',                // Phase 106 short borrower-portal link → redirects to /status/[token]
   '/cert/(.*)',             // Shareable pre-approval certificate — token-gated
   '/certificate/(.*)',      // Phase 52 pre-approval certificate — public token URL
   '/title-portal/(.*)',     // Phase 64 title-company portal — token-gated, no login

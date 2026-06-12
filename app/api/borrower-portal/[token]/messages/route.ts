@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { notifyLoOfPortalEvent } from '@/lib/portal/notifyLoOfPortalEvent';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -64,13 +65,21 @@ export async function POST(req: Request, { params }: { params: { token: string }
     .single();
   if (error) return NextResponse.json({ error: 'Failed to send' }, { status: 500 });
 
-  // Surface on the LO timeline. TODO: Resend email notification once RESEND_API_KEY is set.
+  // Surface on the LO timeline.
   await sb.from('lead_activities').insert({
     lead_id: portal.lead_id,
     org_id: portal.org_id,
     action: 'portal_message_received',
     description: 'Borrower sent a portal message',
     metadata: { source: 'borrower_portal' },
+  });
+
+  // Ping the assigned LO's notification bell (best-effort).
+  await notifyLoOfPortalEvent(sb, {
+    orgId: portal.org_id as string,
+    leadId: portal.lead_id as string,
+    kind: 'message_received',
+    detail: message.slice(0, 100),
   });
 
   return NextResponse.json({ message: data });
