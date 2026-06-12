@@ -69,6 +69,7 @@ const NAV: NavGroup[] = [
       { href: '/income', label: 'Income Calculators' },
       { href: '/dscr', label: 'DSCR / Non-QM' },
       { href: '/training', label: 'Training Center' },
+      { href: '/training/library', label: 'Training Library' },
       { href: '/training/ask', label: 'Ask Ashley' },
       { href: '/refi-watch', label: 'Refi Watch' },
       { href: '/equity', label: 'Equity Tracker' },
