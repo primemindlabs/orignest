@@ -7,6 +7,7 @@ const isPublicRoute = createRouteMatcher([
   '/sign-up(.*)',
   '/privacy',
   '/terms',
+  '/hipaa',
   '/api/webhooks(.*)',      // Stripe / Twilio — verified by signature
   '/api/integrations/closa(.*)', // CLOSA partner bridge — Bearer token verified in-handler
   '/apply(.*)',             // Public referral landing page

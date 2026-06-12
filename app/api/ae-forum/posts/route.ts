@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { getMyProfileId } from '@/lib/teamChat/access';
 import { buildForumFeed } from '@/lib/aeForum/feed';
 import { CATEGORY_KEYS } from '@/lib/aeForum/categories';
-import { FROM, getResend } from '@/lib/resend';
+import { sendCompliantEmail } from '@/lib/resend';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -64,13 +64,13 @@ export async function POST(req: Request) {
   if (process.env.RESEND_API_KEY && (aes ?? []).length > 0) {
     const { data: poster } = await sb.from('profiles').select('first_name, last_name, email').eq('id', me).maybeSingle();
     const posterName = poster ? `${poster.first_name ?? ''} ${poster.last_name ?? ''}`.trim() || 'A loan officer' : 'A loan officer';
-    const resend = getResend();
     for (const ae of aes ?? []) {
       try {
-        await resend.emails.send({
-          from: FROM,
+        await sendCompliantEmail({
           replyTo: poster?.email || undefined,
           to: ae.ae_email,
+          recipientEmail: ae.ae_email,
+          orgId,
           subject: `[AshleyIQ Forum] ${title}`,
           text: `${posterName} posted a question to their branch forum:\n\n"${title}"\n\n${body ?? ''}\n\n---\nReply to this email to share your answer. Your response will be visible to the whole branch team.\n\nPost ID: ${post.id}`,
           headers: { 'X-Forum-Post-Id': String(post.id), 'X-Ae-Id': ae.id },

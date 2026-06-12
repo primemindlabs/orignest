@@ -68,23 +68,21 @@ export async function POST(req: Request) {
       .single();
 
     const resendReady = Boolean(process.env.RESEND_API_KEY);
-    let resend: import('resend').Resend | null = null;
-    if (resendReady) {
-      const { getResend } = await import('@/lib/resend');
-      resend = getResend();
-    }
-    const { FROM_EMAIL } = await import('@/lib/resend');
+    const { FROM_EMAIL, sendCompliantEmail } = await import('@/lib/resend');
 
     let transmitted = 0;
     for (const c of list) {
       const lead = (c as { leads?: { first_name?: string; email?: string; unsubscribed_email?: boolean } }).leads;
       const fullMessage = buildBlastMessage(template, { first_name: lead?.first_name, rate_savings: (c as { monthly_savings?: number }).monthly_savings ?? '' });
 
-      if (resend && lead?.email && !lead.unsubscribed_email) {
+      if (resendReady && lead?.email && !lead.unsubscribed_email) {
         try {
-          await resend.emails.send({
+          await sendCompliantEmail({
             from: FROM_EMAIL,
             to: lead.email,
+            recipientEmail: lead.email,
+            orgId,
+            leadId: (c as { lead_id?: string }).lead_id ?? null,
             subject: 'Rate update — potential savings for you',
             text: fullMessage,
           });

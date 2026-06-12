@@ -11,7 +11,7 @@
  * the borrower acknowledges TCPA in the portal.
  */
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getResend, FROM_EMAIL } from '@/lib/resend';
+import { FROM_EMAIL, sendCompliantEmail } from '@/lib/resend';
 import { buildArriveWelcomeEmail } from '@/lib/arrive/welcomeEmail';
 
 export interface ArriveLead {
@@ -114,10 +114,11 @@ async function sendWelcomeEmail(sb: Admin, payload: ArriveLead, integ: ArriveInt
       .maybeSingle();
     const loName = `${lo?.first_name ?? ''} ${lo?.last_name ?? ''}`.trim() || 'Your mortgage advisor';
     const portalUrl = `${APP_URL}/apply`;
-    const resend = getResend();
-    await resend.emails.send({
+    await sendCompliantEmail({
       from: `${loName} <${FROM_EMAIL}>`,
       to: payload.email,
+      recipientEmail: payload.email,
+      orgId: integ.org_id,
       subject: `Welcome! I'm your mortgage advisor${payload.destinationCity ? ` for your move to ${payload.destinationCity}` : ''}`,
       html: buildArriveWelcomeEmail(payload, { name: loName, email: lo?.email ?? null }, portalUrl),
     });

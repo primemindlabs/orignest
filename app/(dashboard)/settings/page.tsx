@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
-import { CreditCard, Users, Building2, Shield, Bell, ChevronRight, Sparkles, Plug, UserCircle, Percent } from 'lucide-react';
+import { CreditCard, Users, Building2, Shield, Bell, ChevronRight, Sparkles, Plug, UserCircle, Percent, Lock } from 'lucide-react';
 import { CreditRepairSettingsCard } from './CreditRepairSettingsCard';
 import { ensureApplicationSlug } from '@/lib/auth/slug';
 import { ApplicationLink } from '@/components/settings/ApplicationLink';
@@ -69,6 +69,12 @@ const SETTINGS_SECTIONS = [
     icon: Plug,
     label: 'Integrations',
     description: 'Connect your LOS (LendingPad, Arive) for loan status sync',
+  },
+  {
+    href: '/settings/privacy',
+    icon: Lock,
+    label: 'Privacy & Data',
+    description: 'Download your data, opt out of analytics, or request account deletion',
   },
 ] as const;
 

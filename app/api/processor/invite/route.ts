@@ -2,7 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { clerkClient } from '@clerk/nextjs/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getResend, FROM } from '@/lib/resend';
+import { sendCompliantEmail } from '@/lib/resend';
 
 export const runtime = 'nodejs';
 
@@ -112,10 +112,10 @@ export async function POST(request: Request) {
   // ── Send invite email ─────────────────────────────────────────────────────
   const acceptUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.ashleyiq.com'}/processor/organizations`;
   try {
-    const resend = getResend();
-    await resend.emails.send({
-      from: FROM,
+    await sendCompliantEmail({
       to: body.processorEmail,
+      recipientEmail: body.processorEmail,
+      orgId: org.id,
       subject: `${org.name} has invited you to process loans on AshleyIQ`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">

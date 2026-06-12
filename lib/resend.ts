@@ -19,6 +19,42 @@ export const FROM_NAME = 'AshleyIQ';
 export const FROM = `${FROM_NAME} <${FROM_EMAIL}>`;
 
 /**
+ * Canonical outbound-email path. Injects the CAN-SPAM compliance footer
+ * (sender identity + physical address + unsubscribe) and THROWS before sending
+ * if COMPANY_PHYSICAL_ADDRESS is not configured — a non-compliant email is never
+ * delivered. All outbound sends should go through this.
+ */
+export async function sendCompliantEmail(params: {
+  to: string | string[];
+  subject: string;
+  html?: string;
+  text?: string;
+  from?: string;
+  replyTo?: string;
+  headers?: Record<string, string>;
+  orgId?: string | null;
+  recipientEmail?: string;
+  leadId?: string | null;
+}): Promise<{ id?: string } | undefined> {
+  const { complianceFooterHtml, complianceFooterText, requirePhysicalAddress } = await import('@/lib/email/footer');
+  const recipient = params.recipientEmail ?? (Array.isArray(params.to) ? params.to[0] : params.to);
+  const footerArgs = { orgId: params.orgId ?? null, email: recipient, leadId: params.leadId ?? null };
+
+  // Building the footer THROWS if the physical-address env is missing — a
+  // non-compliant email is never assembled or sent.
+  const payload: Record<string, unknown> = { from: params.from ?? FROM, to: params.to, subject: params.subject };
+  if (params.html != null) payload.html = `${params.html}${complianceFooterHtml(footerArgs)}`;
+  if (params.text != null) payload.text = `${params.text}${complianceFooterText(footerArgs)}`;
+  if (params.html == null && params.text == null) requirePhysicalAddress(); // gate even when body is templated elsewhere
+  if (params.replyTo) payload.replyTo = params.replyTo;
+  if (params.headers) payload.headers = params.headers;
+
+  const resend = getResend();
+  const { data } = await resend.emails.send(payload as unknown as Parameters<typeof resend.emails.send>[0]);
+  return data ?? undefined;
+}
+
+/**
  * Send a payment failed notification to the org admin.
  */
 export async function sendPaymentFailedEmail(params: {
@@ -27,11 +63,9 @@ export async function sendPaymentFailedEmail(params: {
   amount: number;
   invoiceUrl: string;
 }): Promise<void> {
-  const resend = getResend();
-
-  await resend.emails.send({
-    from: FROM,
+  await sendCompliantEmail({
     to: params.to,
+    recipientEmail: params.to,
     subject: 'Action required: Payment failed for AshleyIQ',
     html: `
       <div style="font-family: -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
@@ -53,11 +87,9 @@ export async function sendSubscriptionCanceledEmail(params: {
   orgName: string;
   endDate: string;
 }): Promise<void> {
-  const resend = getResend();
-
-  await resend.emails.send({
-    from: FROM,
+  await sendCompliantEmail({
     to: params.to,
+    recipientEmail: params.to,
     subject: 'Your AshleyIQ subscription has been canceled',
     html: `
       <div style="font-family: -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
@@ -82,8 +114,6 @@ export async function sendTRIDAlertEmail(params: {
   alertType: 'le_due' | 'le_overdue' | 'cd_due' | 'cd_overdue';
   deadline: string;
 }): Promise<void> {
-  const resend = getResend();
-
   const labels: Record<string, string> = {
     le_due: 'Loan Estimate Due Today',
     le_overdue: 'Loan Estimate OVERDUE',
@@ -94,9 +124,9 @@ export async function sendTRIDAlertEmail(params: {
   const isOverdue = params.alertType.includes('overdue');
   const color = isOverdue ? '#FF3B30' : '#FF9500';
 
-  await resend.emails.send({
-    from: FROM,
+  await sendCompliantEmail({
     to: params.to,
+    recipientEmail: params.to,
     subject: `TRID Alert: ${labels[params.alertType]} — ${params.borrowerName}`,
     html: `
       <div style="font-family: -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">

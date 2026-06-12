@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import twilio from 'twilio';
 import { createClient } from '@/lib/supabase/server';
-import { getResend, FROM } from '@/lib/resend';
+import { sendCompliantEmail } from '@/lib/resend';
 
 interface SendBody {
   leadId: string | null;
@@ -99,10 +99,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     });
     externalMessageId = message.sid;
   } else if (channel === 'email') {
-    const resend = getResend();
-    const { data: emailResult } = await resend.emails.send({
-      from: FROM,
+    const emailResult = await sendCompliantEmail({
       to: toAddress,
+      recipientEmail: toAddress,
+      orgId: org.id,
+      leadId,
       subject: subject ?? `Message from ${profile.first_name} ${profile.last_name}`,
       html: `<div style="font-family:-apple-system,sans-serif;max-width:600px;margin:0 auto;padding:32px 20px;color:#1c1c1e;line-height:1.6;">${body.replace(/\n/g, '<br/>')}</div>`,
     });

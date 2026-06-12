@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getResend, FROM } from '@/lib/resend';
+import { sendCompliantEmail } from '@/lib/resend';
 import twilio from 'twilio';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -99,10 +99,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       const loName = `${profile.first_name} ${profile.last_name}`;
 
       if (channel === 'email') {
-        const resend = getResend();
-        await resend.emails.send({
-          from: FROM,
+        await sendCompliantEmail({
           to: lead.email,
+          recipientEmail: lead.email,
+          orgId: org.id,
           subject: `${loName} sent you a video message`,
           html: `
             <div style="font-family:-apple-system,sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#1c1c1e;">
