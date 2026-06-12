@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FileText, Shield, FileCheck, CheckSquare, Users, MapPin } from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { VelocityBanner } from '@/components/loan/VelocityBanner';
+import { CompCalculator } from '@/components/comp/CompCalculator';
 
 export const dynamic = 'force-dynamic';
 
@@ -75,6 +76,9 @@ export default async function LoanOverviewPage({ params }: { params: { loanId: s
           </div>
         </div>
       )}
+
+      {/* Phase 91 — per-loan comp / BPS take-home (internal LO-only) */}
+      <CompCalculator loanId={loan.id} loanAmount={loan.loanAmount} />
 
       {/* Quick links */}
       <div>

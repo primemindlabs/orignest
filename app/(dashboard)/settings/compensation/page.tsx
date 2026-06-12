@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { CompSettings, type CompPlan } from '@/components/settings/CompSettings';
+import { CompPipelineSummary } from '@/components/comp/CompPipelineSummary';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Compensation' };
@@ -44,6 +45,8 @@ export default async function CompensationSettingsPage() {
           Your commission rate for dashboard math, plus your company&apos;s comp plans.
         </p>
       </div>
+
+      <CompPipelineSummary />
 
       <CompSettings compRate={profile?.comp_rate ?? null} plans={(plans ?? []) as CompPlan[]} />
     </div>
