@@ -11,6 +11,7 @@ import { StageBadge } from './StageBadge';
 import { LeadAlertTag, type PipelineLead } from './LeadAlertTag';
 import { CloseProbabilityBar } from '@/components/pipeline-probability/CloseProbabilityBar';
 import { IntelligenceRow } from '@/components/pipeline/IntelligenceRow';
+import { SourceBadge } from '@/components/leads/SourceBadge';
 
 const usd0 = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 const fmtVol = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `$${(n / 1000).toFixed(0)}K` : `$${n}`);
@@ -37,6 +38,7 @@ function Row({ lead, compRate, closed }: { lead: PipelineLead; compRate: number;
         <div className="min-w-0">
           <p className="font-medium text-black truncate">{lead.first_name} {lead.last_name}</p>
           <p className="text-[11px] text-[var(--color-text-secondary)] truncate">{formatMortgageEnum(lead.loan_purpose, LOAN_PURPOSE_LABELS) ?? '—'} · {formatMortgageEnum(lead.lead_source, LEAD_SOURCE_LABELS) ?? 'Direct'}</p>
+          {lead.referral_source && <div className="mt-1"><SourceBadge source={lead.referral_source} detail={lead.referral_source_detail} size="sm" /></div>}
           {lead.intel && <IntelligenceRow scores={lead.intel} />}
         </div>
       </div>

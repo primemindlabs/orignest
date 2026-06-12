@@ -14,6 +14,9 @@ export interface PipelineLead {
   prob_factors?: DrivingFactor[];
   // Phase 129 — File Intelligence scores (present only for scored files).
   intel?: LoanIntelligenceScores | null;
+  // Phase 98 — referral source attribution.
+  referral_source?: string | null;
+  referral_source_detail?: string | null;
 }
 
 export function LeadAlertTag({ lead }: { lead: PipelineLead }) {

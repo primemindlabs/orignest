@@ -100,6 +100,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const loanAmountRaw = Number(body.loan_amount);
   const loanAmount = Number.isFinite(loanAmountRaw) && loanAmountRaw > 0 ? loanAmountRaw : null;
   const leadSource = str(body.lead_source) || null;
+  // Phase 98 — structured referral source for ROI analytics.
+  const REFERRAL_SOURCES = ['realtor', 'zillow', 'meta_ads', 'google_ads', 'referral', 'organic', 'other'];
+  const referralSource = REFERRAL_SOURCES.includes(str(body.referral_source)) ? str(body.referral_source) : null;
+  const referralSourceDetail = referralSource ? (str(body.referral_source_detail) || null) : null;
 
   const sb = createAdminClient();
 
@@ -121,6 +125,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     loan_purpose: loanPurpose,
     loan_amount: loanAmount,
     lead_source: leadSource,
+    referral_source: referralSource,
+    referral_source_detail: referralSourceDetail,
     stage,
   };
 

@@ -71,7 +71,7 @@ export default async function PipelinePage() {
     sb
       .from('leads')
       .select(
-        'id, first_name, last_name, stage, loan_type, loan_amount, loan_purpose, lead_source, ai_score, created_at, stage_changed_at, last_contacted_at, application_submitted_at, loan_estimate_sent_at, closing_disclosure_sent_at, closing_date, le_deadline, cd_deadline, data_ownership, is_demo'
+        'id, first_name, last_name, stage, loan_type, loan_amount, loan_purpose, lead_source, referral_source, referral_source_detail, ai_score, created_at, stage_changed_at, last_contacted_at, application_submitted_at, loan_estimate_sent_at, closing_disclosure_sent_at, closing_date, le_deadline, cd_deadline, data_ownership, is_demo'
       )
       .eq('org_id', orgId)
       .in('stage', [...STAGES])
@@ -155,7 +155,7 @@ export default async function PipelinePage() {
 
   // Phase 74 tabs — closed leads + outstanding-condition counts.
   const [{ data: closedRows }, { data: condRows }] = await Promise.all([
-    sb.from('leads').select('id, first_name, last_name, stage, loan_type, loan_amount, loan_purpose, lead_source, created_at, stage_changed_at, last_contacted_at, closing_date')
+    sb.from('leads').select('id, first_name, last_name, stage, loan_type, loan_amount, loan_purpose, lead_source, referral_source, referral_source_detail, created_at, stage_changed_at, last_contacted_at, closing_date')
       .eq('org_id', orgId).in('stage', ['closed', 'funded']).order('closing_date', { ascending: false }).limit(120),
     sb.from('loan_conditions').select('lead_id, status').eq('org_id', orgId).neq('status', 'cleared'),
   ]);
@@ -234,6 +234,8 @@ export default async function PipelinePage() {
     close_probability: probByLead[l.id as string]?.score,
     prob_factors: probByLead[l.id as string]?.factors,
     intel: intelById[l.id as string] ?? null,
+    referral_source: (l.referral_source as string) ?? null,
+    referral_source_detail: (l.referral_source_detail as string) ?? null,
   });
   const activePipelineLeads = allLeads.map(toPipelineLead);
   const closedPipelineLeads = (closedRows ?? []).map(toPipelineLead);

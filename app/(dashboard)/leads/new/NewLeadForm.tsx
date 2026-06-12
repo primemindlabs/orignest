@@ -8,6 +8,7 @@ import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { AlertTriangle, Users } from 'lucide-react';
 import { OwnershipSelector } from '@/components/leads/OwnershipSelector';
+import { LeadSourceField } from '@/components/leads/LeadSourceField';
 
 interface DuplicateLead {
   id: string;
@@ -71,6 +72,8 @@ export function NewLeadForm({ initialStage = 'new_inquiry' }: { initialStage?: s
     loan_purpose: '',
     loan_amount: '',
     lead_source: '',
+    referral_source: null as string | null,
+    referral_source_detail: null as string | null,
     stage: initialStage,
     sms_consent: false,
     data_ownership: 'company_generated' as 'lo_personal' | 'company_generated' | 'company_referral',
@@ -317,6 +320,12 @@ export function NewLeadForm({ initialStage = 'new_inquiry' }: { initialStage?: s
             placeholder="Referral, website…"
           />
         </div>
+        {/* Phase 98 — structured referral source for ROI analytics */}
+        <LeadSourceField
+          value={form.referral_source}
+          detail={form.referral_source_detail}
+          onChange={(s, d) => { set('referral_source', s); set('referral_source_detail', d); }}
+        />
         <Select
           label="Stage"
           options={STAGE_OPTIONS}
