@@ -7,7 +7,7 @@
  */
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Wrench, ChevronDown, FileText, PenLine, FileCheck, ShieldCheck, Building2, ScrollText, Calculator, HardHat, PartyPopper } from 'lucide-react';
+import { Wrench, ChevronDown, FileText, PenLine, FileCheck, ShieldCheck, Building2, ScrollText, Calculator, HardHat, PartyPopper, ClipboardList } from 'lucide-react';
 
 interface Tool { href: string; label: string; icon: React.ReactNode }
 
@@ -24,6 +24,7 @@ export function LeadToolsMenu({ loanId, isConstruction, isClosed }: { loanId: st
   }, [open]);
 
   const tools: Tool[] = [
+    { href: `/loans/${loanId}/apply-1003`, label: 'Digital 1003', icon: <ClipboardList size={15} /> },
     { href: `/loans/${loanId}/income`, label: 'Income', icon: <Calculator size={15} /> },
     { href: `/loans/${loanId}/loe`, label: 'Letter of Explanation', icon: <ScrollText size={15} /> },
     { href: `/loans/${loanId}/waiver-check`, label: 'Appraisal Waiver', icon: <FileCheck size={15} /> },

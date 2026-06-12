@@ -10,7 +10,8 @@ const isPublicRoute = createRouteMatcher([
   '/hipaa',
   '/api/webhooks(.*)',      // Stripe / Twilio — verified by signature
   '/api/integrations/closa(.*)', // CLOSA partner bridge — Bearer token verified in-handler
-  '/apply(.*)',             // Public referral landing page
+  '/apply(.*)',             // Public referral landing + Phase 105 digital 1003 form
+  '/api/apply(.*)',         // Phase 105 digital 1003 — public, token-gated (service-role in handler)
   '/api/referrals/apply(.*)', // Public referral form submit — service-role, no PII enumeration
   '/api/marketing/market-update/unsubscribe(.*)', // Public realtor email unsubscribe (id = credential)
   '/api/v1(.*)',            // REST API — verified by API key
