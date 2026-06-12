@@ -1,43 +1,19 @@
 import { TRIDStatus, TRIDStatusValue } from '@/types';
-
-// Federal holidays through 2028 — update annually
-// Format: YYYY-MM-DD
-const FEDERAL_HOLIDAYS = new Set([
-  // 2024
-  '2024-01-01', '2024-01-15', '2024-02-19', '2024-05-27',
-  '2024-06-19', '2024-07-04', '2024-09-02', '2024-10-14',
-  '2024-11-11', '2024-11-28', '2024-12-25',
-  // 2025
-  '2025-01-01', '2025-01-20', '2025-02-17', '2025-05-26',
-  '2025-06-19', '2025-07-04', '2025-09-01', '2025-10-13',
-  '2025-11-11', '2025-11-27', '2025-12-25',
-  // 2026
-  '2026-01-01', '2026-01-19', '2026-02-16', '2026-05-25',
-  '2026-06-19', '2026-07-04', '2026-09-07', '2026-10-12',
-  '2026-11-11', '2026-11-26', '2026-12-25',
-  // 2027
-  '2027-01-01', '2027-01-18', '2027-02-15', '2027-05-31',
-  '2027-06-19', '2027-07-04', '2027-09-06', '2027-10-11',
-  '2027-11-11', '2027-11-25', '2027-12-24',
-  // 2028
-  '2028-01-01', '2028-01-17', '2028-02-21', '2028-05-29',
-  '2028-06-19', '2028-07-04', '2028-09-04', '2028-10-09',
-  '2028-11-11', '2028-11-23', '2028-12-25',
-]);
+import { isFederalHoliday } from '@/lib/compliance/federalHolidays';
 
 /**
  * TRID "business day" definition (12 CFR 1026.2(a)(6)):
  * For the 3-business-day delivery rules (LE and CD), a "business day"
  * is any calendar day except Sundays and federal public holidays.
  * Saturdays COUNT as business days for TRID purposes.
+ *
+ * Phase 84: federal holidays are now generated dynamically per year
+ * (lib/compliance/federalHolidays.ts) — no annual maintenance, covers all
+ * years, and uses ACTUAL holiday dates (the TRID-correct convention).
  */
 function isTRIDBusinessDay(date: Date): boolean {
-  const dayOfWeek = date.getDay(); // 0 = Sunday
-  if (dayOfWeek === 0) return false; // Sundays excluded
-
-  const dateStr = date.toISOString().slice(0, 10);
-  if (FEDERAL_HOLIDAYS.has(dateStr)) return false;
-
+  if (date.getDay() === 0) return false; // Sundays excluded
+  if (isFederalHoliday(date)) return false;
   return true;
 }
 
@@ -273,4 +249,37 @@ export function getTRIDSummary(status: TRIDStatus): string {
   }
 
   return parts.join(' | ');
+}
+
+// ── Phase 84 — countdown + color state ─────────────────────────────────────────
+
+export type TRIDColorState = 'green' | 'amber' | 'red' | 'critical';
+
+/**
+ * TRID business days remaining until `deadline`, counting days strictly after today
+ * up to and including the deadline. Negative when the deadline is in the past.
+ * Holiday-aware (uses isTRIDBusinessDay — Saturdays count, Sundays + holidays don't).
+ */
+export function tridBusinessDaysRemaining(deadline: Date, today: Date = new Date()): number {
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const target = new Date(deadline.getFullYear(), deadline.getMonth(), deadline.getDate());
+  if (target.getTime() === start.getTime()) return 0;
+
+  const past = target < start;
+  const [from, to] = past ? [target, start] : [start, target];
+  let count = 0;
+  const cursor = new Date(from);
+  while (cursor < to) {
+    cursor.setDate(cursor.getDate() + 1);
+    if (isTRIDBusinessDay(cursor)) count++;
+  }
+  return past ? -count : count;
+}
+
+/** Color state for a TRID countdown. >5 green · 3–5 amber · 1–2 red · ≤0 critical. */
+export function getTRIDColorState(businessDaysRemaining: number): TRIDColorState {
+  if (businessDaysRemaining > 5) return 'green';
+  if (businessDaysRemaining >= 3) return 'amber';
+  if (businessDaysRemaining >= 1) return 'red';
+  return 'critical';
 }
