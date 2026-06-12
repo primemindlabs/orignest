@@ -9,6 +9,7 @@ import { ClosingCelebrationListener } from '@/components/ui/ClosingCelebrationLi
 import { AskAshleyWidget } from '@/components/dashboard/AskAshleyWidget';
 import { TrialBanner } from '@/components/billing/TrialBanner';
 import { ActionRail } from '@/components/dashboard/ActionRail';
+import { NotificationToaster } from '@/components/notifications/NotificationToaster';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,6 +68,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
       </div>
       {/* Global UX layer */}
+      <NotificationToaster userId={(profile?.id as string | undefined) ?? null} />
       <SpeedTicker />
       <ClosingCelebrationListener loName={loName} />
       <AskAshleyWidget />

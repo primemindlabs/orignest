@@ -31,6 +31,7 @@ const NAV: NavGroup[] = [
       { href: '/credit-alerts', label: 'Credit Alerts' },
       { href: '/my-book', label: 'My Book' },
       { href: '/inbox', label: 'Conversations' },
+      { href: '/voicemails', label: 'Voicemails' },
       { href: '/calendar', label: 'Calendar' },
       { href: '/applications', label: 'File Room' },
       { href: '/dscr-calculator', label: 'DSCR Calculator' },
