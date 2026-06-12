@@ -159,6 +159,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // Phase 99 — initial stage_transitions audit row (from_stage = null).
+  if (data?.id) {
+    const { logStageTransition } = await import('@/lib/funnel/logTransition');
+    await logStageTransition(sb, { orgId, leadId: data.id, loId: profile?.id ?? null, fromStage: null, toStage: stage });
+  }
+
   // Phase 33.2 — record ad attribution if UTM / click-id signals are present.
   const attribution = captureLeadAttribution(body as Record<string, unknown>);
   if (data?.id && hasAttribution(attribution)) {

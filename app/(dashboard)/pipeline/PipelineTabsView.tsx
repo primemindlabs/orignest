@@ -3,6 +3,7 @@
 /** Phase 74 — tabbed pipeline list: Active | Needs attention | Pre-approvals |
  * Applications | Closed. Money + urgency visible per row. Real columns only. */
 import { useState, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { format, differenceInCalendarDays } from 'date-fns';
 import { IconSearch, IconBuildingBank, IconCircleCheck, IconClipboardX, IconClockPause, IconCalendarStats } from '@tabler/icons-react';
@@ -90,8 +91,10 @@ export function PipelineTabsView({ active, closed, compRate }: { active: Pipelin
     { key: 'application', label: 'Applications', count: applications.length, alert: false },
     { key: 'closed', label: 'Closed', count: closed.length, alert: false },
   ];
-  const [tab, setTab] = useState('active');
-  const [stage, setStage] = useState('all');
+  // Phase 99 — honor /pipeline?stage=<name> from the funnel chart click.
+  const urlStage = useSearchParams().get('stage');
+  const [tab, setTab] = useState(urlStage === 'closed' ? 'closed' : 'active');
+  const [stage, setStage] = useState(urlStage && urlStage !== 'closed' ? urlStage : 'all');
   const [q, setQ] = useState('');
   const [sort, setSort] = useState('close');
 

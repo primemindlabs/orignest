@@ -26,6 +26,7 @@ import { NeedsAttentionCard } from '@/components/dashboard/NeedsAttentionCard';
 import { TasksCard } from '@/components/dashboard/TasksCard';
 import { InboxPreviewCard } from '@/components/dashboard/InboxPreviewCard';
 import { GettingStartedCard } from '@/components/dashboard/GettingStartedCard';
+import { FunnelWidget } from '@/components/funnel/FunnelWidget';
 import { MorningBriefPanel } from '@/components/morning-brief/MorningBriefPanel';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { ensureApplicationSlug } from '@/lib/auth/slug';
@@ -242,6 +243,9 @@ export default async function DashboardPage() {
             <InboxPreviewCard messages={inboxCards} />
           </div>
         </div>
+
+        {/* Phase 99 — conversion funnel snapshot */}
+        {isFinancial && <FunnelWidget />}
       </div>
     </div>
   );

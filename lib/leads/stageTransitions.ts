@@ -26,7 +26,7 @@ export async function evaluateStageTransitions(params: {
 
   const { data: lead } = await sb
     .from('leads')
-    .select('id, stage')
+    .select('id, stage, assigned_to')
     .eq('id', leadId)
     .eq('org_id', orgId)
     .maybeSingle();
@@ -80,6 +80,15 @@ export async function evaluateStageTransitions(params: {
   } catch {
     /* intelligence recalc is best-effort */
   }
+
+  // Phase 99 — append the immutable funnel audit row. Best-effort.
+  const { logStageTransition } = await import('@/lib/funnel/logTransition');
+  await logStageTransition(sb, {
+    orgId, leadId,
+    loId: (lead.assigned_to as string | null) ?? null,
+    fromStage: lead.stage as string,
+    toStage: to,
+  });
 
   return { transitioned: true, from: lead.stage as string, to, triggerEvent };
 }
