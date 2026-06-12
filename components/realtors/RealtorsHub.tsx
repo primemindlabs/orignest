@@ -12,6 +12,7 @@ import {
   IconCompass,
   IconSparkles,
   IconExternalLink,
+  IconFlame,
 } from '@tabler/icons-react';
 import { RealtorRow, type Realtor } from './RealtorRow';
 
@@ -25,10 +26,12 @@ interface CobrandAsset {
 }
 
 type Tab = 'partners' | 'discovery' | 'comarketing';
-type SortKey = 'volume_12m' | 'deals_referred_12m' | 'last_contact_at';
+type SortKey = 'volume_12m' | 'deals_referred_12m' | 'last_contact_at' | 'heat_score';
 type FilterKey = 'all' | 'active' | 'stale';
+type HeatBandKey = 'all' | 'hot' | 'warm' | 'cooling' | 'cold';
 
 const GOLD = '#C9A95C';
+const HEAT_BANDS: HeatBandKey[] = ['all', 'hot', 'warm', 'cooling', 'cold'];
 
 function daysSince(d: string | null): number | null {
   return d ? differenceInCalendarDays(new Date(), new Date(d)) : null;
@@ -40,7 +43,27 @@ export function RealtorsHub({ realtors, assets }: { realtors: Realtor[]; assets:
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortKey>('volume_12m');
   const [filter, setFilter] = useState<FilterKey>('all');
+  const [heatBand, setHeatBand] = useState<HeatBandKey>('all');
   const [adding, setAdding] = useState(false);
+  const [recalcing, setRecalcing] = useState(false);
+
+  const heatCounts = useMemo(() => {
+    const c: Record<string, number> = { hot: 0, warm: 0, cooling: 0, cold: 0 };
+    for (const r of realtors) if (r.heat_band && c[r.heat_band] !== undefined) c[r.heat_band] += 1;
+    return c;
+  }, [realtors]);
+  const hasHeat = useMemo(() => realtors.some((r) => r.heat_band), [realtors]);
+
+  async function recalcHeat() {
+    if (recalcing) return;
+    setRecalcing(true);
+    try {
+      const r = await fetch('/api/realtors/recalculate', { method: 'POST' });
+      if (r.ok) router.refresh();
+    } finally {
+      setRecalcing(false);
+    }
+  }
 
   const staleCount = useMemo(
     () => realtors.filter((r) => { const d = daysSince(r.last_contact_at); return d === null || d > 21; }).length,
@@ -62,6 +85,9 @@ export function RealtorsHub({ realtors, assets }: { realtors: Realtor[]; assets:
         return filter === 'stale' ? stale : !stale;
       });
     }
+    if (heatBand !== 'all') {
+      list = list.filter((r) => r.heat_band === heatBand);
+    }
     return [...list].sort((a, b) => {
       if (sort === 'last_contact_at') {
         const ad = a.last_contact_at ? new Date(a.last_contact_at).getTime() : 0;
@@ -70,7 +96,7 @@ export function RealtorsHub({ realtors, assets }: { realtors: Realtor[]; assets:
       }
       return (Number(b[sort] ?? 0)) - (Number(a[sort] ?? 0));
     });
-  }, [realtors, search, sort, filter]);
+  }, [realtors, search, sort, filter, heatBand]);
 
   const tabBtn = (key: Tab, label: string) => (
     <button
@@ -96,13 +122,24 @@ export function RealtorsHub({ realtors, assets }: { realtors: Realtor[]; assets:
           </p>
         </div>
         {tab === 'partners' && (
-          <button
-            onClick={() => setAdding((a) => !a)}
-            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-btn text-sm font-medium text-white"
-            style={{ background: GOLD }}
-          >
-            <IconPlus size={15} /> Add partner
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={recalcHeat}
+              disabled={recalcing}
+              title="Recompute heat scores now"
+              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-sm font-medium border border-border bg-surface text-black disabled:opacity-50"
+            >
+              <IconFlame size={15} className={recalcing ? 'animate-pulse' : ''} style={{ color: GOLD }} />
+              {recalcing ? 'Updating…' : 'Heat'}
+            </button>
+            <button
+              onClick={() => setAdding((a) => !a)}
+              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-btn text-sm font-medium text-white"
+              style={{ background: GOLD }}
+            >
+              <IconPlus size={15} /> Add partner
+            </button>
+          </div>
         )}
       </div>
 
@@ -157,6 +194,7 @@ export function RealtorsHub({ realtors, assets }: { realtors: Realtor[]; assets:
               <option value="volume_12m">Sort: Volume</option>
               <option value="deals_referred_12m">Sort: Referrals</option>
               <option value="last_contact_at">Sort: Last contact</option>
+              <option value="heat_score">Sort: Heat</option>
             </select>
             <div className="flex rounded-btn border border-border overflow-hidden">
               {(['all', 'active', 'stale'] as FilterKey[]).map((f) => (
@@ -175,6 +213,31 @@ export function RealtorsHub({ realtors, assets }: { realtors: Realtor[]; assets:
               ))}
             </div>
           </div>
+
+          {/* Heat band filter (Phase 95) — only once scores exist */}
+          {hasHeat && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {HEAT_BANDS.map((b) => {
+                const count = b === 'all' ? realtors.length : heatCounts[b] ?? 0;
+                const isActive = heatBand === b;
+                return (
+                  <button
+                    key={b}
+                    onClick={() => setHeatBand(b)}
+                    className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full text-xs font-medium border capitalize transition-colors"
+                    style={
+                      isActive
+                        ? { background: GOLD, color: '#fff', borderColor: GOLD }
+                        : { background: '#fff', color: '#6E6E73', borderColor: 'var(--c-border, #E5E5E5)' }
+                    }
+                  >
+                    {b === 'all' ? 'All' : b}
+                    <span style={{ opacity: 0.75 }}>{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {/* List */}
           <div className="bg-surface rounded-card shadow-card border border-border overflow-hidden">

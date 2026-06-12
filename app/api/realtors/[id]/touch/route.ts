@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { computePartnershipScore } from '@/lib/realtors/partnershipScore';
+import { recalcRealtorHeatScore } from '@/lib/realtors/heatScore';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -41,5 +42,20 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   patch.partnership_tier = tier;
   await sb.from('realtors').update(patch).eq('id', params.id);
 
-  return NextResponse.json({ ok: true, partnership_score: score, partnership_tier: tier });
+  // Recompute heat (momentum) immediately so the UI reflects this touch without
+  // waiting for the 7 AM cron. Uses the just-written last_contact_at.
+  let heat = null;
+  try {
+    heat = await recalcRealtorHeatScore(sb, { id: params.id as string, org_id: orgId, last_contact_at: now });
+  } catch (e) {
+    console.error('[realtor-heat] recalc after touch failed', e); // never block the touch
+  }
+
+  return NextResponse.json({
+    ok: true,
+    partnership_score: score,
+    partnership_tier: tier,
+    heat_score: heat?.score ?? null,
+    heat_band: heat?.band ?? null,
+  });
 }

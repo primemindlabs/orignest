@@ -13,7 +13,7 @@ export default async function RealtorsPage() {
   if (!orgId) redirect('/onboarding');
 
   const sb = createAdminClient();
-  const [{ data: realtors }, { data: assets }] = await Promise.all([
+  const [{ data: realtors }, { data: assets }, { data: heat }] = await Promise.all([
     sb
       .from('realtors')
       .select(
@@ -29,11 +29,23 @@ export default async function RealtorsPage() {
       .eq('org_id', orgId)
       .order('created_at', { ascending: false })
       .limit(50),
+    sb
+      .from('realtor_heat_scores')
+      .select('realtor_id, score, band, deals_90d')
+      .eq('org_id', orgId)
+      .limit(500),
   ]);
+
+  // Merge the latest heat score onto each realtor (Phase 95 momentum signal).
+  const heatMap = new Map((heat ?? []).map((h) => [h.realtor_id, h]));
+  const realtorsWithHeat = (realtors ?? []).map((r) => {
+    const h = heatMap.get(r.id);
+    return { ...r, heat_score: h?.score ?? null, heat_band: h?.band ?? null, heat_deals_90d: h?.deals_90d ?? null };
+  });
 
   return (
     <div className="max-w-3xl">
-      <RealtorsHub realtors={realtors ?? []} assets={assets ?? []} />
+      <RealtorsHub realtors={realtorsWithHeat} assets={assets ?? []} />
     </div>
   );
 }

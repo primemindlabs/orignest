@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { differenceInCalendarDays } from 'date-fns';
 import { IconAlertCircle, IconMessage, IconPhone, IconCheck } from '@tabler/icons-react';
+import { HeatBandBadge } from './HeatBandBadge';
 
 export interface Realtor {
   id: string;
@@ -18,6 +19,10 @@ export interface Realtor {
   deals_referred_12m: number | null;
   last_contact_at: string | null;
   partnership_tier: string | null;
+  // Phase 95 — heat (momentum) score, merged in by the realtors page.
+  heat_score?: number | null;
+  heat_band?: string | null;
+  heat_deals_90d?: number | null;
 }
 
 function initials(first: string | null, last: string | null) {
@@ -110,8 +115,11 @@ export function RealtorRow({ realtor }: { realtor: Realtor }) {
           {initials(realtor.first_name, realtor.last_name)}
         </div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 500, color: '#1D1D1F', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {name}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+            <span style={{ fontSize: 13.5, fontWeight: 500, color: '#1D1D1F', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {name}
+            </span>
+            {realtor.heat_band && <HeatBandBadge band={realtor.heat_band} className="flex-shrink-0" />}
           </div>
           <div style={{ fontSize: 11.5, color: '#6E6E73', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {realtor.brokerage_name || realtor.primary_city || '—'}

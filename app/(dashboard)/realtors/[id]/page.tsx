@@ -5,6 +5,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, Building2, Mail, Phone, Gift, StickyNote, PhoneCall, Users } from 'lucide-react';
 import { computePartnershipScore, TIER_LABELS, TIER_COLORS, type PartnershipTier } from '@/lib/realtors/partnershipScore';
+import { recalcRealtorHeatScoreById } from '@/lib/realtors/heatScore';
+import { HeatScoreRing } from '@/components/realtors/HeatScoreRing';
+import { HeatBandBadge } from '@/components/realtors/HeatBandBadge';
 import { NotesEditor } from './NotesEditor';
 import { RealtorEngagement } from './RealtorEngagement';
 
@@ -24,6 +27,22 @@ export default async function RealtorDetailPage({ params }: { params: { id: stri
   const { data: touches } = await sb.from('realtor_touches').select('id, touch_type, created_at').eq('realtor_id', params.id).order('created_at', { ascending: false }).limit(50);
   const { factors } = computePartnershipScore(r);
   const tier = r.partnership_tier as PartnershipTier;
+
+  // Phase 95 — recompute heat on view so the detail is always current, then read
+  // back the stored row for the display metrics (deals_90d, days_since_contact).
+  const heat = await recalcRealtorHeatScoreById(sb, params.id, orgId);
+  const { data: heatRow } = await sb
+    .from('realtor_heat_scores')
+    .select('score, band, deals_90d, days_since_last_contact, driving_factors')
+    .eq('realtor_id', params.id)
+    .maybeSingle();
+
+  const HEAT_FACTORS: [string, number, number][] = [
+    ['Deals (90d)', heat?.deals_90d_score ?? 0, 40],
+    ['Recency', heat?.recency_score ?? 0, 30],
+    ['Deal trend', heat?.deal_trend_score ?? 0, 20],
+    ['In-person', heat?.meeting_bonus ?? 0, 10],
+  ];
 
   const FACTORS: [string, number, number][] = [
     ['Production', factors.production_score, 40],
@@ -59,6 +78,36 @@ export default async function RealtorDetailPage({ params }: { params: { id: stri
         {[['Transactions 12m', String(r.transactions_12m)], ['Volume 12m', `$${(Number(r.volume_12m) / 1_000_000).toFixed(1)}M`], ['Buyer side', r.buyer_side_pct != null ? `${r.buyer_side_pct}%` : '—'], ['Referred to me', String(r.deals_referred_12m)]].map(([l, v]) => (
           <div key={String(l)} className="bg-[var(--c-surface)] border border-[var(--c-border)] rounded-[14px] px-3 py-3"><p className="text-[10px] uppercase tracking-wide text-[var(--c-label2)] mb-1">{l}</p><p className="text-[17px] font-bold font-mono tabular-nums text-[var(--c-text)]">{v}</p></div>
         ))}
+      </div>
+
+      {/* Heat (momentum) — Phase 95 */}
+      <div>
+        <h2 className="text-[14px] font-semibold text-[var(--c-text)] mb-2">Heat score</h2>
+        <div className="bg-[var(--c-surface)] border border-[var(--c-border)] rounded-[14px] p-4 flex items-start gap-4">
+          <div className="flex-shrink-0">
+            <HeatScoreRing score={heatRow?.score ?? 0} band={heatRow?.band ?? 'cold'} size={84} strokeWidth={8} />
+          </div>
+          <div className="flex-1 min-w-0 space-y-2.5">
+            <div className="flex items-center gap-2">
+              <HeatBandBadge band={heatRow?.band ?? 'cold'} />
+              <span className="text-[12px] text-[var(--c-label2)]">
+                {heatRow?.deals_90d ?? 0} closed / 90d
+                {heatRow?.days_since_last_contact != null ? ` · contacted ${heatRow.days_since_last_contact}d ago` : ' · never contacted'}
+              </span>
+            </div>
+            {heat?.top_signal && <p className="text-[12px] text-[var(--c-text)] italic">{heat.top_signal}</p>}
+            <div className="space-y-1.5 pt-0.5">
+              {HEAT_FACTORS.map(([label, val, max]) => (
+                <div key={label} className="flex items-center gap-3">
+                  <span className="text-[11px] text-[var(--c-label2)] w-20">{label}</span>
+                  <div className="h-1.5 rounded-full bg-[var(--c-fill)] flex-1 overflow-hidden"><div className="h-full rounded-full" style={{ width: `${(val / max) * 100}%`, background: 'var(--c-gold)' }} /></div>
+                  <span className="text-[10px] font-mono tabular-nums text-[var(--c-label2)] w-10 text-right">{val}/{max}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <p className="text-[11px] text-[var(--c-label2)] mt-1.5">Momentum signal (recency + deal velocity). Distinct from the partnership score below, which measures production capacity. Recomputed nightly at 7 AM and on every logged touch.</p>
       </div>
 
       {/* Partnership health */}
