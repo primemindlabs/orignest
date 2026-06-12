@@ -31,6 +31,7 @@ const NAV: NavGroup[] = [
       { href: '/credit-alerts', label: 'Credit Alerts' },
       { href: '/my-book', label: 'My Book' },
       { href: '/inbox', label: 'Conversations' },
+      { href: '/team-chat', label: 'Team Chat' },
       { href: '/voicemails', label: 'Voicemails' },
       { href: '/calendar', label: 'Calendar' },
       { href: '/applications', label: 'File Room' },
