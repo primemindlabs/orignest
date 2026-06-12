@@ -24,6 +24,9 @@ import { CreditMonitoringButton } from '@/components/leads/CreditMonitoringButto
 import { PreApprovalCertButton } from '@/components/loan/PreApprovalCertButton';
 import { LoanOpsPanel } from '@/components/loan/LoanOpsPanel';
 import { InvestorEntityPanel } from '@/components/loan/InvestorEntityPanel';
+import { FileIntelligencePanel } from '@/components/intelligence/FileIntelligencePanel';
+import { recalculateLoanIntelligence } from '@/lib/intelligence/recalculateLoanIntelligence';
+import type { LoanIntelligenceScores } from '@/lib/intelligence/types';
 import { DNCStatusBadge } from '@/components/loan/DNCStatusBadge';
 import { BorrowerEngagementBanner } from '@/components/ghost/BorrowerEngagementBanner';
 import { TcpaWindowBadge } from '@/components/loan/TcpaWindowBadge';
@@ -134,6 +137,16 @@ export default async function LeadDetailPage({
       : lead.loan_amount && lead.down_payment
       ? `${(((lead.loan_amount - lead.down_payment) / lead.loan_amount) * 100).toFixed(1)}%`
       : null;
+
+  // Phase 129 — File Intelligence scores for the Overview panel. Lazy-seed on the
+  // first view (assigned loans only); subsequent views just read the stored row.
+  let intelScores =
+    (await sb.from('loan_intelligence_scores').select('*').eq('loan_id', lead.id).eq('org_id', orgId).maybeSingle()).data;
+  if (!intelScores) {
+    await recalculateLoanIntelligence(sb, lead.id as string, 'manual_refresh').catch(() => undefined);
+    intelScores =
+      (await sb.from('loan_intelligence_scores').select('*').eq('loan_id', lead.id).eq('org_id', orgId).maybeSingle()).data;
+  }
 
   // ── Per-tab lazy data (kept off the default Overview view to avoid cost / side effects) ──
   let conditions: Condition[] = [];
@@ -355,6 +368,13 @@ export default async function LeadDetailPage({
       {/* ════════════════════ OVERVIEW ════════════════════ */}
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {/* Phase 129 — File Intelligence Suite */}
+          {intelScores && (
+            <div className="lg:col-span-2">
+              <FileIntelligencePanel loanId={lead.id} scores={intelScores as unknown as LoanIntelligenceScores} />
+            </div>
+          )}
+
           {isInvestorLoan && (
             <div className="lg:col-span-2">
               <InvestorEntityPanel leadId={lead.id} />

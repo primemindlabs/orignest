@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { recalculateLoanIntelligence } from '@/lib/intelligence/recalculateLoanIntelligence';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -73,5 +74,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { loanId: st
     .update(update).eq('id', body.id).eq('lead_id', params.loanId).eq('org_id', orgId)
     .select('id, status, is_agent_visible').single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Phase 129 — a condition change moves File Intelligence. Best-effort, non-blocking.
+  if (typeof update.status === 'string') {
+    await recalculateLoanIntelligence(sb, params.loanId, 'condition_update').catch((e) =>
+      console.error('[intelligence] condition recalc failed', e),
+    );
+  }
+
   return NextResponse.json({ condition: data });
 }

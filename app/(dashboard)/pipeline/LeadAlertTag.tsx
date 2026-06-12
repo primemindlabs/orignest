@@ -2,6 +2,7 @@
  * last_contacted_at, outstanding_conditions_count). No lead-level rate-lock column exists. */
 import { differenceInCalendarDays } from 'date-fns';
 import type { DrivingFactor } from '@/lib/pipeline-probability/score';
+import type { LoanIntelligenceScores } from '@/lib/intelligence/types';
 
 export interface PipelineLead {
   id: string; first_name: string | null; last_name: string | null; stage: string;
@@ -11,6 +12,8 @@ export interface PipelineLead {
   // Phase 83 — close probability (optional; present for active loans).
   close_probability?: number;
   prob_factors?: DrivingFactor[];
+  // Phase 129 — File Intelligence scores (present only for scored files).
+  intel?: LoanIntelligenceScores | null;
 }
 
 export function LeadAlertTag({ lead }: { lead: PipelineLead }) {

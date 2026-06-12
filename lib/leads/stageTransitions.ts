@@ -72,5 +72,14 @@ export async function evaluateStageTransitions(params: {
     /* notifications are best-effort */
   }
 
+  // Phase 129 — a stage change moves File Intelligence (close prob, predicted
+  // close, etc.). Best-effort; never blocks the transition.
+  try {
+    const { recalculateLoanIntelligence } = await import('@/lib/intelligence/recalculateLoanIntelligence');
+    await recalculateLoanIntelligence(sb, leadId, 'stage_change');
+  } catch {
+    /* intelligence recalc is best-effort */
+  }
+
   return { transitioned: true, from: lead.stage as string, to, triggerEvent };
 }

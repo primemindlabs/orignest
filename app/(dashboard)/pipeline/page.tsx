@@ -162,6 +162,16 @@ export default async function PipelinePage() {
   const condCount: Record<string, number> = {};
   for (const c of condRows ?? []) condCount[c.lead_id] = (condCount[c.lead_id] ?? 0) + 1;
 
+  // Phase 129 — File Intelligence scores per loan (only present for files that
+  // have been scored; the row renders nothing when absent).
+  const { data: intelRows } = await sb
+    .from('loan_intelligence_scores')
+    .select('loan_id, file_health_score, close_probability, uw_readiness_score, predicted_close_date, predicted_close_confidence, fallout_flags')
+    .eq('org_id', orgId)
+    .limit(1000);
+  const intelById: Record<string, import('@/lib/intelligence/types').LoanIntelligenceScores> = {};
+  for (const r of intelRows ?? []) intelById[r.loan_id as string] = r as unknown as import('@/lib/intelligence/types').LoanIntelligenceScores;
+
   // ── Phase 83 — close-probability per active loan + 4-week weighted forecast ─────
   const behaviorByLead: Record<string, { tier: string | null; avg_response_hours: number | null }> = {};
   for (const r of scoreRows ?? []) behaviorByLead[r.lead_id] = { tier: r.tier ?? null, avg_response_hours: (r as { avg_response_hours?: number | null }).avg_response_hours ?? null };
@@ -223,6 +233,7 @@ export default async function PipelinePage() {
     outstanding_conditions_count: condCount[l.id as string] ?? 0,
     close_probability: probByLead[l.id as string]?.score,
     prob_factors: probByLead[l.id as string]?.factors,
+    intel: intelById[l.id as string] ?? null,
   });
   const activePipelineLeads = allLeads.map(toPipelineLead);
   const closedPipelineLeads = (closedRows ?? []).map(toPipelineLead);

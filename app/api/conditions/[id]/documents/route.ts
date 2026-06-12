@@ -8,6 +8,7 @@
 import { NextResponse } from 'next/server';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { recalculateLoanIntelligence } from '@/lib/intelligence/recalculateLoanIntelligence';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -52,6 +53,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     file_name: file.name, file_size: buf.length, storage_path: path, mime_type: file.type || null, note: (form?.get('note') as string) || null,
   }).select('*').single();
   if (error) return NextResponse.json({ error: 'save_failed' }, { status: 500 });
+
+  // Phase 129 — a document upload moves File Intelligence. Best-effort, non-blocking.
+  await recalculateLoanIntelligence(sb, cond.lead_id as string, 'document_upload').catch((e) =>
+    console.error('[intelligence] document recalc failed', e),
+  );
+
   return NextResponse.json({ document: data });
 }
 
