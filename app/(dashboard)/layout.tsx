@@ -11,6 +11,7 @@ import { TrialBanner } from '@/components/billing/TrialBanner';
 import { ActionRail } from '@/components/dashboard/ActionRail';
 import { NotificationToaster } from '@/components/notifications/NotificationToaster';
 import { QuickActionsBar } from '@/components/dashboard/QuickActionsBar';
+import { LOALauncher } from '@/components/loa/LOALauncher';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,6 +74,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <SpeedTicker />
       <ClosingCelebrationListener loName={loName} />
       <AskAshleyWidget />
+      <LOALauncher />
       <QuickActionsBar />
     </CommandPaletteProvider>
   );
