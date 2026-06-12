@@ -7,11 +7,11 @@
  */
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Wrench, ChevronDown, FileText, PenLine, FileCheck, ShieldCheck, Building2, ScrollText, Calculator, HardHat } from 'lucide-react';
+import { Wrench, ChevronDown, FileText, PenLine, FileCheck, ShieldCheck, Building2, ScrollText, Calculator, HardHat, PartyPopper } from 'lucide-react';
 
 interface Tool { href: string; label: string; icon: React.ReactNode }
 
-export function LeadToolsMenu({ loanId, isConstruction }: { loanId: string; isConstruction?: boolean }) {
+export function LeadToolsMenu({ loanId, isConstruction, isClosed }: { loanId: string; isConstruction?: boolean; isClosed?: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -31,6 +31,7 @@ export function LeadToolsMenu({ loanId, isConstruction }: { loanId: string; isCo
     { href: `/loans/${loanId}/title`, label: 'Title & Closing', icon: <ShieldCheck size={15} /> },
     { href: `/loans/${loanId}/signatures`, label: 'Signatures', icon: <PenLine size={15} /> },
     ...(isConstruction ? [{ href: `/loans/${loanId}/construction`, label: 'Construction', icon: <HardHat size={15} /> }] : []),
+    ...(isClosed ? [{ href: `/loans/${loanId}/closing-post`, label: 'Closing Celebration', icon: <PartyPopper size={15} /> }] : []),
   ];
 
   return (

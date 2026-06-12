@@ -275,7 +275,7 @@ export default async function LeadDetailPage({
           {/* Header quick actions — lean bar; per-lead tools moved into tabs (TCPA gated) */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <AIDraftsPanel leadId={lead.id} />
-            <LeadToolsMenu loanId={lead.id} isConstruction={isConstructionLoan} />
+            <LeadToolsMenu loanId={lead.id} isConstruction={isConstructionLoan} isClosed={lead.stage === 'closed'} />
             <ScenarioAIPanel
               leadId={lead.id}
               initial={{
