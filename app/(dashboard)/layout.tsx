@@ -10,6 +10,7 @@ import { AskAshleyWidget } from '@/components/dashboard/AskAshleyWidget';
 import { TrialBanner } from '@/components/billing/TrialBanner';
 import { ActionRail } from '@/components/dashboard/ActionRail';
 import { NotificationToaster } from '@/components/notifications/NotificationToaster';
+import { QuickActionsBar } from '@/components/dashboard/QuickActionsBar';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,6 +73,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <SpeedTicker />
       <ClosingCelebrationListener loName={loName} />
       <AskAshleyWidget />
+      <QuickActionsBar />
     </CommandPaletteProvider>
   );
 }
