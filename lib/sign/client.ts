@@ -16,10 +16,10 @@ export interface SignBrand { logoUrl: string | null; primaryColor: string; compa
 /** White-label brand for a tenant + LO. Shows LO + company, never "Ashley IQ". */
 export async function getSignBrand(orgId: string, loId?: string): Promise<SignBrand> {
   const sb = createAdminClient();
-  const { data: org } = await sb.from('organizations').select('name').eq('id', orgId).maybeSingle();
+  const { data: org } = await sb.from('organizations').select('name, brand_color').eq('id', orgId).maybeSingle();
   let fromName = '';
   if (loId) { const { data: lo } = await sb.from('profiles').select('first_name, last_name').eq('id', loId).maybeSingle(); if (lo) fromName = `${lo.first_name ?? ''} ${lo.last_name ?? ''}`.trim(); }
-  return { logoUrl: null, primaryColor: '#C9A95C', companyName: org?.name ?? '', fromName: fromName && org?.name ? `${fromName} | ${org.name}` : fromName };
+  return { logoUrl: null, primaryColor: (org?.brand_color as string | null) || '#C9A95C', companyName: org?.name ?? '', fromName: fromName && org?.name ? `${fromName} | ${org.name}` : fromName };
 }
 
 export type EnvelopeResult = { gated: true; reason: string } | { gated: false; envelope_id: string; expires_at: string };

@@ -77,6 +77,15 @@ export async function PUT(req: NextRequest) {
   }
 
   const sb = createAdminClient();
+
+  // Capture the prior NMLS so a change can be audit-logged (Phase 93).
+  const { data: prior } = await sb
+    .from('profiles')
+    .select('id, nmls_id')
+    .eq('clerk_user_id', userId)
+    .eq('org_id', orgId)
+    .maybeSingle();
+
   const { data, error } = await sb
     .from('profiles')
     .update(update)
@@ -86,6 +95,14 @@ export async function PUT(req: NextRequest) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Phase 93 — INSERT-only audit of every NMLS number change.
+  if ('nmls_id' in update && nmls && nmls !== (prior?.nmls_id ?? null) && prior?.id) {
+    await sb
+      .from('nmls_verification_log')
+      .insert({ org_id: orgId, user_id: prior.id, nmls_number: nmls, verified_by: 'self_declared' })
+      .then(() => undefined, () => undefined);
+  }
 
   // Goal ring + commission figures read these — refresh the dashboard immediately.
   revalidatePath('/dashboard');

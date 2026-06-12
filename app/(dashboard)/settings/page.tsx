@@ -9,6 +9,7 @@ import { CreditCard, Users, Building2, Shield, Bell, ChevronRight, Sparkles, Plu
 import { CreditRepairSettingsCard } from './CreditRepairSettingsCard';
 import { ensureApplicationSlug } from '@/lib/auth/slug';
 import { ApplicationLink } from '@/components/settings/ApplicationLink';
+import { GateReadinessCard } from '@/components/settings/GateReadinessCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -134,6 +135,8 @@ export default async function SettingsPage() {
           </div>
         </div>
       </Link>
+
+      <GateReadinessCard />
 
       {applicationSlug && <ApplicationLink slug={applicationSlug} />}
 

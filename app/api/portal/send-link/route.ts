@@ -3,6 +3,7 @@ import { randomBytes } from 'crypto';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getMyProfileId } from '@/lib/teamChat/access';
+import { nmlsGate } from '@/lib/gates/clientFacingGate';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -41,6 +42,11 @@ export async function POST(req: Request) {
   const sb = createAdminClient();
   const me = await getMyProfileId(sb, userId);
   if (!me) return NextResponse.json({ error: 'No profile' }, { status: 403 });
+
+  // ── NMLS gate — borrower comms must carry the LO's NMLS # (RESPA/TRID) ───────
+  if (!(await nmlsGate(sb, me))) {
+    return NextResponse.json({ error: 'Add your NMLS number in Settings → Profile before sending borrower communications.' }, { status: 403 });
+  }
 
   const { data: lead } = await sb
     .from('leads')
