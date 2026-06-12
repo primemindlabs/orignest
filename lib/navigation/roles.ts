@@ -51,3 +51,16 @@ export const ROLE_LABELS: Record<AppRole, string> = {
   brand_manager: 'Brand Manager', branch_manager: 'Branch Manager', ae: 'Account Executive',
   ae_manager: 'AE Manager', admin: 'Administrator',
 };
+
+/**
+ * Phase 133 — role landing page. LOA and Processor get a dedicated workspace
+ * home; everyone else lands on the standard dashboard. (The Sidebar already
+ * filters nav groups by role via isGroupVisible.)
+ */
+export function roleHome(role: string | null | undefined): string {
+  switch (normalizeRole(role)) {
+    case 'loa': return '/home/loa';
+    case 'processor': return '/home/processor';
+    default: return '/dashboard';
+  }
+}

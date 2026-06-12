@@ -13,7 +13,7 @@ import { randomBytes, createHash } from 'crypto';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const ROLES = ['loan_officer', 'lo', 'processor', 'manager', 'branch_manager'];
+const ROLES = ['loan_officer', 'lo', 'loa', 'processor', 'manager', 'branch_manager', 'admin'];
 const ADMIN_ROLES = ['admin', 'branch_manager'];
 
 function sha256(s: string) {
@@ -35,10 +35,13 @@ export async function POST(req: Request) {
   if (!orgId) return NextResponse.json({ error: 'No org' }, { status: 403 });
   if (!ADMIN_ROLES.includes(role)) return NextResponse.json({ error: 'Only admins can invite team members.' }, { status: 403 });
 
-  const body = (await req.json().catch(() => ({}))) as { email?: string; role?: string };
+  const body = (await req.json().catch(() => ({}))) as { email?: string; role?: string; assigned_lo_id?: string | null };
   const email = (body.email ?? '').trim().toLowerCase();
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return NextResponse.json({ error: 'A valid email is required' }, { status: 400 });
   const inviteRole = ROLES.includes(body.role ?? '') ? (body.role as string) : 'loan_officer';
+  // An LOA invite must name the LO they will assist.
+  const assignedLoId = inviteRole === 'loa' ? (body.assigned_lo_id ?? null) : null;
+  if (inviteRole === 'loa' && !assignedLoId) return NextResponse.json({ error: 'Select which loan officer this assistant will support.' }, { status: 400 });
 
   const sb = createAdminClient();
 
@@ -59,7 +62,7 @@ export async function POST(req: Request) {
   const token = randomBytes(32).toString('hex');
 
   const { error } = await sb.from('invitations').upsert({
-    org_id: orgId, email, role: inviteRole, invited_by: profile?.id ?? null,
+    org_id: orgId, email, role: inviteRole, invited_by: profile?.id ?? null, assigned_lo_id: assignedLoId,
     token_hash: sha256(token), expires_at: new Date(Date.now() + 7 * 86_400_000).toISOString(),
     accepted_at: null, revoked_at: null,
   }, { onConflict: 'org_id,email' });
