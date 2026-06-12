@@ -45,11 +45,16 @@ export default async function ApplicationsPage() {
 
   return (
     <div className="max-w-5xl space-y-5">
-      <div>
-        <h1 className="text-[22px] font-bold text-black tracking-tight">Applications</h1>
-        <p className="text-label-2 text-sm mt-0.5">
-          {(leads ?? []).length} in-process loans · TRID compliance tracking
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-[22px] font-bold text-black tracking-tight">Applications</h1>
+          <p className="text-label-2 text-sm mt-0.5">
+            {(leads ?? []).length} in-process loans · TRID compliance tracking
+          </p>
+        </div>
+        <Link href="/applications/recovery" className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-[13px] font-medium border border-border text-black hover:bg-fill transition-colors whitespace-nowrap">
+          Application recovery →
+        </Link>
       </div>
 
       <div className="bg-surface rounded-card shadow-card border border-border overflow-hidden">

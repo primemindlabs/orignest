@@ -74,6 +74,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       if (lr?.email && orgId) {
         await sb.from('email_unsubscribes').upsert({ org_id: orgId, email: lr.email.toLowerCase(), lead_id: leadId, source: 'sms_stop' }, { onConflict: 'org_id,email', ignoreDuplicates: true }).then(() => undefined, () => undefined);
       }
+      // Phase 97 — halt any in-progress 1003 abandon-recovery sequence for this
+      // borrower and log the opt-out audit row.
+      if (orgId) {
+        await sb.from('application_sessions').update({ sms_consent: false }).eq('lead_id', leadId).is('completed_at', null).then(() => undefined, () => undefined);
+        await sb.from('sms_opt_outs').insert({ org_id: orgId, lead_id: leadId, phone: from, source: 'twilio_webhook' }).then(() => undefined, () => undefined);
+      }
     }
     // Twilio's Advanced Opt-Out sends the standard confirmation; return empty TwiML.
     return twimlResponse();
