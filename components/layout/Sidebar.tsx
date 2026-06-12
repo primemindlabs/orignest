@@ -55,6 +55,7 @@ const NAV: NavGroup[] = [
       { href: '/social', label: 'Social Media' },
       { href: '/co-marketing', label: 'Co-Marketing' },
       { href: '/marketing/market-update', label: 'Realtor Market Update' },
+      { href: '/outreach', label: 'Birthday & Anniversary' },
       { href: '/co-marketing/listings', label: 'Listings' },
       { href: '/ads', label: 'Ad Center' },
       { href: '/dialer/power', label: 'Power Dialer' },
