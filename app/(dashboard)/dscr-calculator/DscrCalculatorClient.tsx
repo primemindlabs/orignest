@@ -5,6 +5,7 @@
 import { useState, useMemo } from 'react';
 import { calculateDscr, type DscrInputs } from '@/lib/loans/calculators';
 import { ScenarioAIPrompt } from '@/components/loanFile/ScenarioAIPrompt';
+import { LoanTypeAEs } from '@/components/aeConnect/LoanTypeAEs';
 
 const FIELDS: { key: keyof DscrInputs; label: string; suffix?: string; step?: number }[] = [
   { key: 'gross_monthly_rent', label: 'Gross monthly rent', suffix: '$' },
@@ -70,6 +71,21 @@ export function DscrCalculatorClient() {
           ))}
         </div>
         {r.dscr_status === 'below' && <ScenarioAIPrompt trigger="dscr_below_1" />}
+        <LoanTypeAEs
+          loanType="dscr"
+          emailSubject={`DSCR scenario — ${r.dscr.toFixed(2)} DSCR on $${fmt(v.proposed_loan_amount)}`}
+          emailBody={[
+            `Hi — looking to place a DSCR loan:`,
+            ``,
+            `Loan amount: $${fmt(v.proposed_loan_amount)}`,
+            `Rate: ${v.proposed_rate}% · ${v.amortization_years}yr${v.is_interest_only ? ' (interest-only)' : ''}`,
+            `Gross rent: $${fmt(v.gross_monthly_rent)}/mo`,
+            `NOI: $${fmt(r.noi)}/yr`,
+            `DSCR: ${r.dscr.toFixed(2)} (${r.dscr_status})`,
+            ``,
+            `Can you price this? Thanks.`,
+          ].join('\n')}
+        />
       </div>
     </div>
   );
