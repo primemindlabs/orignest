@@ -6,12 +6,12 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 /**
- * POST /api/training/[courseId]/submit — grade a quiz attempt.
+ * POST /api/training/[id]/submit — grade a quiz attempt.
  * Body: { answers: number[] } (selected option index per question).
  * Grades against the course's stored answer key, upserts the caller's
  * enrollment with score/status, and issues a certificate code on pass.
  */
-export async function POST(req: Request, { params }: { params: { courseId: string } }) {
+export async function POST(req: Request, { params }: { params: { id: string } }) {
   const { userId, orgId } = await getOrgContext();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (!orgId) return NextResponse.json({ error: 'No organization context' }, { status: 403 });
@@ -22,7 +22,7 @@ export async function POST(req: Request, { params }: { params: { courseId: strin
   const sb = createAdminClient();
 
   const [{ data: course }, { data: profile }] = await Promise.all([
-    sb.from('lms_courses').select('id, pass_threshold, questions').eq('id', params.courseId).eq('org_id', orgId).maybeSingle(),
+    sb.from('lms_courses').select('id, pass_threshold, questions').eq('id', params.id).eq('org_id', orgId).maybeSingle(),
     sb.from('profiles').select('id').eq('clerk_user_id', userId).maybeSingle(),
   ]);
   if (!course) return NextResponse.json({ error: 'Course not found' }, { status: 404 });
@@ -36,7 +36,7 @@ export async function POST(req: Request, { params }: { params: { courseId: strin
   const passed = score >= (Number(course.pass_threshold) || 80);
 
   const certificate_code = passed
-    ? `CERT-${params.courseId.slice(0, 4).toUpperCase()}-${Date.now().toString(36).slice(-5).toUpperCase()}`
+    ? `CERT-${params.id.slice(0, 4).toUpperCase()}-${Date.now().toString(36).slice(-5).toUpperCase()}`
     : null;
 
   const { error } = await sb
@@ -44,7 +44,7 @@ export async function POST(req: Request, { params }: { params: { courseId: strin
     .upsert(
       {
         org_id: orgId,
-        course_id: params.courseId,
+        course_id: params.id,
         profile_id: profile.id,
         status: passed ? 'completed' : 'failed',
         score,
