@@ -13,6 +13,9 @@ import { getTRIDStatus } from '@/lib/compliance/trid';
 import { formatDistanceToNow, isThisMonth } from 'date-fns';
 import { PipelineCommissionMetric } from './PipelineCommissionMetric';
 import { PipelineTabsView } from './PipelineTabsView';
+import { calculateCloseProbability, businessDaysUntil } from '@/lib/pipeline-probability/score';
+import { buildFourWeekForecast } from '@/lib/pipeline-probability/forecast';
+import { FourWeekForecast } from '@/components/pipeline-probability/FourWeekForecast';
 
 export const dynamic = 'force-dynamic';
 
@@ -68,7 +71,7 @@ export default async function PipelinePage() {
     sb
       .from('leads')
       .select(
-        'id, first_name, last_name, stage, loan_type, loan_amount, loan_purpose, lead_source, ai_score, created_at, stage_changed_at, last_contacted_at, application_submitted_at, loan_estimate_sent_at, closing_disclosure_sent_at, closing_date, data_ownership, is_demo'
+        'id, first_name, last_name, stage, loan_type, loan_amount, loan_purpose, lead_source, ai_score, created_at, stage_changed_at, last_contacted_at, application_submitted_at, loan_estimate_sent_at, closing_disclosure_sent_at, closing_date, le_deadline, cd_deadline, data_ownership, is_demo'
       )
       .eq('org_id', orgId)
       .in('stage', [...STAGES])
@@ -78,7 +81,7 @@ export default async function PipelinePage() {
       .select('stage, warning_days, critical_days, org_id')
       .or(`org_id.eq.${orgId},org_id.is.null`),
     // Phase 30.5 — behavioral close scores
-    sb.from('borrower_behavior_scores').select('lead_id, score, tier').eq('org_id', orgId),
+    sb.from('borrower_behavior_scores').select('lead_id, score, tier, avg_response_hours').eq('org_id', orgId),
     // Phase 30.6 — velocity predictions (reduced to latest per lead below)
     sb.from('velocity_predictions').select('lead_id, predicted_close_date, risk_level, generated_at').eq('org_id', orgId).order('generated_at', { ascending: false }),
   ]);
@@ -108,6 +111,7 @@ export default async function PipelinePage() {
   }
 
   const now = Date.now();
+  const todayStrPipeline = new Date().toISOString().slice(0, 10);
   function stallLevel(lead: { stage: string; stage_changed_at: string | null; created_at: string }):
     | 'critical'
     | 'warning'
@@ -138,8 +142,9 @@ export default async function PipelinePage() {
   const totalValue = allLeads.reduce((s, l) => s + (l.loan_amount ?? 0), 0);
 
   // Phase 74 — money bar. Real columns: closing_date (expected close), stage.
-  const { data: profileRow } = await sb.from('profiles').select('comp_rate').eq('clerk_user_id', userId).maybeSingle();
+  const { data: profileRow } = await sb.from('profiles').select('id, comp_rate').eq('clerk_user_id', userId).maybeSingle();
   const compRate = Number(profileRow?.comp_rate ?? 0.5);
+  const profileId = (profileRow?.id as string | undefined) ?? null;
   const CLOSING_STAGES = ['processing', 'underwriting', 'clear_to_close'];
   const closingThisMonth = allLeads.filter((l) => l.closing_date && isThisMonth(new Date(l.closing_date)) && CLOSING_STAGES.includes(l.stage));
   const closingThisMonthVolume = closingThisMonth.reduce((s, l) => s + (l.loan_amount ?? 0), 0);
@@ -156,11 +161,68 @@ export default async function PipelinePage() {
   ]);
   const condCount: Record<string, number> = {};
   for (const c of condRows ?? []) condCount[c.lead_id] = (condCount[c.lead_id] ?? 0) + 1;
+
+  // ── Phase 83 — close-probability per active loan + 4-week weighted forecast ─────
+  const behaviorByLead: Record<string, { tier: string | null; avg_response_hours: number | null }> = {};
+  for (const r of scoreRows ?? []) behaviorByLead[r.lead_id] = { tier: r.tier ?? null, avg_response_hours: (r as { avg_response_hours?: number | null }).avg_response_hours ?? null };
+
+  const probByLead: Record<string, { score: number; confidence: string; factors: { factor: string; weight: number; impact: 'positive' | 'negative' }[] }> = {};
+  for (const l of allLeads) {
+    const since = l.stage_changed_at ?? l.created_at;
+    const daysInStage = since ? Math.floor((now - new Date(since).getTime()) / 86_400_000) : 0;
+    const leDays = businessDaysUntil((l as { le_deadline?: string | null }).le_deadline ?? null);
+    const cdDays = businessDaysUntil((l as { cd_deadline?: string | null }).cd_deadline ?? null);
+    const tridDays = [leDays, cdDays].filter((d): d is number => d !== null).sort((a, b) => a - b)[0] ?? null;
+    const result = calculateCloseProbability({
+      stage: l.stage,
+      days_in_stage: daysInStage,
+      conditions_outstanding: condCount[l.id] ?? 0,
+      behavior_tier: behaviorByLead[l.id]?.tier ?? null,
+      trid_business_days_remaining: tridDays,
+      avg_response_hours: behaviorByLead[l.id]?.avg_response_hours ?? null,
+    });
+    probByLead[l.id] = { score: result.score, confidence: result.confidence, factors: result.driving_factors };
+  }
+
+  const scoreById: Record<string, number> = {};
+  for (const id in probByLead) scoreById[id] = probByLead[id].score;
+  const forecast = buildFourWeekForecast(
+    allLeads.map((l) => ({ id: l.id, loan_amount: l.loan_amount ?? null, closing_date: l.closing_date ?? null })),
+    scoreById,
+  );
+
+  // Persist scores + capacity snapshots (best-effort; never blocks the page).
+  try {
+    if (Object.keys(probByLead).length) {
+      await sb.from('loan_probability_scores').upsert(
+        allLeads.map((l) => ({
+          org_id: orgId, lead_id: l.id, user_id: profileId,
+          score: probByLead[l.id].score, confidence: probByLead[l.id].confidence,
+          driving_factors: probByLead[l.id].factors, calculated_at: new Date().toISOString(),
+        })),
+        { onConflict: 'lead_id' },
+      );
+    }
+    if (profileId) {
+      await sb.from('pipeline_capacity_snapshots').upsert(
+        forecast.map((w) => ({
+          org_id: orgId, user_id: profileId, week_start: w.week_start,
+          weighted_pipeline_value: w.weighted_value, loan_count: w.loan_count, snapshot_date: todayStrPipeline,
+        })),
+        { onConflict: 'user_id,week_start,snapshot_date' },
+      );
+    }
+  } catch (e) {
+    console.error('[pipeline probability persist]', e);
+  }
+
   const toPipelineLead = (l: Record<string, unknown>) => ({
     id: l.id as string, first_name: l.first_name as string, last_name: l.last_name as string, stage: l.stage as string,
     loan_type: (l.loan_type as string) ?? null, loan_amount: (l.loan_amount as number) ?? null, loan_purpose: (l.loan_purpose as string) ?? null, lead_source: (l.lead_source as string) ?? null,
     closing_date: (l.closing_date as string) ?? null, stage_changed_at: (l.stage_changed_at as string) ?? null, last_contacted_at: (l.last_contacted_at as string) ?? null, created_at: l.created_at as string,
     outstanding_conditions_count: condCount[l.id as string] ?? 0,
+    close_probability: probByLead[l.id as string]?.score,
+    prob_factors: probByLead[l.id as string]?.factors,
   });
   const activePipelineLeads = allLeads.map(toPipelineLead);
   const closedPipelineLeads = (closedRows ?? []).map(toPipelineLead);
@@ -268,6 +330,9 @@ export default async function PipelinePage() {
           </div>
         </div>
       )}
+
+      {/* ── 4-week weighted capacity forecast (Phase 83) ─────────────── */}
+      <FourWeekForecast data={forecast} />
 
       {/* ── Mobile list view (Phase 42.6) — kanban is desktop-only ───── */}
       <MobilePipelineView leads={allLeads as never} className="md:hidden" />

@@ -1,12 +1,16 @@
 /** Phase 74 — per-lead urgency tag. Uses REAL columns (closing_date, stage_changed_at,
  * last_contacted_at, outstanding_conditions_count). No lead-level rate-lock column exists. */
 import { differenceInCalendarDays } from 'date-fns';
+import type { DrivingFactor } from '@/lib/pipeline-probability/score';
 
 export interface PipelineLead {
   id: string; first_name: string | null; last_name: string | null; stage: string;
   loan_type: string | null; loan_amount: number | null; loan_purpose: string | null; lead_source: string | null;
   closing_date: string | null; stage_changed_at: string | null; last_contacted_at: string | null; created_at: string;
   outstanding_conditions_count: number;
+  // Phase 83 — close probability (optional; present for active loans).
+  close_probability?: number;
+  prob_factors?: DrivingFactor[];
 }
 
 export function LeadAlertTag({ lead }: { lead: PipelineLead }) {

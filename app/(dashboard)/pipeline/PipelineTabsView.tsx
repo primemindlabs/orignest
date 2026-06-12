@@ -9,6 +9,7 @@ import { IconSearch, IconBuildingBank, IconCircleCheck, IconClipboardX, IconCloc
 import { formatMortgageEnum, LOAN_PURPOSE_LABELS, LOAN_TYPE_LABELS, LEAD_SOURCE_LABELS } from '@/lib/formatters/mortgage';
 import { StageBadge } from './StageBadge';
 import { LeadAlertTag, type PipelineLead } from './LeadAlertTag';
+import { CloseProbabilityBar } from '@/components/pipeline-probability/CloseProbabilityBar';
 
 const usd0 = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 const fmtVol = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `$${(n / 1000).toFixed(0)}K` : `$${n}`);
@@ -47,6 +48,11 @@ function Row({ lead, compRate, closed }: { lead: PipelineLead; compRate: number;
           {lead.closing_date && <span className="text-[11px] text-[var(--color-text-secondary)]">{format(new Date(lead.closing_date), 'MMM d')}</span>}
           {!closed && <LeadAlertTag lead={lead} />}
         </div>
+        {!closed && typeof lead.close_probability === 'number' && (
+          <div className="mt-1.5">
+            <CloseProbabilityBar score={lead.close_probability} factors={lead.prob_factors} compact />
+          </div>
+        )}
       </div>
       <div className="text-right">
         {lead.loan_amount ? (<><p className="font-medium text-[#8A6310]">{usd0(commission)}</p><p className="text-[11px] text-[var(--color-text-secondary)]">{compRate}% {closed ? 'earned' : 'comp'}</p></>) : <p className="text-[11px] text-[var(--color-text-secondary)]">—</p>}
