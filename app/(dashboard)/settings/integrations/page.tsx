@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { IntegrationsClient } from './IntegrationsClient';
+import { ArriveCard } from './ArriveCard';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Integrations' };
@@ -23,6 +24,14 @@ export default async function IntegrationsPage() {
         </p>
       </div>
       <IntegrationsClient canManage={role === 'admin' || role === 'branch_manager'} />
+
+      <div className="pt-2">
+        <h2 className="text-[16px] font-bold text-[var(--c-text)] tracking-tight">Referral Sources</h2>
+        <p className="text-[13px] text-[var(--c-label2)] mt-0.5 mb-3">
+          Connect partner platforms that send you new borrowers. Each loan officer links their own account.
+        </p>
+        <ArriveCard />
+      </div>
     </div>
   );
 }
