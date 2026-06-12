@@ -11,6 +11,7 @@ export type NotifyType =
   | 'refi_opportunity'
   | 'team_mention'
   | 'rate_lock'
+  | 'ae_forum'
   | 'system';
 
 // Lower urgency number = more urgent (matches the notifications.urgency convention).
@@ -20,6 +21,7 @@ const URGENCY: Record<NotifyType, number> = {
   ghost_alert: 2,
   new_voicemail: 2,
   team_mention: 2,
+  ae_forum: 2,
   refi_opportunity: 3,
   system: 3,
 };
