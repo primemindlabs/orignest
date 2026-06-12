@@ -42,4 +42,13 @@ export async function logStageTransition(
   } catch (e) {
     console.error('[funnel] logStageTransition failed', e); // never block the stage write
   }
+
+  // Phase 107 — fire milestone automations for the new stage (best-effort; never
+  // blocks the stage write). The engine no-ops when there are no matching rules.
+  try {
+    const { evaluateAutomations } = await import('@/lib/automations/engine');
+    await evaluateAutomations(sb, { orgId, leadId, newStage: toStage, loId });
+  } catch (e) {
+    console.error('[automations] evaluateAutomations failed', e);
+  }
 }

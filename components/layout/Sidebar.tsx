@@ -77,6 +77,7 @@ const NAV: NavGroup[] = [
       { href: '/training/ask', label: 'Ask Ashley' },
       { href: '/refi-watch', label: 'Refi Watch' },
       { href: '/equity', label: 'Equity Tracker' },
+      { href: '/settings/automations', label: 'Milestone Automations' },
     ],
   },
   {
