@@ -349,7 +349,7 @@ function SharedLandingPages({ partners, profiles }: CoMarketingClientProps) {
     <div className="space-y-4">
       <p className="text-[13px] text-[#8A8A8E]">
         Each co-branded page lives at <code className="text-[12px] bg-[#F2F2F7] px-1.5 py-0.5 rounded-md">ashleyiq.app/[lo-slug]/[realtor-slug]</code>.
-        Leads captured route to the LO's pipeline. Partners see their own portal view.
+        Leads captured route to the LO&apos;s pipeline. Partners see their own portal view.
       </p>
 
       <div className="grid grid-cols-2 gap-3">

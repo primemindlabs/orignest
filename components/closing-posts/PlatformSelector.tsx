@@ -3,8 +3,7 @@
 import { IconBrandInstagram, IconBrandFacebook, IconBrandLinkedin } from '@tabler/icons-react';
 import type { SocialPlatform } from '@/types/closingPosts';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-const PLATFORMS: { value: SocialPlatform; label: string; icon: React.ComponentType<any> }[] = [
+const PLATFORMS: { value: SocialPlatform; label: string; icon: React.ComponentType<{ size?: number | string; className?: string }> }[] = [
   { value: 'instagram', label: 'Instagram', icon: IconBrandInstagram },
   { value: 'facebook', label: 'Facebook', icon: IconBrandFacebook },
   { value: 'linkedin', label: 'LinkedIn', icon: IconBrandLinkedin },

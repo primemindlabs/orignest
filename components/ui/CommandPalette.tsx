@@ -359,7 +359,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
               {flatItems.length === 0 && !searching && query.length >= 3 && (
                 <div className="flex flex-col items-center gap-2 py-10 text-center">
                   <Search size={24} className="text-[#AEAEB2]" />
-                  <p className="text-sm text-[#6C6C70]">No results for "{query}"</p>
+                  <p className="text-sm text-[#6C6C70]">No results for &quot;{query}&quot;</p>
                 </div>
               )}
 

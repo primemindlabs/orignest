@@ -91,7 +91,7 @@ export function DealAnalysisPanel({ leadId }: Props) {
       {!analysis && !loading && !error && (
         <div className="px-5 py-8 text-center">
           <Bot size={28} className="mx-auto text-label-3 mb-2" />
-          <p className="text-sm text-label-2">Click "Run Analysis" to get AI-powered underwriting insights</p>
+          <p className="text-sm text-label-2">Click &quot;Run Analysis&quot; to get AI-powered underwriting insights</p>
           <p className="text-xs text-label-3 mt-1">Powered by Claude Haiku</p>
         </div>
       )}

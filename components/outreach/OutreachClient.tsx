@@ -117,7 +117,7 @@ function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <IconConfetti size={28} className="text-[#C9A95C]" />
-      <p className="mt-3 text-sm font-medium text-[var(--c-text)]">You're all caught up</p>
+      <p className="mt-3 text-sm font-medium text-[var(--c-text)]">You&apos;re all caught up</p>
       <p className="mt-1 text-[13px] text-[var(--c-label2)]">
         New birthdays and anniversaries appear here as they approach.
       </p>

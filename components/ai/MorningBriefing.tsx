@@ -55,7 +55,7 @@ export function MorningBriefing({ loName, briefing, isLoading }: Props) {
             </div>
             <div>
               <h3 className="text-sm font-semibold text-label">{greeting}, {firstName}.</h3>
-              <p className="text-[11px] text-label-3">Here's your day.</p>
+              <p className="text-[11px] text-label-3">Here&apos;s your day.</p>
             </div>
           </div>
           {briefing && (

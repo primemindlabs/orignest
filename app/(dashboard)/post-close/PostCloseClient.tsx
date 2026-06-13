@@ -139,7 +139,7 @@ function NurtureList({ borrowers, currentMarketRate }: { borrowers: ClosedBorrow
       <div className="text-center py-16 bg-white border border-black/[0.06] shadow-sm rounded-2xl">
         <Home size={32} className="text-[#C7C7CC] mx-auto mb-3" />
         <p className="text-[15px] font-semibold text-[#1C1C1E] mb-1">No closed borrowers yet</p>
-        <p className="text-[13px] text-[#8A8A8E]">Leads moved to the "Closed" stage will appear here for post-close nurture</p>
+        <p className="text-[13px] text-[#8A8A8E]">Leads moved to the &quot;Closed&quot; stage will appear here for post-close nurture</p>
       </div>
     );
   }

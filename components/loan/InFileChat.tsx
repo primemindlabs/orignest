@@ -57,7 +57,7 @@ export function InFileChat({ loanId }: { loanId: string }) {
       <div className="bg-[#FAFAF8] rounded-2xl border border-gray-100 p-10 text-center">
         <IconLock size={26} className="mx-auto text-gray-300" />
         <p className="mt-3 text-sm font-medium text-gray-700">Internal chat is restricted</p>
-        <p className="mt-1 text-xs text-gray-400">Only the assigned LO, processors, LOAs, and managers can view this file's team chat.</p>
+        <p className="mt-1 text-xs text-gray-400">Only the assigned LO, processors, LOAs, and managers can view this file&apos;s team chat.</p>
       </div>
     );
   }
@@ -67,7 +67,7 @@ export function InFileChat({ loanId }: { loanId: string }) {
       <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
         <IconUsers size={16} className="text-[#C9A95C]" />
         <p className="text-sm font-semibold text-gray-900">Internal Team Chat</p>
-        <span className="text-[11px] text-gray-400">· internal only — borrowers can't see this</span>
+        <span className="text-[11px] text-gray-400">· internal only — borrowers can&apos;t see this</span>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">

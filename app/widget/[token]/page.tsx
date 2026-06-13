@@ -153,7 +153,7 @@ export default function WidgetPage() {
           <div className="w-14 h-14 rounded-full bg-green/10 flex items-center justify-center mx-auto mb-4">
             <CheckCircle size={28} className="text-green" />
           </div>
-          <h2 className="text-xl font-bold text-label mb-2">You're Pre-Qualified!</h2>
+          <h2 className="text-xl font-bold text-label mb-2">You&apos;re Pre-Qualified!</h2>
           <p className="text-sm text-label-2 mb-5">Hi {form.firstName}, here are your estimated numbers:</p>
 
           <div className="space-y-3 text-left mb-5">
@@ -305,7 +305,7 @@ export default function WidgetPage() {
           {step === 4 && (
             <div>
               <h2 className="text-lg font-bold text-label mb-1">Credit Score Range</h2>
-              <p className="text-sm text-label-2 mb-4">Estimate is fine — this won't affect your credit</p>
+              <p className="text-sm text-label-2 mb-4">Estimate is fine — this won&apos;t affect your credit</p>
               <div className="space-y-2">
                 {CREDIT_RANGES.map((range) => (
                   <button

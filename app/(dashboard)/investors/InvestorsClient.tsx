@@ -62,7 +62,7 @@ export default function InvestorsClient({ entities, leads, deedmineEnabled }: { 
           <div className="w-9 h-9 rounded-[10px] bg-black/[0.05] flex items-center justify-center"><Lock className="w-4 h-4 text-label-3" /></div>
           <div className="flex-1">
             <p className="text-[13px] font-medium text-label">DeedMine multi-property enrichment</p>
-            <p className="text-[12px] text-label-2">Auto-discover an entity's full property portfolio via ATTOM. <span className="font-mono text-label-3">TODO: set DEEDMINE_API_KEY</span></p>
+            <p className="text-[12px] text-label-2">Auto-discover an entity&apos;s full property portfolio via ATTOM. <span className="font-mono text-label-3">TODO: set DEEDMINE_API_KEY</span></p>
           </div>
           <span className="text-[11px] font-semibold text-label-3 border border-border rounded-full px-2.5 py-1">Not connected</span>
         </div>

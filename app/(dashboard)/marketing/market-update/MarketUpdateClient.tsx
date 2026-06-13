@@ -80,7 +80,7 @@ export function MarketUpdateClient() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-              <p className="font-semibold text-gray-900 mb-4">Enter Today's Rates</p>
+              <p className="font-semibold text-gray-900 mb-4">Enter Today&apos;s Rates</p>
               <div className="grid grid-cols-2 gap-3">
                 {RATE_FIELDS.map(({ key, label }) => (
                   <div key={key}>

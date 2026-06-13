@@ -183,7 +183,7 @@ function Drawer({ loanId, onClose }: { loanId: string; onClose: () => void }) {
             {isLoading ? <IconLoader2 size={16} className="animate-spin" /> : <IconArrowUp size={16} />}
           </button>
         </div>
-        <p className="mt-1.5 text-[10px] text-[var(--c-label3)]">Answers use only this loan file's data.</p>
+        <p className="mt-1.5 text-[10px] text-[var(--c-label3)]">Answers use only this loan file&apos;s data.</p>
       </div>
     </aside>
   );

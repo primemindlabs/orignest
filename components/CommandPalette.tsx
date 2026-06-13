@@ -436,7 +436,7 @@ export function CommandPalette() {
               <div className="max-h-[60vh] overflow-y-auto py-2" role="listbox">
                 {flatItems.length === 0 && query.trim().length > 0 && !searching && (
                   <div className="px-4 py-8 text-center text-sm text-[#AEAEB2]">
-                    No results for "{query}"
+                    No results for &quot;{query}&quot;
                   </div>
                 )}
 

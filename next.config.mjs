@@ -1,13 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Type errors fail the build (re-enabled after clearing the tsc baseline).
-  // ESLint is still skipped during builds — re-enable separately once the lint
-  // backlog is cleared (lint quality, not type safety).
+  // Both type and lint errors fail the build (baselines cleared).
+  // .eslintrc.json extends next/core-web-vitals; 0 errors, 13 known warnings
+  // (no-img-element, exhaustive-deps) which Next does not fail the build on.
   typescript: {
     ignoreBuildErrors: false,
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   experimental: {
     serverComponentsExternalPackages: ['@supabase/ssr'],

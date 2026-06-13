@@ -105,7 +105,7 @@ export function CompetitorAnalysisPanel({
     <div className="space-y-4">
       {!textractConfigured && (
         <div className="text-[12px] text-[var(--c-label2)] bg-[var(--c-fill)] rounded-[10px] px-3 py-2">
-          PDF auto-extract (AWS Textract) isn't connected yet — enter the competitor's figures below and Ashley IQ writes the talking points.
+          PDF auto-extract (AWS Textract) isn&apos;t connected yet — enter the competitor&apos;s figures below and Ashley IQ writes the talking points.
         </div>
       )}
 
