@@ -7,7 +7,7 @@
  */
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Wrench, ChevronDown, FileText, PenLine, FileCheck, ShieldCheck, Building2, ScrollText, Calculator, HardHat, PartyPopper, ClipboardList, MessagesSquare, GitCompare } from 'lucide-react';
+import { Wrench, ChevronDown, FileText, PenLine, FileCheck, ShieldCheck, Building2, ScrollText, Calculator, HardHat, PartyPopper, ClipboardList, MessagesSquare, GitCompare, UserCheck } from 'lucide-react';
 
 interface Tool { href: string; label: string; icon: React.ReactNode }
 
@@ -32,6 +32,7 @@ export function LeadToolsMenu({ loanId, isConstruction, isClosed }: { loanId: st
     { href: `/loans/${loanId}/waiver-check`, label: 'Appraisal Waiver', icon: <FileCheck size={15} /> },
     { href: `/loans/${loanId}/hoa`, label: 'HOA Warrantability', icon: <Building2 size={15} /> },
     { href: `/loans/${loanId}/title`, label: 'Title & Closing', icon: <ShieldCheck size={15} /> },
+    { href: `/loans/${loanId}/identity`, label: 'Identity Verification', icon: <UserCheck size={15} /> },
     { href: `/loans/${loanId}/signatures`, label: 'Signatures', icon: <PenLine size={15} /> },
     ...(isConstruction ? [{ href: `/loans/${loanId}/construction`, label: 'Construction', icon: <HardHat size={15} /> }] : []),
     ...(isClosed ? [{ href: `/loans/${loanId}/closing-post`, label: 'Closing Celebration', icon: <PartyPopper size={15} /> }] : []),
