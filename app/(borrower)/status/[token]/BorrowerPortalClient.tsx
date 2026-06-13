@@ -10,6 +10,7 @@ import { Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CreditRepairTab, type CreditRepairEnrollment } from './CreditRepairTab';
 import { PortalChat } from '@/components/chat/PortalChat';
+import { LoanSwitcher } from '@/components/portal/LoanSwitcher';
 
 interface DocItem {
   id: string;
@@ -155,6 +156,10 @@ export function BorrowerPortalClient({
               Call LO
             </a>
           )}
+        </div>
+        {/* Phase 111 — multi-loan switcher (renders only when the borrower has >1 loan). */}
+        <div className="max-w-2xl mx-auto px-5 pb-3 empty:hidden">
+          <LoanSwitcher token={token} />
         </div>
       </header>
 
