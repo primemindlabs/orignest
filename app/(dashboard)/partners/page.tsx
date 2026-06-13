@@ -1,25 +1,16 @@
-import { auth } from '@clerk/nextjs/server';
-import { createAdminClient } from '@/lib/supabase/admin';
+// Phase 121 — Referral Partner Network. Functional dashboard for non-Realtor referral
+// sources (attorneys, CPAs, advisors, insurance) — public referral links, heat, and
+// one-click milestone updates. Renders all referral_partners for the org.
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
-import { createClient } from '@/lib/supabase/server';
-import { Badge } from '@/components/ui/Badge';
-import { Plus, Network } from 'lucide-react';
-import { format } from 'date-fns';
+import { headers } from 'next/headers';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { computePartnerHeat } from '@/lib/referralPartners/heat';
+import { ReferralPartnerDashboard } from '@/components/referral-partners/ReferralPartnerDashboard';
 
 export const dynamic = 'force-dynamic';
-
-export const metadata: Metadata = { title: 'Partners' };
-
-const PARTNER_TYPE_LABELS: Record<string, string> = {
-  realtor: 'Realtor',
-  builder: 'Builder',
-  cpa: 'CPA',
-  attorney: 'Attorney',
-  financial_advisor: 'Financial Advisor',
-  other: 'Other',
-};
+export const metadata: Metadata = { title: 'Referral Partners' };
 
 export default async function PartnersPage() {
   const { userId, orgId } = await getOrgContext();
@@ -27,92 +18,43 @@ export default async function PartnersPage() {
   if (!orgId) redirect('/onboarding');
 
   const sb = createAdminClient();
-  const { data: org } = await sb
-    .from('organizations')
-    .select('id')
-    .eq('clerk_org_id', orgId)
-    .maybeSingle();
-
   const { data: partners } = await sb
     .from('referral_partners')
     .select('*')
-    .eq('org_id', org?.id ?? '')
+    .eq('org_id', orgId)
     .order('total_volume', { ascending: false });
 
-  return (
-    <div className="max-w-4xl space-y-5">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-[22px] font-bold text-black tracking-tight">Partners</h1>
-          <p className="text-label-2 text-sm mt-0.5">
-            {(partners ?? []).length} referral partners · Manage your network
-          </p>
-        </div>
-        <button className="inline-flex items-center gap-1.5 h-9 px-4 rounded-btn text-sm font-medium bg-blue text-white hover:bg-blue/90 transition-colors shadow-sm">
-          <Plus size={14} />
-          Add Partner
-        </button>
-      </div>
+  // 180-day referral momentum per partner → heat.
+  const ids = (partners ?? []).map((p) => p.id);
+  const counts = new Map<string, { d90: number; d180: number }>();
+  if (ids.length) {
+    const since = new Date(Date.now() - 180 * 86_400_000).toISOString();
+    const { data: refs } = await sb.from('partner_referrals').select('partner_id, created_at').eq('org_id', orgId).in('partner_id', ids).gte('created_at', since);
+    const cut90 = Date.now() - 90 * 86_400_000;
+    for (const r of refs ?? []) {
+      const e = counts.get(r.partner_id as string) ?? { d90: 0, d180: 0 };
+      e.d180 += 1;
+      if (new Date(r.created_at as string).getTime() >= cut90) e.d90 += 1;
+      counts.set(r.partner_id as string, e);
+    }
+  }
 
-      {(partners ?? []).length === 0 ? (
-        <div className="bg-surface rounded-card shadow-card border border-border p-10 text-center">
-          <Network size={32} className="text-label-3 mx-auto mb-3" />
-          <p className="text-sm font-medium text-black mb-1">No partners yet</p>
-          <p className="text-xs text-label-2 mb-4">
-            Add realtors, builders, and other referral sources to track volume and ROI
-          </p>
-          <button className="inline-flex items-center gap-1.5 h-9 px-4 rounded-btn text-sm font-medium bg-blue text-white hover:bg-blue/90 transition-colors">
-            <Plus size={14} />
-            Add Your First Partner
-          </button>
-        </div>
-      ) : (
-        <div className="bg-surface rounded-card shadow-card border border-border overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left text-[11px] font-semibold text-label-2 uppercase tracking-wide px-5 py-3">Partner</th>
-                <th className="text-left text-[11px] font-semibold text-label-2 uppercase tracking-wide px-3 py-3">Type</th>
-                <th className="text-right text-[11px] font-semibold text-label-2 uppercase tracking-wide px-3 py-3">Referrals</th>
-                <th className="text-right text-[11px] font-semibold text-label-2 uppercase tracking-wide px-3 py-3">Closed</th>
-                <th className="text-right text-[11px] font-semibold text-label-2 uppercase tracking-wide px-3 py-3">Volume</th>
-                <th className="text-left text-[11px] font-semibold text-label-2 uppercase tracking-wide px-3 py-3">Added</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {(partners ?? []).map((partner) => (
-                <tr key={partner.id} className="hover:bg-fill transition-colors">
-                  <td className="px-5 py-3">
-                    <p className="text-sm font-medium text-black">
-                      {partner.first_name} {partner.last_name}
-                    </p>
-                    <p className="text-xs text-label-2">{partner.company_name}</p>
-                  </td>
-                  <td className="px-3 py-3">
-                    <Badge variant="neutral" size="sm">
-                      {PARTNER_TYPE_LABELS[partner.type] ?? partner.type}
-                    </Badge>
-                  </td>
-                  <td className="px-3 py-3 text-right text-sm font-mono tabular-nums text-black">
-                    {partner.referral_count}
-                  </td>
-                  <td className="px-3 py-3 text-right text-sm font-mono tabular-nums text-green">
-                    {partner.closed_count}
-                  </td>
-                  <td className="px-3 py-3 text-right text-sm font-mono tabular-nums text-black">
-                    {partner.total_volume > 0
-                      ? `$${(partner.total_volume / 1_000_000).toFixed(1)}M`
-                      : '—'}
-                  </td>
-                  <td className="px-3 py-3 text-xs text-label-2">
-                    {format(new Date(partner.created_at), 'MMM d, yyyy')}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+  const rows = (partners ?? []).map((p) => {
+    const c = counts.get(p.id as string) ?? { d90: 0, d180: 0 };
+    const heat = computePartnerHeat({ referrals_90d: c.d90, referrals_180d: c.d180, last_outreach_at: (p.last_outreach_at as string) ?? null });
+    return { ...p, referrals_90d: c.d90, heat_band: heat.band, heat_score: heat.score };
+  });
+
+  const h = await headers();
+  const origin = process.env.NEXT_PUBLIC_APP_URL ?? `https://${h.get('host') ?? 'app.ashleyiq.com'}`;
+
+  return (
+    <div className="max-w-5xl">
+      <div className="mb-5">
+        <h1 className="text-[22px] font-bold text-black tracking-tight">Referral Partners</h1>
+        <p className="text-sm text-gray-400 mt-0.5">{rows.length} partners · attorneys, CPAs, advisors & more</p>
+      </div>
+      <ReferralPartnerDashboard initialPartners={rows} origin={origin} />
     </div>
   );
 }
