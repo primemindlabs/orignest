@@ -10,8 +10,6 @@ import { AskAshleyWidget } from '@/components/dashboard/AskAshleyWidget';
 import { TrialBanner } from '@/components/billing/TrialBanner';
 import { ActionRail } from '@/components/dashboard/ActionRail';
 import { NotificationToaster } from '@/components/notifications/NotificationToaster';
-import { QuickActionsBar } from '@/components/dashboard/QuickActionsBar';
-import { LOALauncher } from '@/components/loa/LOALauncher';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,9 +71,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <NotificationToaster userId={(profile?.id as string | undefined) ?? null} />
       <SpeedTicker />
       <ClosingCelebrationListener loName={loName} />
+      {/* One Ashley brain — the single floating AI. Absorbs the former LOA launcher
+          (business intelligence, now auto-routed inside Ashley) and the Quick Actions bar. */}
       <AskAshleyWidget />
-      <LOALauncher />
-      <QuickActionsBar />
     </CommandPaletteProvider>
   );
 }
