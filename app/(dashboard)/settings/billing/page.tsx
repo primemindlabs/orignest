@@ -212,7 +212,7 @@ export default async function BillingPage({
                   <p className="text-xs text-label-2">Up to {p.seats} seat{p.seats !== 1 ? 's' : ''}</p>
                 </div>
                 <ul className="space-y-1.5">
-                  {p.features.slice(0, 6).map((f) => (
+                  {p.features.slice(0, 6).map((f: string) => (
                     <li key={f} className="flex items-start gap-2 text-xs text-label-2">
                       <Check size={12} className="text-green flex-shrink-0 mt-0.5" />
                       {f}

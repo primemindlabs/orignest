@@ -111,6 +111,17 @@ const PERMISSIONS: Record<UserRole, Set<Permission>> = {
     'admin:users',
     'admin:org',
   ]),
+
+  // Processor — cross-tenant ops role: works conditions/docs on assigned files,
+  // no commission/billing/admin or lead-ownership writes.
+  processor: new Set<Permission>([
+    'leads:read:own',
+    'tasks:write',
+    'documents:upload',
+    'ai:use',
+    'profile:write',
+    'settings:read',
+  ]),
 };
 
 /**

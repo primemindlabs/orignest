@@ -104,7 +104,7 @@ function scrubPIIFromEvent(event: Sentry.ErrorEvent): Sentry.ErrorEvent | null {
   return event;
 }
 
-function scrubPIIFromTransaction(event: Sentry.TransactionEvent): Sentry.TransactionEvent | null {
+function scrubPIIFromTransaction<T extends Sentry.Event>(event: T): T | null {
   // Strip PII from transaction data as well
   if (event.request?.data) {
     event.request.data = '[SCRUBBED]';

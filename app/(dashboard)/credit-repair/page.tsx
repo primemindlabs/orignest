@@ -4,7 +4,7 @@ import { getOrgContext } from '@/lib/auth/orgContext';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
-import { CreditRepairClient } from './CreditRepairClient';
+import { CreditRepairClient, type PipelineRecord } from './CreditRepairClient';
 import { ConsumerCreditRepairPanel } from './ConsumerCreditRepairPanel';
 
 export const dynamic = 'force-dynamic';
@@ -72,7 +72,7 @@ export default async function CreditRepairPage() {
   const estPipelineValue = all
     .filter((r) => r.status !== 'stopped_responding')
     .reduce((sum, r) => {
-      const lead = r.leads as { loan_amount: number | null } | null;
+      const lead = r.leads as unknown as { loan_amount: number | null } | null;
       return sum + ((lead?.loan_amount ?? 300000) * 0.01); // rough 1% origination fee
     }, 0);
 
@@ -81,7 +81,7 @@ export default async function CreditRepairPage() {
     <ConsumerCreditRepairPanel />
     <CreditRepairClient
       orgId={org.id}
-      pipeline={all}
+      pipeline={all as unknown as PipelineRecord[]}
       availableLeads={(leads ?? []) as Array<{ id: string; first_name: string; last_name: string; email: string; loan_type: string | null; estimated_credit_score: number | null }>}
       partners={(partners ?? []) as Array<{ id: string; name: string; contact_name: string | null; email: string | null; phone: string | null; avg_timeline_days: number | null; success_rate: number | null }>}
       kpis={{ enrolledCount, qualifiedMTD, avgScoreGain, estPipelineValue }}

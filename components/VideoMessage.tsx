@@ -339,7 +339,7 @@ export function VideoMessage({ lead, onClose, onSent }: VideoMessageProps) {
               </div>
 
               {/* Send options — shown in preview state */}
-              {state === 'preview' && (
+              {(state === 'preview' || state === 'uploading') && (
                 <div className="space-y-3 border-t border-[rgba(60,60,67,0.08)] pt-4">
                   {/* Title */}
                   <div>

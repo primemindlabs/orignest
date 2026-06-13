@@ -33,12 +33,14 @@ export function formatCurrencyShort(amount: number): string {
 
 /**
  * Format a number as full USD currency.
+ * Pass `{ compact: true }` for abbreviated output ("$485K", "$1.2M").
  */
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: number, options?: { compact?: boolean }): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-    maximumFractionDigits: 0,
+    notation: options?.compact ? 'compact' : 'standard',
+    maximumFractionDigits: options?.compact ? 1 : 0,
   }).format(amount);
 }
 

@@ -30,10 +30,11 @@ export async function runVelocityPrediction(
 
   const borrowerData = (appRow?.borrower_data ?? {}) as Record<string, unknown>;
   const employmentData = (appRow?.employment_data ?? {}) as Record<string, unknown>;
-  const context = deriveLoanContext(
-    { ...lead, employment_type: (employmentData.employment_type as string) ?? null },
-    { has_co_borrower: !!borrowerData.has_co_borrower || !!borrowerData.co_borrower_section, has_reo: !!borrowerData.has_reo }
-  );
+  const context = deriveLoanContext(lead, {
+    has_co_borrower: !!borrowerData.has_co_borrower || !!borrowerData.co_borrower_section,
+    has_reo: !!borrowerData.has_reo,
+    employment_type: (employmentData.employment_type as string) ?? null,
+  });
 
   const todayISO = new Date().toISOString().slice(0, 10);
   const since = lead.stage_changed_at ?? lead.created_at;

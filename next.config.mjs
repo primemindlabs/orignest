@@ -1,8 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Skip TypeScript and ESLint errors during build — fix after deploy
+  // Type errors fail the build (re-enabled after clearing the tsc baseline).
+  // ESLint is still skipped during builds — re-enable separately once the lint
+  // backlog is cleared (lint quality, not type safety).
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   eslint: {
     ignoreDuringBuilds: true,

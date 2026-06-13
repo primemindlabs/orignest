@@ -235,6 +235,7 @@ export function getTRIDSummary(status: TRIDStatus): string {
       case 'overdue': return 'OVERDUE';
       case 'blocked': return 'BLOCKED';
       case 'not_applicable': return 'N/A';
+      default: return s;
     }
   };
 

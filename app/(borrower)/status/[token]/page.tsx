@@ -178,8 +178,11 @@ export default async function BorrowerPortalPage({ params }: { params: { token: 
   const pipelineSteps = STAGE_ORDER.map((s, idx) => ({
     stage: s,
     label: STAGE_LABELS[s] ?? s,
-    status:
-      idx < currentStageIndex ? 'completed' : idx === currentStageIndex ? 'current' : 'upcoming',
+    status: (idx < currentStageIndex
+      ? 'completed'
+      : idx === currentStageIndex
+        ? 'current'
+        : 'upcoming') as 'completed' | 'current' | 'upcoming',
   }));
 
   // Phase 4.5 — AI plain-English "what happens next" (cached per stage).

@@ -40,6 +40,7 @@ function statusLabel(status: TRIDStatusValue): string {
     case 'overdue': return 'Overdue';
     case 'blocked': return 'Blocked';
     case 'not_applicable': return 'Not Applicable';
+    default: return status;
   }
 }
 
@@ -50,6 +51,7 @@ function statusClass(status: TRIDStatusValue): string {
     case 'overdue': return 'border-red/20 bg-red/5';
     case 'blocked': return 'border-red/20 bg-red/5';
     case 'not_applicable': return 'border-[rgba(60,60,67,0.12)] bg-bg';
+    default: return '';
   }
 }
 

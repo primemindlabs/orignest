@@ -44,8 +44,7 @@ export async function POST(req: Request) {
       },
       { onConflict: 'clerk_org_id', ignoreDuplicates: false }
     )
-    .then(() => undefined)
-    .catch(() => undefined);
+    .then(() => undefined, () => undefined);
 
   const { data: org } = await sb
     .from('organizations')
@@ -76,8 +75,7 @@ export async function POST(req: Request) {
       },
       { onConflict: 'clerk_user_id', ignoreDuplicates: false }
     )
-    .then(() => undefined)
-    .catch(() => undefined);
+    .then(() => undefined, () => undefined);
 
   return NextResponse.json({ ok: true, orgId: org?.id ?? null });
 }

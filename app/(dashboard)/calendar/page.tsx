@@ -91,7 +91,7 @@ export default async function CalendarPage({
     });
   }
 
-  const allLoans: CalendarLoan[] = [...(loans ?? []), ...(ctcLoans ?? [])];
+  const allLoans = [...(loans ?? []), ...(ctcLoans ?? [])] as CalendarLoan[];
 
   return (
     <CalendarClient

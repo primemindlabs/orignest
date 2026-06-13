@@ -1,19 +1,10 @@
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect, notFound } from 'next/navigation';
-import { ConditionsManager, type Condition } from '@/components/loan/ConditionsManager';
+import { ConditionsManager } from '@/components/loan/ConditionsManager';
+import { loadConditions } from './loadConditions';
 
 export const dynamic = 'force-dynamic';
-
-export async function loadConditions(loanId: string, orgId: string): Promise<Condition[]> {
-  const sb = createAdminClient();
-  const { data } = await sb
-    .from('loan_conditions')
-    .select('id, condition_text, category, priority, status, due_date')
-    .eq('lead_id', loanId).eq('org_id', orgId)
-    .order('created_at', { ascending: true });
-  return (data ?? []) as Condition[];
-}
 
 export default async function ConditionsPage({ params }: { params: { loanId: string } }) {
   const { userId, orgId } = await getOrgContext();

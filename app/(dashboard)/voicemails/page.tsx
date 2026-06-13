@@ -29,7 +29,7 @@ export default async function VoicemailsPage() {
         <h1 className="text-[22px] font-bold text-black tracking-tight">Voicemails</h1>
         <p className="text-[13px] text-[var(--c-label2)] mt-0.5">Inbound voicemails with Ashley&apos;s instant text reply.</p>
       </div>
-      <VoicemailInbox calls={(data ?? []) as CallRecord[]} />
+      <VoicemailInbox calls={(data ?? []) as unknown as CallRecord[]} />
     </div>
   );
 }

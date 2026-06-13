@@ -51,7 +51,7 @@ export async function recordAIFeedback(params: {
       : params.userAction === 'modified' ? 'edited'
       : 'no_action',
     edited_output: params.finalOutput ?? null,
-  }).then(() => undefined).catch(() => undefined); // graceful — table may not exist yet
+  }).then(() => undefined, () => undefined); // graceful — table may not exist yet
 }
 
 // ─── Record AI input (pre-action) ─────────────────────────────────────────────
@@ -91,8 +91,7 @@ export async function recordAIFeedbackInput(params: {
       user_action: 'no_action',
       edited_output: null,
     })
-    .then(() => undefined)
-    .catch(() => undefined); // graceful — table may not exist yet
+    .then(() => undefined, () => undefined); // graceful — table may not exist yet
 }
 
 // ─── Build org-specific context ───────────────────────────────────────────────

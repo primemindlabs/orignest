@@ -254,7 +254,7 @@ export default async function ProcessingFilePage({
             {notes && notes.length > 0 ? (
               <div className="space-y-2">
                 {notes.map((note) => {
-                  const author = note.profiles as { first_name: string; last_name: string } | null;
+                  const author = note.profiles as unknown as { first_name: string; last_name: string } | null;
                   return (
                     <div key={note.id} className="py-2 border-b border-border/60 last:border-0">
                       <div className="flex items-center gap-1.5 mb-1">

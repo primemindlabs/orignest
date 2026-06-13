@@ -7,7 +7,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ConditionsChecklist } from './ConditionsChecklist';
 import Link from 'next/link';
 
-interface Lead {
+export interface Lead {
   id: string;
   first_name: string;
   last_name: string;

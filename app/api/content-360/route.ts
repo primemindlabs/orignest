@@ -51,7 +51,7 @@ export async function POST(req: Request) {
   const days = lastAt ? Math.floor((Date.now() - new Date(lastAt).getTime()) / 86_400_000) : null;
   const recent = ev.filter((e) => (Date.now() - new Date(e.occurred_at).getTime()) / 86_400_000 <= 30);
 
-  const recs = await generateContentRecommendations({ contact_type: contactType, loan_stage: b.loan_stage, days_since_last_contact: days, tier: score.tier, recent_count: recent.length, recent_types: Array.from(new Set(recent.map((e) => e.content_type))), last_content_title: ev[0]?.content_title ?? undefined });
+  const recs = await generateContentRecommendations({ contact_type: contactType, loan_stage: b.loan_stage, days_since_last_contact: days, tier: score.tier, recent_count: recent.length, recent_types: Array.from(new Set(recent.map((e) => e.content_type))), last_content_title: ev[0]?.content_type ?? undefined });
   await sb.from('content_360_recommendations').upsert({ org_id: orgId, contact_id: b.contact_id, contact_type: contactType, recommendations: recs, generated_at: new Date().toISOString() }, { onConflict: 'contact_id,contact_type' });
   return NextResponse.json({ recommendations: recs });
 }

@@ -4,7 +4,7 @@ import { getOrgContext } from '@/lib/auth/orgContext';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
-import { ProcessingWorkspace } from '@/components/processing/ProcessingWorkspace';
+import { ProcessingWorkspace, type Lead } from '@/components/processing/ProcessingWorkspace';
 
 export const dynamic = 'force-dynamic';
 
@@ -78,7 +78,7 @@ export default async function ProcessingPage() {
 
   return (
     <ProcessingWorkspace
-      leads={leads ?? []}
+      leads={(leads ?? []) as unknown as Lead[]}
       openByLead={openByLead}
       kpis={{
         filesInProcessing: (leads ?? []).length,

@@ -29,9 +29,10 @@ interface Partner {
   success_rate: number | null;
 }
 
-interface PipelineRecord {
+export interface PipelineRecord {
   id: string;
   target_program: string;
+  updated_at: string | null;
   target_score: number;
   starting_score: number;
   current_score: number | null;

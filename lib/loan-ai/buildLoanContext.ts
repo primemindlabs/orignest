@@ -15,7 +15,28 @@ export async function buildLoanContext(
   orgId: string,
   leadId: string,
 ): Promise<LoanAIContext | null> {
-  const { data: lead } = await sb
+  type LeadRow = {
+    id: string;
+    org_id: string;
+    stage: string | null;
+    first_name: string | null;
+    loan_amount: number | null;
+    loan_type: string | null;
+    loan_purpose: string | null;
+    property_address: string | null;
+    property_city: string | null;
+    property_state: string | null;
+    occupancy_type: string | null;
+    credit_score: number | null;
+    ltv: number | null;
+    le_deadline: string | null;
+    cd_deadline: string | null;
+    closing_date: string | null;
+    last_contacted_at: string | null;
+    assigned_to: string | null;
+  };
+
+  const { data: leadData } = await sb
     .from('leads')
     .select(
       'id, org_id, stage, first_name, loan_amount, loan_type, loan_purpose, property_address, ' +
@@ -26,6 +47,7 @@ export async function buildLoanContext(
     .eq('org_id', orgId) // tenant isolation — never read another org's loan
     .maybeSingle();
 
+  const lead = leadData as LeadRow | null;
   if (!lead) return null;
 
   const [{ data: lock }, { data: behavior }, { data: dti }, { data: conds }, { data: lo }] =
