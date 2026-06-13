@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Plug, Check, X, ChevronRight } from 'lucide-react';
 
-interface Conn { los_type: string; is_active: boolean; last_sync_at: string | null; sync_error: string | null }
+interface Conn { los_type: string; is_active: boolean; last_sync_at: string | null; sync_error: string | null; webhook_secret?: string | null }
 
 const LOS = [
   { id: 'lendingpad', name: 'LendingPad', desc: 'Sync loan status, conditions, and contacts with your LendingPad account.', fields: [{ key: 'api_key', label: 'API Key' }, { key: 'api_secret', label: 'API Secret' }] },
   { id: 'arive', name: 'Arive', desc: 'Sync loan pipeline and conditions with your Arive account.', fields: [{ key: 'api_key', label: 'API Key' }] },
+  { id: 'byte', name: 'BytePro', desc: 'Receive loan status updates from BytePro via webhook (receive-only).', fields: [{ key: 'api_key', label: 'BytePro Account ID' }] },
 ];
 
 export function IntegrationsClient({ canManage }: { canManage: boolean }) {
@@ -55,6 +56,18 @@ export function IntegrationsClient({ canManage }: { canManage: boolean }) {
                 </div>
                 <p className="text-[12px] text-[var(--c-label2)] mt-0.5">{los.desc}</p>
                 {c?.sync_error && <p className="text-[11px] text-[var(--c-label3)] mt-1">{c.sync_error}</p>}
+                {c && los.id === 'byte' && (
+                  <div className="mt-2 space-y-1.5 text-[11px]">
+                    <p className="text-[var(--c-label2)]">Point BytePro&apos;s webhook here (HMAC-SHA256, header <code>x-webhook-signature</code>):</p>
+                    <code className="block bg-[var(--c-fill)] rounded px-2 py-1 break-all text-[var(--c-text)]">{(typeof window !== 'undefined' ? window.location.origin : '')}/api/webhooks/byte</code>
+                    {c.webhook_secret && (
+                      <>
+                        <p className="text-[var(--c-label2)]">Signing secret:</p>
+                        <code className="block bg-[var(--c-fill)] rounded px-2 py-1 break-all text-[var(--c-text)]">{c.webhook_secret}</code>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
               {canManage && (c ? (
                 <Button variant="secondary" onClick={() => disconnect(los.id)} disabled={busy}><X size={13} /> Disconnect</Button>

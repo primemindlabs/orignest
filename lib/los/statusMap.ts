@@ -31,8 +31,24 @@ export const ARIVE_STATUS_MAP: Record<string, string> = {
   INCOMPLETE: 'new_inquiry',
 };
 
+// Phase 117 — BytePro uses numeric status codes. Mapped onto the REAL leads.stage
+// values (closing→clear_to_close, funded→closed, denied→declined).
+export const BYTEPRO_STATUS_MAP: Record<string, string> = {
+  '1': 'pre_qual',
+  '2': 'processing',
+  '3': 'conditional_approval',
+  '4': 'clear_to_close',
+  '5': 'clear_to_close',
+  '6': 'closed',
+  '7': 'declined',
+};
+
 export function mapLosStatus(losType: string, status: string): string | null {
-  const m = losType === 'lendingpad' ? LENDINGPAD_STATUS_MAP : losType === 'arive' ? ARIVE_STATUS_MAP : {};
+  const m =
+    losType === 'lendingpad' ? LENDINGPAD_STATUS_MAP
+    : losType === 'arive' ? ARIVE_STATUS_MAP
+    : losType === 'byte' ? BYTEPRO_STATUS_MAP
+    : {};
   return m[status] ?? null;
 }
 

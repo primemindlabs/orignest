@@ -25,7 +25,9 @@ export async function GET() {
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (!orgId) return NextResponse.json({ error: 'No org' }, { status: 403 });
   const sb = createAdminClient();
-  const { data } = await sb.from('los_connections').select('los_type, is_active, last_sync_at, sync_error, created_at').eq('org_id', orgId);
+  // webhook_secret is the org's own signing key (admin-only view) — needed to configure
+  // a push LOS like BytePro.
+  const { data } = await sb.from('los_connections').select('los_type, is_active, last_sync_at, sync_error, created_at, webhook_secret').eq('org_id', orgId);
   return NextResponse.json({ connections: data ?? [] });
 }
 
