@@ -74,6 +74,7 @@ const NAV: NavGroup[] = [
       { href: '/income', label: 'Income Calculators' },
       { href: '/dscr', label: 'DSCR / Non-QM' },
       { href: '/dscr-analyzer', label: 'DSCR Analyzer (5–9 unit)' },
+      { href: '/rate-sheets', label: 'Rate Sheet Parser' },
       { href: '/training', label: 'Training Center' },
       { href: '/training/library', label: 'Training Library' },
       { href: '/training/ask', label: 'Ask Ashley' },
