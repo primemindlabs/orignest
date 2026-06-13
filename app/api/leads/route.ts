@@ -165,6 +165,22 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     await logStageTransition(sb, { orgId, leadId: data.id, loId: profile?.id ?? null, fromStage: null, toStage: stage });
   }
 
+  // Speed-to-lead — alert the assigned LO instantly so they can respond first.
+  if (data?.id && profile?.id) {
+    try {
+      const { notify } = await import('@/lib/notifications/notify');
+      await notify(sb, {
+        orgId,
+        userId: profile.id,
+        type: 'system',
+        title: `New lead — respond now: ${`${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()}`,
+        body: 'The fastest response usually wins the loan. Tap to call or text.',
+        link: '/speed-to-lead',
+        urgency: 1,
+      });
+    } catch { /* non-blocking */ }
+  }
+
   // Phase 33.2 — record ad attribution if UTM / click-id signals are present.
   const attribution = captureLeadAttribution(body as Record<string, unknown>);
   if (data?.id && hasAttribution(attribution)) {
