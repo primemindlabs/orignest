@@ -73,6 +73,7 @@ const NAV: NavGroup[] = [
       { href: '/scenarios', label: 'Scenario AI' },
       { href: '/income', label: 'Income Calculators' },
       { href: '/dscr', label: 'DSCR / Non-QM' },
+      { href: '/dscr-analyzer', label: 'DSCR Analyzer (5–9 unit)' },
       { href: '/training', label: 'Training Center' },
       { href: '/training/library', label: 'Training Library' },
       { href: '/training/ask', label: 'Ask Ashley' },
