@@ -40,6 +40,19 @@ export function minimumPlanFor(feature: FeatureKey): string {
   return 'Growth';
 }
 
+// Contextual upgrade copy — shown at the moment an LO hits a locked feature (the
+// "moment of value" that converts far better than a static pricing page).
+export const FEATURE_COPY: Partial<Record<FeatureKey, { title: string; benefit: string }>> = {
+  power_dialer: { title: 'Power Dialer', benefit: 'Work your call list 3× faster with one-click dialing, local presence, and automatic call logging.' },
+  campaign_manager: { title: 'Campaign Manager', benefit: 'Automated, personalized email + SMS drip campaigns that nurture every lead while you sleep.' },
+  ad_center: { title: 'Ad Center', benefit: 'Launch compliant Facebook & Google lead ads and track ROI all the way to closed loans.' },
+  ai_draft_engine: { title: 'AI Draft Engine', benefit: 'Let Ashley draft your follow-ups, emails, and texts in your voice — in seconds.' },
+  branch_manager: { title: 'Branch Manager', benefit: 'Team leaderboards, per-LO scorecards, and branch-wide pipeline analytics in one view.' },
+  ai_content_studio: { title: 'AI Content Studio', benefit: 'Generate social posts, market updates, and co-branded content on autopilot.' },
+  course_builder: { title: 'Course Builder', benefit: 'Build and assign training courses to onboard and level up your team.' },
+  api_access: { title: 'API Access', benefit: 'Programmatic access to your data plus webhooks for custom integrations.' },
+};
+
 export interface OrgBilling {
   subscription_plan: string | null;
   subscription_status: string | null;
