@@ -33,8 +33,10 @@ export async function POST(req: Request) {
   if (event.type === 'Loan.Milestone.Changed' && event.loanId) {
     const stage = mapEncompassMilestone(event.milestoneCurrentName);
     // Additive: update the mapped lead's stage if we already track this loan (never insert/delete here).
-    await sb.from('leads').update({ stage, updated_at: new Date().toISOString() }).eq('org_id', conn.org_id).eq('los_loan_id', event.loanId).eq('los_provider', 'encompass');
-    await sb.from('los_sync_events').insert({ org_id: conn.org_id, los_type: 'encompass', external_id: event.loanId, event_type: 'pull_from_los', payload: { milestone: event.milestoneCurrentName, stage } }).then(() => undefined, () => undefined);
+    // Real columns: leads.los_type (not los_provider) + los_last_synced_at.
+    await sb.from('leads').update({ stage, los_last_synced_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('org_id', conn.org_id).eq('los_loan_id', event.loanId).eq('los_type', 'encompass');
+    // Real los_sync_events columns: los_loan_id (not external_id) + direction + result.
+    await sb.from('los_sync_events').insert({ org_id: conn.org_id, los_type: 'encompass', los_loan_id: event.loanId, event_type: 'status_changed', direction: 'inbound', payload: { milestone: event.milestoneCurrentName, stage }, result: 'success' }).then(() => undefined, () => undefined);
   }
   return NextResponse.json({ received: true });
 }

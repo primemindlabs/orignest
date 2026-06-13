@@ -57,6 +57,7 @@ const NAV: NavGroup[] = [
       { href: '/campaigns/manager', label: 'Campaigns' },
       { href: '/social', label: 'Social Media' },
       { href: '/co-marketing', label: 'Co-Marketing' },
+      { href: '/co-marketing/generate', label: 'Co-Marketing Generator' },
       { href: '/marketing/market-update', label: 'Realtor Market Update' },
       { href: '/outreach', label: 'Birthday & Anniversary' },
       { href: '/co-marketing/listings', label: 'Listings' },
