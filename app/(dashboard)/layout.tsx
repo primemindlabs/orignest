@@ -4,6 +4,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { CommandPaletteProvider } from '@/components/providers/CommandPaletteProvider';
+import { NavDrawerProvider } from '@/components/layout/NavDrawerContext';
 import { SpeedTicker } from '@/components/dashboard/SpeedTicker';
 import { ClosingCelebrationListener } from '@/components/ui/ClosingCelebrationListener';
 import { AskAshleyWidget } from '@/components/dashboard/AskAshleyWidget';
@@ -53,27 +54,26 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <CommandPaletteProvider>
-      <div className="flex h-screen overflow-hidden bg-bg">
-        <Sidebar userRole={userRole} orgName={org?.name ?? undefined} />
-        <div
-          className="flex-1 flex flex-col min-w-0 transition-[margin] duration-150"
-          style={{ marginLeft: 'var(--sidebar-w, 220px)' }}
-        >
-          <Topbar role={userRole} />
-          <main className="flex-1 overflow-auto pt-14 animate-fade-in">
-            <TrialBanner />
-            <ActionRail />
-            <div className="p-6">{children}</div>
-          </main>
+      <NavDrawerProvider>
+        <div className="flex h-screen overflow-hidden bg-bg">
+          <Sidebar userRole={userRole} orgName={org?.name ?? undefined} />
+          <div className="flex-1 flex flex-col min-w-0 transition-[margin] duration-150 lg:ml-[var(--sidebar-w)]">
+            <Topbar role={userRole} />
+            <main className="flex-1 overflow-auto pt-14 animate-fade-in">
+              <TrialBanner />
+              <ActionRail />
+              <div className="p-4 sm:p-6">{children}</div>
+            </main>
+          </div>
         </div>
-      </div>
-      {/* Global UX layer */}
-      <NotificationToaster userId={(profile?.id as string | undefined) ?? null} />
-      <SpeedTicker />
-      <ClosingCelebrationListener loName={loName} />
-      {/* One Ashley brain — the single floating AI. Absorbs the former LOA launcher
-          (business intelligence, now auto-routed inside Ashley) and the Quick Actions bar. */}
-      <AskAshleyWidget />
+        {/* Global UX layer */}
+        <NotificationToaster userId={(profile?.id as string | undefined) ?? null} />
+        <SpeedTicker />
+        <ClosingCelebrationListener loName={loName} />
+        {/* One Ashley brain — the single floating AI. Absorbs the former LOA launcher
+            (business intelligence, now auto-routed inside Ashley) and the Quick Actions bar. */}
+        <AskAshleyWidget />
+      </NavDrawerProvider>
     </CommandPaletteProvider>
   );
 }

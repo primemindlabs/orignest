@@ -1,12 +1,13 @@
 'use client';
 
 import { clsx } from 'clsx';
-import { Search, ChevronRight } from 'lucide-react';
+import { Search, ChevronRight, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NotificationCenter } from '@/components/layout/NotificationCenter';
 import { BriefBell } from '@/components/layout/BriefBell';
 import { useCommandPalette } from '@/components/providers/CommandPaletteProvider';
+import { useNavDrawer } from '@/components/layout/NavDrawerContext';
 
 interface BreadcrumbItem {
   label: string;
@@ -87,20 +88,29 @@ export function Topbar({ breadcrumbs: propBreadcrumbs, actions, role }: TopbarPr
   const autoBreadcrumbs = useBreadcrumbs();
   const breadcrumbs = propBreadcrumbs ?? autoBreadcrumbs;
   const { setOpen: openCommandPalette } = useCommandPalette();
+  const { setOpen: openNavDrawer } = useNavDrawer();
 
   return (
     <header
-      style={{ left: 'var(--sidebar-w, 220px)' }}
       className={clsx(
-        'fixed top-0 right-0 z-30',
+        'fixed top-0 right-0 z-30 left-0 lg:left-[var(--sidebar-w)]',
         'h-14 transition-[left] duration-150',
-        'flex items-center justify-between px-5',
+        'flex items-center justify-between px-4 sm:px-5 gap-2',
         'bg-[rgba(255,255,255,0.85)] backdrop-blur-[20px]',
         'border-b border-[rgba(60,60,67,0.12)]'
       )}
     >
+      {/* Mobile menu trigger */}
+      <button
+        onClick={() => openNavDrawer(true)}
+        className="lg:hidden p-1.5 -ml-1 rounded-lg text-label-2 hover:bg-[rgba(60,60,67,0.08)] flex-shrink-0"
+        aria-label="Open menu"
+      >
+        <Menu size={18} />
+      </button>
+
       {/* Breadcrumbs */}
-      <nav className="flex items-center gap-1 min-w-0">
+      <nav className="flex items-center gap-1 min-w-0 flex-1">
         {breadcrumbs.map((crumb, i) => (
           <div key={i} className="flex items-center gap-1 min-w-0">
             {i > 0 && (

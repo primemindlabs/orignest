@@ -7,9 +7,10 @@ import { useClerk, useUser } from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/brand/Logo';
 import { isGroupVisible } from '@/lib/navigation/roles';
+import { useNavDrawer } from '@/components/layout/NavDrawerContext';
 import {
   LayoutDashboard, GitBranch, Repeat, Megaphone, Sparkles, BarChart3, ShieldCheck, Settings,
-  ChevronDown, PanelLeftClose, PanelLeftOpen, LogOut,
+  ChevronDown, PanelLeftClose, PanelLeftOpen, LogOut, X,
 } from 'lucide-react';
 
 /**
@@ -48,7 +49,7 @@ const NAV: NavGroup[] = [
       { href: '/equity-loop', label: 'Equity Loop' },
       { href: '/partners', label: 'Realtors & Partners' },
       { href: '/realtors', label: 'Realtor Intelligence' },
-      { href: '/discover', label: 'Discover Realtors' },
+      { href: '/discover', label: 'Find New Realtors' },
       { href: '/ae-connect', label: 'AE Connect' },
     ],
   },
@@ -64,7 +65,6 @@ const NAV: NavGroup[] = [
       { href: '/outreach', label: 'Birthday & Anniversary' },
       { href: '/co-marketing/listings', label: 'Listings' },
       { href: '/ads', label: 'Ad Center' },
-      { href: '/dialer/power', label: 'Power Dialer' },
     ],
   },
   {
@@ -137,6 +137,7 @@ export function Sidebar({ userRole, orgName }: SidebarProps) {
   const router = useRouter();
   const { signOut } = useClerk();
   const { user } = useUser();
+  const { open: mobileOpen, setOpen: setMobileOpen } = useNavDrawer();
 
   // Phase 57.1 — role-filtered nav. Generalists (lo / branch_manager / admin) keep
   // the full nav exactly as before; specialized roles get a tailored subset.
@@ -193,8 +194,47 @@ export function Sidebar({ userRole, orgName }: SidebarProps) {
   const initials = fullName ? fullName.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) : '?';
 
   return (
+    <>
+    {/* Mobile off-canvas drawer (full nav). Desktop uses the fixed aside below. */}
+    {mobileOpen && (
+      <div className="lg:hidden fixed inset-0 z-50" role="dialog" aria-modal="true">
+        <div className="absolute inset-0 bg-black/30" onClick={() => setMobileOpen(false)} />
+        <div className="absolute left-0 top-0 bottom-0 w-[260px] bg-white border-r border-gray-100 flex flex-col">
+          <div className="h-[60px] flex items-center justify-between px-4 border-b border-gray-100 flex-shrink-0">
+            <Logo size={32} />
+            <button onClick={() => setMobileOpen(false)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-50" aria-label="Close menu"><X className="w-4 h-4" /></button>
+          </div>
+          <nav className="flex-1 overflow-y-auto py-3 px-2.5 space-y-2">
+            {groups.map((g) => {
+              const Icon = g.icon;
+              const target = g.href ?? g.items?.[0]?.href ?? '#';
+              if (g.href) {
+                return (
+                  <Link key={g.key} href={target} onClick={() => setMobileOpen(false)} className={cn('flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium', activeGroup === g.key ? 'bg-gold-50 text-gold-700' : 'text-gray-700 hover:bg-gray-50')}>
+                    <Icon className="w-4 h-4 text-gray-400" /> {g.label}
+                  </Link>
+                );
+              }
+              return (
+                <div key={g.key}>
+                  <div className="flex items-center gap-2 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400"><Icon className="w-3.5 h-3.5" /> {g.label}</div>
+                  <ul className="mt-0.5">
+                    {(g.items ?? []).map((it) => (
+                      <li key={it.href}>
+                        <Link href={it.href} onClick={() => setMobileOpen(false)} className={cn('block px-3 py-1.5 rounded-lg text-[13px]', activeHref === it.href ? 'bg-gold-50 text-gold-700 font-medium' : 'text-gray-600 hover:bg-gray-50')}>{it.label}</Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </nav>
+        </div>
+      </div>
+    )}
+
     <aside
-      className={cn('fixed left-0 top-0 bottom-0 z-40 flex flex-col bg-white border-r border-gray-100 transition-[width] duration-150', collapsed ? 'w-[64px]' : 'w-[220px]')}
+      className={cn('fixed left-0 top-0 bottom-0 z-40 hidden lg:flex flex-col bg-white border-r border-gray-100 transition-[width] duration-150', collapsed ? 'w-[64px]' : 'w-[220px]')}
     >
       {/* Logo + collapse toggle */}
       <div className="h-[60px] flex items-center justify-between px-3 border-b border-gray-100 flex-shrink-0">
@@ -305,6 +345,7 @@ export function Sidebar({ userRole, orgName }: SidebarProps) {
         </div>
       </div>
     </aside>
+    </>
   );
 }
 
