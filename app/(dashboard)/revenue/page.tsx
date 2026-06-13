@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import type { Metadata } from 'next';
 import RevenueClient from './RevenueClient';
 
@@ -68,10 +69,21 @@ export default async function RevenuePage() {
       ? closedLoans.length / (totalLeadsEver ?? 1)
       : 0.35;
 
-  // TODO: replace with settings table values when settings UI is built
+  // Compensation + goal come from the LO's own profile (Settings → Profile).
+  // comp_rate is stored as a percent (e.g. 1.25 = 1.25%); revenue math wants
+  // basis points, so ×100. monthly_volume_goal is already a dollar figure.
+  // Read with the admin client — profiles aren't readable under the anon/RLS
+  // client in this Clerk app (RLS keys off auth.uid(), which is never set).
+  const { data: profile } = await createAdminClient()
+    .from('profiles')
+    .select('comp_rate, monthly_volume_goal')
+    .eq('clerk_user_id', userId)
+    .eq('org_id', orgId)
+    .maybeSingle();
+
   const orgSettings = {
-    basis_points: 100,
-    monthly_goal: 3_000_000,
+    basis_points: profile?.comp_rate != null ? Math.round(profile.comp_rate * 100) : 100,
+    monthly_goal: profile?.monthly_volume_goal ?? 3_000_000,
   };
 
   return (

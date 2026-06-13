@@ -525,11 +525,35 @@ export default function TemplatesPage() {
   const [editorMode, setEditorMode] = useState<'use' | 'edit'>('use');
   const [showCreate, setShowCreate] = useState(false);
 
-  // TODO: fetch from profile; for now use env/placeholder
-  const loName = 'Your Name';
-  const loNmls = '';
-  const loPhone = '';
-  const companyName = 'AshleyIQ Mortgage';
+  // LO merge tokens come from the signed-in profile (Settings → Profile).
+  // Fetched via the API because profiles aren't readable from the browser
+  // client under Clerk (RLS keys off auth.uid(), which is never set).
+  const [loName, setLoName] = useState('');
+  const [loNmls, setLoNmls] = useState('');
+  const [loPhone, setLoPhone] = useState('');
+  const [companyName, setCompanyName] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/settings/profile');
+        if (!res.ok) return;
+        const { profile, company } = await res.json();
+        if (cancelled) return;
+        const name = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim();
+        setLoName(name);
+        setLoNmls(profile?.nmls_id ?? '');
+        setLoPhone(profile?.phone ?? '');
+        setCompanyName(company ?? '');
+      } catch {
+        /* fall back to the [Bracketed] merge-field placeholders */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const loadData = useCallback(async () => {
     const [{ data: tmplData }, { data: leadData }] = await Promise.all([
