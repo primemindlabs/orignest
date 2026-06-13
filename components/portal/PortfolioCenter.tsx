@@ -3,13 +3,14 @@
 // Phase 123 — Real Estate Portfolio (investor/DSCR borrowers).
 import { useEffect, useState } from 'react';
 import { IconHome, IconBuildingEstate } from '@tabler/icons-react';
+import { PortalEmptyState } from './PortalEmptyState';
 
 interface Prop { id: string; address: string; property_type: string; current_value: number | null; mortgage_balance: number | null; monthly_cash_flow: number | null; is_primary_residence: boolean }
 interface Totals { value: number; balance: number; equity: number; cash_flow: number }
 
 const usd = (n: number | null | undefined) => (n == null ? '—' : `$${Math.round(Number(n)).toLocaleString()}`);
 
-export function PortfolioCenter({ token }: { token: string }) {
+export function PortfolioCenter({ token, onAskAshley }: { token: string; onAskAshley?: () => void }) {
   const [properties, setProperties] = useState<Prop[]>([]);
   const [totals, setTotals] = useState<Totals | null>(null);
   const [loading, setLoading] = useState(true);
@@ -20,11 +21,12 @@ export function PortfolioCenter({ token }: { token: string }) {
 
   if (loading) return <div className="bg-white rounded-2xl border border-[#EDEAE4] p-6 text-[13px] text-[#9B9590]">Loading your portfolio…</div>;
   if (properties.length === 0) return (
-    <div className="bg-white rounded-2xl border border-[#EDEAE4] p-6 text-center">
-      <IconBuildingEstate size={28} className="text-[#C9A95C] mx-auto mb-2" />
-      <p className="text-[13px] font-medium text-[#1A1816]">No properties yet</p>
-      <p className="text-[12px] text-[#9B9590] mt-1">As you build your real estate portfolio, your properties and cash flow will appear here.</p>
-    </div>
+    <PortalEmptyState
+      icon={<IconBuildingEstate size={20} className="text-[#C9A95C]" />}
+      title="Your portfolio activates after closing"
+      message="Once you close your first loan, your properties show up here — track each home's value, equity, and monthly cash flow as you grow your real estate portfolio."
+      onAskAshley={onAskAshley}
+    />
   );
 
   return (

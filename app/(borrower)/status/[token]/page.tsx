@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getOrGenerateNextStep } from '@/lib/borrower/nextStep';
 import { BorrowerPortalClient } from './BorrowerPortalClient';
+import { PortalLinkExpired } from '@/components/portal/PortalLinkExpired';
 
 const STAGE_LABELS: Record<string, string> = {
   new_inquiry: 'Application Received',
@@ -48,7 +49,33 @@ export default async function BorrowerPortalPage({ params }: { params: { token: 
     .maybeSingle();
 
   if (!portalToken) notFound();
-  if (portalToken.expires_at && new Date(portalToken.expires_at) < new Date()) notFound();
+
+  // Expired link: render a branded, LO-aware page (not a bare 404). We already have the
+  // token row here, so resolve the assigned loan officer for a "contact them" CTA.
+  if (portalToken.expires_at && new Date(portalToken.expires_at) < new Date()) {
+    const { data: expiredLead } = await sb
+      .from('leads')
+      .select('assigned_to')
+      .eq('id', portalToken.lead_id)
+      .eq('org_id', portalToken.org_id)
+      .maybeSingle();
+    let loName: string | null = null;
+    let loEmail: string | null = null;
+    let loPhone: string | null = null;
+    if (expiredLead?.assigned_to) {
+      const { data: expLo } = await sb
+        .from('profiles')
+        .select('first_name,last_name,email,phone')
+        .eq('id', expiredLead.assigned_to)
+        .maybeSingle();
+      if (expLo) {
+        loName = [expLo.first_name, expLo.last_name].filter(Boolean).join(' ') || null;
+        loEmail = (expLo.email as string) ?? null;
+        loPhone = (expLo.phone as string) ?? null;
+      }
+    }
+    return <PortalLinkExpired variant="expired" loName={loName} loEmail={loEmail} loPhone={loPhone} />;
+  }
 
   // Increment page views
   await sb

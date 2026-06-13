@@ -2,14 +2,15 @@
 
 // Phase 123 — Mortgage Health Score ring (r=28, circumference=175.9) + action items.
 import { useEffect, useState } from 'react';
-import { IconArrowUpRight } from '@tabler/icons-react';
+import { IconArrowUpRight, IconHeartRateMonitor } from '@tabler/icons-react';
+import { PortalEmptyState } from './PortalEmptyState';
 
 interface ActionItem { type: string; label: string; points_potential: number }
 interface Score { score: number; credit_score: number | null; equity_estimate: number | null; rate_comparison_delta: number | null; action_items: ActionItem[] }
 
 const C = 175.9;
 
-export function MortgageHealthScore({ token }: { token: string }) {
+export function MortgageHealthScore({ token, onAskAshley }: { token: string; onAskAshley?: () => void }) {
   const [score, setScore] = useState<Score | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -18,7 +19,14 @@ export function MortgageHealthScore({ token }: { token: string }) {
   }, [token]);
 
   if (loading) return <div className="bg-white rounded-2xl border border-[#EDEAE4] p-6 text-[13px] text-[#9B9590]">Loading your score…</div>;
-  if (!score) return <div className="bg-white rounded-2xl border border-[#EDEAE4] p-6 text-[13px] text-[#9B9590]">Your health score isn’t available yet.</div>;
+  if (!score) return (
+    <PortalEmptyState
+      icon={<IconHeartRateMonitor size={20} className="text-[#C9A95C]" />}
+      title="Your Health Score unlocks in processing"
+      message="Once your loan reaches processing, we review your credit, equity, and rate to calculate your Mortgage Health Score — automatically, with no action needed from you."
+      onAskAshley={onAskAshley}
+    />
+  );
 
   const offset = C * (1 - score.score / 100);
   const band = score.score >= 80 ? 'Excellent' : score.score >= 60 ? 'Good' : score.score >= 40 ? 'Fair' : 'Building';

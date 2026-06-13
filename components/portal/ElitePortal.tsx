@@ -82,11 +82,11 @@ export function ElitePortal({ token, summary }: { token: string; summary?: { hom
           <AnnualReviewCard closingDate={tracker?.loan.closingDate ?? null} />
         </div>
       )}
-      {section === 'health' && <MortgageHealthScore token={token} />}
-      {section === 'wealth' && <HomeWealthDashboard token={token} />}
-      {section === 'portfolio' && <PortfolioCenter token={token} />}
+      {section === 'health' && <MortgageHealthScore token={token} onAskAshley={() => setSection('ashley')} />}
+      {section === 'wealth' && <HomeWealthDashboard token={token} onAskAshley={() => setSection('ashley')} />}
+      {section === 'portfolio' && <PortfolioCenter token={token} onAskAshley={() => setSection('ashley')} />}
       {section === 'concierge' && <FinancialConcierge token={token} />}
-      {section === 'vault' && <ClosingVault token={token} />}
+      {section === 'vault' && <ClosingVault token={token} onAskAshley={() => setSection('ashley')} />}
       {section === 'ashley' && <AshleyAI token={token} />}
     </div>
   );

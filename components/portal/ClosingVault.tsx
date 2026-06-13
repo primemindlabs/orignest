@@ -2,11 +2,11 @@
 
 // Phase 123 — Closing Vault: permanent document storage (read-only, no delete).
 import { useEffect, useState } from 'react';
-import { IconFileText, IconDownload, IconLock } from '@tabler/icons-react';
+import { IconFileText, IconDownload, IconLock, IconMessageChatbot } from '@tabler/icons-react';
 
 interface Doc { id: string; document_type: string; document_label: string; uploaded_at: string; url: string | null }
 
-export function ClosingVault({ token }: { token: string }) {
+export function ClosingVault({ token, onAskAshley }: { token: string; onAskAshley?: () => void }) {
   const [docs, setDocs] = useState<Doc[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,7 +25,15 @@ export function ClosingVault({ token }: { token: string }) {
       {loading ? (
         <p className="text-[13px] text-[#9B9590]">Loading your documents…</p>
       ) : docs.length === 0 ? (
-        <p className="text-[13px] text-[#9B9590]">Your closing documents will appear here after you close.</p>
+        <div className="text-center py-4">
+          <p className="text-[13px] text-[#1A1816] font-medium">Your vault activates with your first document</p>
+          <p className="text-[12.5px] text-[#6B6560] mt-1 max-w-sm mx-auto leading-relaxed">When your loan officer shares your first file — your closing disclosure, deed, title insurance, and more — it lives here permanently, ready to download anytime.</p>
+          {onAskAshley && (
+            <button onClick={onAskAshley} className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-[#C9A95C] text-[#8C6B2A] px-4 py-2 text-[13px] font-medium hover:bg-[#FBF5E6] transition-colors">
+              <IconMessageChatbot size={15} /> Ask Ashley
+            </button>
+          )}
+        </div>
       ) : (
         <div className="space-y-2">
           {docs.map((d) => (

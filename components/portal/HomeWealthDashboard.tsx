@@ -2,12 +2,14 @@
 
 // Phase 123 — Home Wealth Dashboard: value, balance, equity (+ trend).
 import { useEffect, useState } from 'react';
+import { IconCoin } from '@tabler/icons-react';
+import { PortalEmptyState } from './PortalEmptyState';
 
 interface Snap { home_value: number; mortgage_balance: number; equity: number; monthly_appreciation: number | null; net_worth_growth_ytd: number | null; data_source: string; snapshot_date: string }
 
 const usd = (n: number | null | undefined) => (n == null ? '—' : `$${Math.round(Number(n)).toLocaleString()}`);
 
-export function HomeWealthDashboard({ token }: { token: string }) {
+export function HomeWealthDashboard({ token, onAskAshley }: { token: string; onAskAshley?: () => void }) {
   const [latest, setLatest] = useState<Snap | null>(null);
   const [series, setSeries] = useState<Snap[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +19,14 @@ export function HomeWealthDashboard({ token }: { token: string }) {
   }, [token]);
 
   if (loading) return <div className="bg-white rounded-2xl border border-[#EDEAE4] p-6 text-[13px] text-[#9B9590]">Loading your wealth map…</div>;
-  if (!latest) return <div className="bg-white rounded-2xl border border-[#EDEAE4] p-6 text-[13px] text-[#9B9590]">Your home wealth dashboard will appear once your loan details are in.</div>;
+  if (!latest) return (
+    <PortalEmptyState
+      icon={<IconCoin size={20} className="text-[#C9A95C]" />}
+      title="Your equity insights unlock at closing"
+      message="Once your loan reaches closing and we have your final loan amount and home value, your equity, appreciation, and wealth map will start tracking here."
+      onAskAshley={onAskAshley}
+    />
+  );
 
   const equityPct = latest.home_value > 0 ? Math.round((latest.equity / latest.home_value) * 100) : 0;
 
