@@ -7,7 +7,7 @@
  */
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Wrench, ChevronDown, FileText, PenLine, FileCheck, ShieldCheck, Building2, ScrollText, Calculator, HardHat, PartyPopper, ClipboardList, MessagesSquare, GitCompare, UserCheck, Landmark } from 'lucide-react';
+import { Wrench, ChevronDown, FileText, PenLine, FileCheck, ShieldCheck, Building2, ScrollText, Calculator, HardHat, PartyPopper, ClipboardList, MessagesSquare, GitCompare, UserCheck, Landmark, FileBadge } from 'lucide-react';
 
 interface Tool { href: string; label: string; icon: React.ReactNode }
 
@@ -27,6 +27,7 @@ export function LeadToolsMenu({ loanId, isConstruction, isClosed }: { loanId: st
     { href: `/loans/${loanId}/internal-chat`, label: 'Team Chat', icon: <MessagesSquare size={15} /> },
     { href: `/loans/${loanId}/apply-1003`, label: 'Digital 1003', icon: <ClipboardList size={15} /> },
     { href: `/loans/${loanId}/scenarios`, label: 'Scenario Builder', icon: <GitCompare size={15} /> },
+    { href: `/loans/${loanId}/proposal`, label: 'Loan Proposal', icon: <FileBadge size={15} /> },
     { href: `/deal-desk?lead=${loanId}`, label: 'AE Deal Desk', icon: <Landmark size={15} /> },
     { href: `/loans/${loanId}/income`, label: 'Income', icon: <Calculator size={15} /> },
     { href: `/loans/${loanId}/loe`, label: 'Letter of Explanation', icon: <ScrollText size={15} /> },

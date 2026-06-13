@@ -32,6 +32,8 @@ const isPublicRoute = createRouteMatcher([
   '/api/deal-desk-respond(.*)', // Phase 120 AE response submit — token-verified in handler
   '/refer/(.*)',            // Phase 121 public partner referral landing — code is the credential
   '/api/refer/(.*)',        // Phase 121 public referral submit — rate-limited, code-gated in handler
+  '/proposal/(.*)',         // Phase 122 borrower-facing loan proposal — share_token is the credential
+  '/api/proposals/(.*)',    // Phase 122 public proposal choose — token-gated in handler
   '/review/(.*)',           // Annual homeownership review — unguessable id, noindex
   '/(partner)(.*)',         // Partner portal — token-authenticated
   '/portal/realtor/(.*)',   // Realtor portal — token-authenticated, permission-walled
