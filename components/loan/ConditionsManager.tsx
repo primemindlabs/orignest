@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Plus, Check, Circle, Eye, EyeOff } from 'lucide-react';
 import { ConditionDocuments } from '@/components/conditions/ConditionDocuments';
 import { SubmissionPackageButton } from '@/components/conditions/SubmissionPackageButton';
+import { RemindBorrowerButton } from '@/components/loan/RemindBorrowerButton';
 
 export interface Condition {
   id: string;
@@ -103,7 +104,12 @@ export function ConditionsManager({ loanId, initial }: { loanId: string; initial
         </div>
       )}
 
-      {conditions.length > 0 && <SubmissionPackageButton loanId={loanId} />}
+      {conditions.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <SubmissionPackageButton loanId={loanId} />
+          <RemindBorrowerButton loanId={loanId} outstandingCount={open.length} />
+        </div>
+      )}
 
       <div className="bg-[var(--c-surface)] border border-[var(--c-border)] rounded-[14px] overflow-hidden divide-y divide-[var(--c-border)]">
         {conditions.length === 0 && <p className="text-[13px] text-[var(--c-label3)] text-center py-8">No conditions yet.</p>}
