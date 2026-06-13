@@ -55,7 +55,7 @@ export async function POST(req: Request, { params }: { params: { loanId: string 
   if (error) return NextResponse.json({ error: 'Failed to create title agent' }, { status: 500 });
 
   // Add the title agent to the loan chat thread.
-  const { data: thread } = await sb.from('loan_chat_threads').select('id').eq('lead_id', params.loanId).eq('org_id', orgId).maybeSingle();
+  const { data: thread } = await sb.from('loan_chat_threads').select('id').eq('lead_id', params.loanId).eq('org_id', orgId).eq('is_internal', false).maybeSingle();
   if (thread) {
     await sb.from('loan_chat_threads').update({ title_agent_in_thread: true, title_agent_portal_id: created.id }).eq('id', thread.id);
   }

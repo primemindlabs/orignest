@@ -30,6 +30,7 @@ export async function getOrCreateThread(
     .select('id, realtor_in_thread, realtor_portal_id, realtor_sees_borrower_messages')
     .eq('lead_id', leadId)
     .eq('org_id', orgId)
+    .eq('is_internal', false)
     .maybeSingle();
   if (existing) return existing;
 
@@ -38,8 +39,38 @@ export async function getOrCreateThread(
 
   const { data: created } = await sb
     .from('loan_chat_threads')
-    .insert({ lead_id: leadId, org_id: orgId, lo_id: lead.assigned_to ?? null, borrower_in_thread: true })
+    .insert({ lead_id: leadId, org_id: orgId, lo_id: lead.assigned_to ?? null, borrower_in_thread: true, is_internal: false })
     .select('id, realtor_in_thread, realtor_portal_id, realtor_sees_borrower_messages')
+    .single();
+  return created ?? null;
+}
+
+/**
+ * Phase 109 — the loan's INTERNAL team thread (is_internal=true), separate from the
+ * external multi-party thread so internal messages never leak into the LO's external
+ * chat. Created on first use. Internal messages are stored with visible_to=['internal'].
+ */
+export async function getOrCreateInternalThread(
+  sb: SupabaseClient<any, any, any>,
+  orgId: string,
+  leadId: string
+): Promise<{ id: string } | null> {
+  const { data: existing } = await sb
+    .from('loan_chat_threads')
+    .select('id')
+    .eq('lead_id', leadId)
+    .eq('org_id', orgId)
+    .eq('is_internal', true)
+    .maybeSingle();
+  if (existing) return existing;
+
+  const { data: lead } = await sb.from('leads').select('assigned_to').eq('id', leadId).eq('org_id', orgId).maybeSingle();
+  if (!lead) return null;
+
+  const { data: created } = await sb
+    .from('loan_chat_threads')
+    .insert({ lead_id: leadId, org_id: orgId, lo_id: lead.assigned_to ?? null, is_internal: true, borrower_in_thread: false })
+    .select('id')
     .single();
   return created ?? null;
 }

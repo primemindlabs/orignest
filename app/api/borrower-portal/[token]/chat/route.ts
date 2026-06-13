@@ -23,7 +23,7 @@ async function resolvePortal(token: string) {
 }
 
 async function thread(sb: ReturnType<typeof createAdminClient>, leadId: string, orgId: string) {
-  const { data } = await sb.from('loan_chat_threads').select('id').eq('lead_id', leadId).eq('org_id', orgId).maybeSingle();
+  const { data } = await sb.from('loan_chat_threads').select('id').eq('lead_id', leadId).eq('org_id', orgId).eq('is_internal', false).maybeSingle();
   return data?.id ?? null;
 }
 

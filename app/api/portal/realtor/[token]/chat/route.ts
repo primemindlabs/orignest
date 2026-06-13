@@ -33,6 +33,7 @@ export async function GET(_req: Request, { params }: { params: { token: string }
     .select('id, realtor_in_thread, realtor_portal_id')
     .eq('lead_id', realtor.lead_id)
     .eq('org_id', realtor.org_id)
+    .eq('is_internal', false)
     .maybeSingle();
   // Realtor must be explicitly added to this thread.
   if (!thread || !thread.realtor_in_thread || thread.realtor_portal_id !== realtor.id) {
@@ -58,6 +59,7 @@ export async function POST(req: Request, { params }: { params: { token: string }
     .select('id, realtor_in_thread, realtor_portal_id')
     .eq('lead_id', realtor.lead_id)
     .eq('org_id', realtor.org_id)
+    .eq('is_internal', false)
     .maybeSingle();
   if (!thread || !thread.realtor_in_thread || thread.realtor_portal_id !== realtor.id) {
     return NextResponse.json({ error: 'You have not been added to this conversation.' }, { status: 403 });

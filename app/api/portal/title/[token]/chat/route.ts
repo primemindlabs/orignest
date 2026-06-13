@@ -25,7 +25,7 @@ export async function GET(_req: Request, { params }: { params: { token: string }
   const ta = await resolve(params.token);
   if (!ta) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   const sb = createAdminClient();
-  const { data: thread } = await sb.from('loan_chat_threads').select('id, title_agent_in_thread, title_agent_portal_id').eq('lead_id', ta.lead_id).eq('org_id', ta.org_id).maybeSingle();
+  const { data: thread } = await sb.from('loan_chat_threads').select('id, title_agent_in_thread, title_agent_portal_id').eq('lead_id', ta.lead_id).eq('org_id', ta.org_id).eq('is_internal', false).maybeSingle();
   if (!thread || !thread.title_agent_in_thread || thread.title_agent_portal_id !== ta.id) return NextResponse.json({ messages: [], in_thread: false });
   const { data } = await sb.from('chat_messages').select('*').eq('thread_id', thread.id).order('created_at', { ascending: true });
   return NextResponse.json({ messages: filterMessages((data ?? []) as ChatMessage[], 'title_agent'), in_thread: true });
@@ -40,7 +40,7 @@ export async function POST(req: Request, { params }: { params: { token: string }
   if (content.length > 4000) return NextResponse.json({ error: 'Message too long' }, { status: 400 });
 
   const sb = createAdminClient();
-  const { data: thread } = await sb.from('loan_chat_threads').select('id, title_agent_in_thread, title_agent_portal_id').eq('lead_id', ta.lead_id).eq('org_id', ta.org_id).maybeSingle();
+  const { data: thread } = await sb.from('loan_chat_threads').select('id, title_agent_in_thread, title_agent_portal_id').eq('lead_id', ta.lead_id).eq('org_id', ta.org_id).eq('is_internal', false).maybeSingle();
   if (!thread || !thread.title_agent_in_thread || thread.title_agent_portal_id !== ta.id) {
     return NextResponse.json({ error: 'You have not been added to this conversation.' }, { status: 403 });
   }

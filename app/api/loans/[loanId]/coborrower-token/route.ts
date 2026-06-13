@@ -44,7 +44,7 @@ export async function POST(_req: Request, { params }: { params: { loanId: string
   if (error) return NextResponse.json({ error: 'Failed to create token' }, { status: 500 });
 
   // Mark the thread as including a co-borrower.
-  await sb.from('loan_chat_threads').update({ coborrower_in_thread: true }).eq('lead_id', params.loanId).eq('org_id', orgId).then(() => undefined, () => undefined);
+  await sb.from('loan_chat_threads').update({ coborrower_in_thread: true }).eq('lead_id', params.loanId).eq('org_id', orgId).eq('is_internal', false).then(() => undefined, () => undefined);
 
   return NextResponse.json({ portal_url: `/status/${created.token}` });
 }
