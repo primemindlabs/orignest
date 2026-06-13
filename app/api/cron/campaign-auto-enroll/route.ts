@@ -56,3 +56,6 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ ok: true, trigger_type, enrolled });
 }
+
+// Vercel Cron invokes via GET with the CRON_SECRET bearer; delegate to POST.
+export const GET = POST;

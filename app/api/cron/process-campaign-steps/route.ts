@@ -111,3 +111,6 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ processed: due?.length ?? 0, sent, skipped, exited, live: LIVE });
 }
+
+// Vercel Cron invokes via GET with the CRON_SECRET bearer; delegate to POST.
+export const GET = POST;

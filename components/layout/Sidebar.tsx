@@ -88,6 +88,7 @@ const NAV: NavGroup[] = [
   {
     key: 'analytics', label: 'Insights', icon: BarChart3, items: [
       { href: '/reports', label: 'Reports' },
+      { href: '/impact', label: "Ashley's Impact" },
       { href: '/analytics/funnel', label: 'Conversion Funnel' },
       { href: '/analytics/referral-roi', label: 'Referral ROI' },
       { href: '/referral-attribution', label: 'Attribution' },
@@ -119,6 +120,7 @@ const NAV: NavGroup[] = [
       { href: '/settings', label: 'Settings' },
       { href: '/team', label: 'Team' },
       { href: '/settings/billing', label: 'Billing' },
+      { href: '/settings/system-status', label: 'System Status' },
     ],
   },
 ];

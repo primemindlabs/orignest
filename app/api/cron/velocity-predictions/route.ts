@@ -63,3 +63,6 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ processed: candidates.length, ok, failed, capped: candidates.length >= BATCH_CAP });
 }
+
+// Vercel Cron invokes via GET with the CRON_SECRET bearer; delegate to POST.
+export const GET = POST;

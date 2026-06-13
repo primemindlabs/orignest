@@ -1,0 +1,16 @@
+{
+  "crons": [
+    { "path": "/api/cron/process-campaign-steps", "schedule": "0 * * * *" },
+    { "path": "/api/cron/campaign-auto-enroll", "schedule": "15 * * * *" },
+    { "path": "/api/cron/outreach-queue", "schedule": "0 13 * * *" },
+    { "path": "/api/cron/annual-review", "schedule": "0 13 * * *" },
+    { "path": "/api/cron/rate-drop-scan", "schedule": "30 13 * * *" },
+    { "path": "/api/cron/post-close", "schedule": "0 12 * * *" },
+    { "path": "/api/cron/borrower-heat-refresh", "schedule": "10 12 * * *" },
+    { "path": "/api/cron/realtor-heat-scores", "schedule": "20 12 * * *" },
+    { "path": "/api/cron/velocity-predictions", "schedule": "30 12 * * *" },
+    { "path": "/api/cron/recalculate-roi", "schedule": "0 6 * * *" },
+    { "path": "/api/cron/calculate-funnel", "schedule": "10 6 * * *" },
+    { "path": "/api/cron/partner-summaries", "schedule": "0 14 1 * *" }
+  ]
+}
