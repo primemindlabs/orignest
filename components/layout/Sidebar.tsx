@@ -69,6 +69,7 @@ const NAV: NavGroup[] = [
     key: 'tools', label: 'Tools', icon: Sparkles, items: [
       { href: '/ai-coach', label: 'AI Coach' },
       { href: '/pricing', label: 'Rate & Pricing' },
+      { href: '/deal-desk', label: 'AE Deal Desk' },
       { href: '/dialer/power', label: 'Power Dialer' },
       { href: '/pre-approval', label: 'Pre-Approval' },
       { href: '/scenarios', label: 'Scenario AI' },

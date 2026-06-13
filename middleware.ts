@@ -28,6 +28,8 @@ const isPublicRoute = createRouteMatcher([
   '/certificate/(.*)',      // Phase 52 pre-approval certificate — public token URL
   '/title-portal/(.*)',     // Phase 64 title-company portal — token-gated, no login
   '/api/title/(.*)',        // Title portal API — token-verified in handler
+  '/deal-desk-respond/(.*)', // Phase 120 AE pricing-response page — HMAC magic-link, no login
+  '/api/deal-desk-respond(.*)', // Phase 120 AE response submit — token-verified in handler
   '/review/(.*)',           // Annual homeownership review — unguessable id, noindex
   '/(partner)(.*)',         // Partner portal — token-authenticated
   '/portal/realtor/(.*)',   // Realtor portal — token-authenticated, permission-walled
