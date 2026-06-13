@@ -190,7 +190,7 @@ function ScoreCard({ label, starting, current, target }: { label: string; starti
     <div className="bg-white border border-[rgba(60,60,67,0.06)] rounded-[10px] p-4 shadow-card">
       <p className="text-xs text-label-3 mb-1">{label}</p>
       <div className="flex items-end gap-2 mb-2">
-        <span className="text-2xl font-bold text-navy">{current || '—'}</span>
+        <span className="text-2xl font-bold text-[#876830]">{current || '—'}</span>
         <span className="text-xs text-label-3 mb-0.5">/ {target} target</span>
       </div>
       <div className="h-2 bg-black/[0.06] rounded-full overflow-hidden">
@@ -247,7 +247,7 @@ function CroaSign({ base, enrollmentId, busy, setBusy, setError, onSigned }: { b
         <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 accent-blue" />
         <span className="text-xs text-label-2">I have read and agree to the Credit Repair Organizations Act disclosure.</span>
       </label>
-      <button onClick={sign} disabled={!agreed || busy} className="mt-3 w-full py-2.5 bg-navy text-white text-sm font-semibold rounded-[10px] hover:bg-navy/90 transition-colors disabled:opacity-40">
+      <button onClick={sign} disabled={!agreed || busy} className="mt-3 w-full py-2.5 bg-[#0F0D0B] text-white text-sm font-semibold rounded-[10px] hover:bg-[#0F0D0B]/90 transition-colors disabled:opacity-40">
         {busy ? 'Signing…' : 'Sign & Continue'}
       </button>
     </div>
@@ -289,7 +289,7 @@ function SoftPullForm({ base, firstName, busy, setBusy, setError, onDone }: { ba
         <input required placeholder="State" maxLength={2} value={f.state} onChange={set('state')} className={input} />
         <input required placeholder="Zip" value={f.zip} onChange={set('zip')} className={input} />
       </div>
-      <button type="submit" disabled={busy} className="w-full py-3 bg-navy text-white text-sm font-semibold rounded-[10px] hover:bg-navy/90 transition-colors disabled:opacity-40 flex items-center justify-center gap-2">
+      <button type="submit" disabled={busy} className="w-full py-3 bg-[#0F0D0B] text-white text-sm font-semibold rounded-[10px] hover:bg-[#0F0D0B]/90 transition-colors disabled:opacity-40 flex items-center justify-center gap-2">
         {busy ? <Loader2 size={15} className="animate-spin" /> : <ShieldCheck size={15} />}
         {busy ? 'Pulling your credit report…' : 'Pull My Credit — Free Soft Pull'}
       </button>
@@ -391,7 +391,7 @@ function DisputeSection({ base, enrollmentId, tradelines, disputes, firstName, b
               <pre className="whitespace-pre-wrap bg-bg rounded-[8px] p-2 mt-1 text-[11px] text-label-2 max-h-40 overflow-y-auto">{d.letter_body}</pre>
             </details>
           ))}
-          <button onClick={sendAll} disabled={busy} className="w-full py-2.5 bg-navy text-white text-sm font-semibold rounded-[10px] hover:bg-navy/90 transition-colors disabled:opacity-40 flex items-center justify-center gap-2">
+          <button onClick={sendAll} disabled={busy} className="w-full py-2.5 bg-[#0F0D0B] text-white text-sm font-semibold rounded-[10px] hover:bg-[#0F0D0B]/90 transition-colors disabled:opacity-40 flex items-center justify-center gap-2">
             <Send size={15} /> {busy ? 'Sending…' : 'Approve & Send Certified Mail'}
           </button>
         </div>
@@ -477,7 +477,7 @@ function ScoreUpdate({ base, enrollmentId, busy, setBusy, setError, onChange }: 
             <input placeholder="TransUnion" inputMode="numeric" value={s.tu} onChange={(e) => setS((p) => ({ ...p, tu: e.target.value }))} className={input} />
           </div>
           <div className="flex gap-2">
-            <button onClick={submit} disabled={busy || !s.exp || !s.eqx || !s.tu} className="px-4 py-2 bg-navy text-white text-sm font-semibold rounded-[10px] disabled:opacity-40">Save</button>
+            <button onClick={submit} disabled={busy || !s.exp || !s.eqx || !s.tu} className="px-4 py-2 bg-[#0F0D0B] text-white text-sm font-semibold rounded-[10px] disabled:opacity-40">Save</button>
             <button onClick={() => setOpen(false)} className="px-4 py-2 bg-black/[0.06] text-label-2 text-sm rounded-[10px]">Cancel</button>
           </div>
         </div>

@@ -139,7 +139,7 @@ export function BorrowerPortalClient({
             {org?.logoUrl ? (
               <img src={org.logoUrl} alt={org.name} className="h-7 object-contain" />
             ) : (
-              <div className="w-7 h-7 rounded-[7px] bg-navy flex items-center justify-center">
+              <div className="w-7 h-7 rounded-[7px] bg-[#0F0D0B] flex items-center justify-center">
                 <span className="text-gold text-[10px] font-bold">C</span>
               </div>
             )}
@@ -151,7 +151,7 @@ export function BorrowerPortalClient({
           {lo?.phone && (
             <a
               href={`tel:${lo.phone}`}
-              className="flex items-center gap-2 px-3 py-1.5 bg-navy text-white text-xs font-semibold rounded-full hover:bg-navy/90 transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 bg-[#0F0D0B] text-white text-xs font-semibold rounded-full hover:bg-[#0F0D0B]/90 transition-colors"
             >
               <Phone size={13} />
               Call LO
@@ -281,12 +281,12 @@ export function BorrowerPortalClient({
         {/* Phase 28.7 — refi opportunity */}
         {refiAlert && (
           <div className="bg-gold/10 border border-gold/30 rounded-[10px] p-4">
-            <p className="text-xs font-semibold text-navy mb-1">💡 Potential savings opportunity</p>
+            <p className="text-xs font-semibold text-[#876830] mb-1">💡 Potential savings opportunity</p>
             <p className="text-sm text-label leading-relaxed">
               Your rate {refiAlert.originalRate?.toFixed(3)}% vs today&apos;s {refiAlert.currentRate?.toFixed(3)}%.
               {refiAlert.monthlySavings ? ` Estimated savings ~$${Math.round(refiAlert.monthlySavings).toLocaleString()}/mo.` : ''}
             </p>
-            {lo?.phone && <a href={`tel:${lo.phone}`} className="inline-block mt-2 text-xs font-semibold text-navy">Speak with {lo.name} →</a>}
+            {lo?.phone && <a href={`tel:${lo.phone}`} className="inline-block mt-2 text-xs font-semibold text-[#876830]">Speak with {lo.name} →</a>}
           </div>
         )}
 
@@ -297,7 +297,7 @@ export function BorrowerPortalClient({
             <div className="space-y-1 text-sm">
               {equityInfo.avm != null && <div className="flex justify-between"><span className="text-label-2">Estimated value</span><span className="font-medium text-label">${equityInfo.avm.toLocaleString()}</span></div>}
               {equityInfo.balance != null && <div className="flex justify-between"><span className="text-label-2">Remaining balance</span><span className="font-medium text-label">${equityInfo.balance.toLocaleString()}</span></div>}
-              <div className="flex justify-between border-t border-black/[0.06] pt-1 mt-1"><span className="text-label-2">Estimated equity</span><span className="font-semibold text-navy">${equityInfo.equity.toLocaleString()}</span></div>
+              <div className="flex justify-between border-t border-black/[0.06] pt-1 mt-1"><span className="text-label-2">Estimated equity</span><span className="font-semibold text-[#876830]">${equityInfo.equity.toLocaleString()}</span></div>
             </div>
           </div>
         )}
@@ -417,7 +417,7 @@ export function BorrowerPortalClient({
         {trid && (
           <div className="bg-white rounded-[10px] border border-[rgba(60,60,67,0.06)] p-5 shadow-card">
             <div className="flex items-center gap-2 mb-3">
-              <ShieldCheck size={16} className="text-navy" />
+              <ShieldCheck size={16} className="text-[#876830]" />
               <h2 className="text-sm font-semibold text-label">Disclosure Timeline</h2>
             </div>
             <div className="space-y-2">
@@ -436,7 +436,7 @@ export function BorrowerPortalClient({
               {trid.closingDate && (
                 <div className="flex justify-between text-sm border-t border-black/[0.06] pt-2 mt-2">
                   <span className="text-label-2">Expected closing</span>
-                  <span className="font-semibold text-navy">{new Date(trid.closingDate).toLocaleDateString()}</span>
+                  <span className="font-semibold text-[#876830]">{new Date(trid.closingDate).toLocaleDateString()}</span>
                 </div>
               )}
             </div>
@@ -451,7 +451,7 @@ export function BorrowerPortalClient({
               {lo.avatarUrl ? (
                 <img src={lo.avatarUrl} alt={lo.name} className="w-12 h-12 rounded-full object-cover" />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-navy flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-12 h-12 rounded-full bg-[#0F0D0B] flex items-center justify-center text-white font-bold text-sm">
                   {lo.name.split(' ').map((n) => n[0]).join('')}
                 </div>
               )}
@@ -463,7 +463,7 @@ export function BorrowerPortalClient({
               {lo.phone && (
                 <a
                   href={`tel:${lo.phone}`}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-navy text-white text-xs font-semibold rounded-[10px] hover:bg-navy/90 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-[#0F0D0B] text-white text-xs font-semibold rounded-[10px] hover:bg-[#0F0D0B]/90 transition-colors"
                 >
                   <Phone size={13} />
                   Call
