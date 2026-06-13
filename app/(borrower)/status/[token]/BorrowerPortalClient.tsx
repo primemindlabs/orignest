@@ -9,6 +9,7 @@ import { EquityChart } from '@/components/relationships/EquityChart';
 import { Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CreditRepairTab, type CreditRepairEnrollment } from './CreditRepairTab';
+import { ElitePortal } from '@/components/portal/ElitePortal';
 import { PortalChat } from '@/components/chat/PortalChat';
 import { LoanSwitcher } from '@/components/portal/LoanSwitcher';
 
@@ -68,7 +69,7 @@ export function BorrowerPortalClient({
   portfolio = null,
 }: Props) {
   const [docs, setDocs] = useState<DocItem[]>(documents);
-  const [activeTab, setActiveTab] = useState<'status' | 'portfolio' | 'credit-repair'>('status');
+  const [activeTab, setActiveTab] = useState<'wealth' | 'status' | 'portfolio' | 'credit-repair'>('status');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -167,6 +168,15 @@ export function BorrowerPortalClient({
         {/* Tab switcher */}
         <div className="flex gap-1 p-1 bg-black/[0.05] rounded-xl">
           <button
+            onClick={() => setActiveTab('wealth')}
+            className={cn(
+              'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-[9px] text-[13px] font-medium transition-all',
+              activeTab === 'wealth' ? 'bg-white text-label shadow-sm' : 'text-label-2'
+            )}
+          >
+            <LayoutDashboard size={14} /> My Home
+          </button>
+          <button
             onClick={() => setActiveTab('status')}
             className={cn(
               'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-[9px] text-[13px] font-medium transition-all',
@@ -197,7 +207,9 @@ export function BorrowerPortalClient({
           </button>
         </div>
 
-        {activeTab === 'credit-repair' ? (
+        {activeTab === 'wealth' ? (
+          <ElitePortal token={token} />
+        ) : activeTab === 'credit-repair' ? (
           <CreditRepairTab token={token} initial={creditRepair} borrowerFirstName={borrowerFirstName} />
         ) : activeTab === 'portfolio' && portfolio ? (
           <div className="space-y-4">
