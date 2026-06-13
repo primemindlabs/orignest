@@ -45,7 +45,7 @@ const config: Config = {
         label: '#1D1D1F',
         'label-1': '#1D1D1F',   // primary — Apple near-black
         'label-2': '#6E6E73',   // secondary — Apple system gray
-        'label-3': '#86868B',   // tertiary — Apple system gray
+        'label-3': '#73726F',   // tertiary — darkened to meet WCAG AA for small text
         slate: '#6E6E73',       // secondary text
         // Borders & fills — neutral gray hairlines (Apple)
         border: 'rgba(0,0,0,0.10)',
@@ -68,7 +68,7 @@ const config: Config = {
         },
         // Sidebar aliases (no hyphens for Tailwind class compatibility)
         label2: '#6E6E73',
-        label3: '#86868B',
+        label3: '#73726F',
       },
       fontFamily: {
         // Display — headings. Apple feel: SF Pro Display, NO serif.

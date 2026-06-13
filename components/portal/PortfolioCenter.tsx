@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { IconHome, IconBuildingEstate } from '@tabler/icons-react';
 import { PortalEmptyState } from './PortalEmptyState';
+import { SkeletonCard } from '@/components/ui/Skeleton';
 
 interface Prop { id: string; address: string; property_type: string; current_value: number | null; mortgage_balance: number | null; monthly_cash_flow: number | null; is_primary_residence: boolean }
 interface Totals { value: number; balance: number; equity: number; cash_flow: number }
@@ -19,7 +20,7 @@ export function PortfolioCenter({ token, onAskAshley }: { token: string; onAskAs
     fetch(`/api/borrower-portal/${token}/portfolio`).then((r) => (r.ok ? r.json() : null)).then((d) => { setProperties(d?.properties ?? []); setTotals(d?.totals ?? null); }).catch(() => {}).finally(() => setLoading(false));
   }, [token]);
 
-  if (loading) return <div className="bg-white rounded-2xl border border-[#EDEAE4] p-6 text-[13px] text-[#9B9590]">Loading your portfolio…</div>;
+  if (loading) return <SkeletonCard />;
   if (properties.length === 0) return (
     <PortalEmptyState
       icon={<IconBuildingEstate size={20} className="text-[#C9A95C]" />}

@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { IconArrowUpRight, IconHeartRateMonitor } from '@tabler/icons-react';
 import { PortalEmptyState } from './PortalEmptyState';
+import { SkeletonCard } from '@/components/ui/Skeleton';
 
 interface ActionItem { type: string; label: string; points_potential: number }
 interface Score { score: number; credit_score: number | null; equity_estimate: number | null; rate_comparison_delta: number | null; action_items: ActionItem[] }
@@ -18,7 +19,7 @@ export function MortgageHealthScore({ token, onAskAshley }: { token: string; onA
     fetch(`/api/borrower-portal/${token}/health-score`).then((r) => (r.ok ? r.json() : null)).then((d) => setScore(d?.score ?? null)).catch(() => {}).finally(() => setLoading(false));
   }, [token]);
 
-  if (loading) return <div className="bg-white rounded-2xl border border-[#EDEAE4] p-6 text-[13px] text-[#9B9590]">Loading your score…</div>;
+  if (loading) return <SkeletonCard />;
   if (!score) return (
     <PortalEmptyState
       icon={<IconHeartRateMonitor size={20} className="text-[#C9A95C]" />}

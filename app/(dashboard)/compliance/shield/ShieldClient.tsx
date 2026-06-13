@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { IconShieldCheck, IconMessageCheck, IconBan, IconClockCheck, IconCertificate, IconHistory } from '@tabler/icons-react';
+import { SkeletonCard } from '@/components/ui/Skeleton';
 
 interface Shield {
   tcpa: { consentsOnFile: number; optOutsHonored: number; consentEvents30d: number };
@@ -17,7 +18,7 @@ export function ShieldClient() {
     fetch('/api/compliance/shield').then((r) => (r.ok ? r.json() : null)).then(setD).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="bg-[var(--c-surface)] rounded-card border border-[var(--c-border)] p-8 text-[13px] text-[var(--c-label2)]">Checking your compliance posture…</div>;
+  if (loading) return <div className="space-y-3"><SkeletonCard /><div className="grid sm:grid-cols-4 gap-3"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div></div>;
   if (!d) return <div className="bg-[var(--c-surface)] rounded-card border border-[var(--c-border)] p-8 text-[13px] text-[var(--c-label2)]">Compliance data isn&rsquo;t available.</div>;
 
   const cards = [

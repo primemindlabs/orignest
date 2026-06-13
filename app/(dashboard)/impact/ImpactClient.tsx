@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { IconClockHour4, IconSparkles, IconSend, IconBellRinging, IconFileText, IconTrendingUp } from '@tabler/icons-react';
+import { SkeletonCard } from '@/components/ui/Skeleton';
 
 interface Impact {
   month: string;
@@ -20,7 +21,7 @@ export function ImpactClient() {
     fetch('/api/ai/impact').then((r) => (r.ok ? r.json() : null)).then(setData).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="bg-[var(--c-surface)] rounded-card border border-[var(--c-border)] p-8 text-[13px] text-[var(--c-label2)]">Calculating Ashley&rsquo;s impact…</div>;
+  if (loading) return <div className="space-y-3"><SkeletonCard /><div className="grid sm:grid-cols-3 gap-3"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div></div>;
   if (!data) return <div className="bg-[var(--c-surface)] rounded-card border border-[var(--c-border)] p-8 text-[13px] text-[var(--c-label2)]">Impact data isn&rsquo;t available yet.</div>;
 
   const b = data.breakdown;
