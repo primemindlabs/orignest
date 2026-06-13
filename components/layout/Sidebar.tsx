@@ -108,6 +108,7 @@ const NAV: NavGroup[] = [
   {
     key: 'compliance', label: 'Compliance', icon: ShieldCheck, adminOnly: true, items: [
       { href: '/settings/compliance', label: 'Compliance & Templates' },
+      { href: '/compliance/tcpa', label: 'TCPA & Comm Center' },
       { href: '/compliance/dnc', label: 'Do Not Call List' },
     ],
   },

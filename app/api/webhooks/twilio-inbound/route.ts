@@ -79,9 +79,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       if (orgId) {
         await sb.from('application_sessions').update({ sms_consent: false }).eq('lead_id', leadId).is('completed_at', null).then(() => undefined, () => undefined);
         await sb.from('sms_opt_outs').insert({ org_id: orgId, lead_id: leadId, phone: from, source: 'twilio_webhook' }).then(() => undefined, () => undefined);
+        // Phase 116 — granular preference + immutable consent audit.
+        await sb.from('communication_preferences').upsert({ org_id: orgId, lead_id: leadId, lo_id: loId, sms_opted_in: false, updated_at: new Date().toISOString() }, { onConflict: 'org_id,lead_id' }).then(() => undefined, () => undefined);
+        await sb.from('consent_audit_log').insert({ org_id: orgId, lead_id: leadId, lo_id: loId, event_type: 'sms_opt_out', channel: 'sms', source: 'sms_reply', old_value: 'true', new_value: 'false', consent_text: `Contact replied "${body.trim()}" to SMS` }).then(() => undefined, () => undefined);
       }
     }
     // Twilio's Advanced Opt-Out sends the standard confirmation; return empty TwiML.
+    return twimlResponse();
+  }
+  // Phase 116 — START/UNSTOP re-opt-in (carrier keywords only; "YES" omitted to avoid
+  // hijacking conversational replies).
+  const START = ['START', 'UNSTOP'];
+  if (START.includes(keyword)) {
+    if (leadId && orgId) {
+      await sb.from('leads').update({ sms_consent: true }).eq('id', leadId).then(() => undefined, () => undefined);
+      await sb.from('sms_opt_outs').delete().eq('org_id', orgId).eq('phone', from).then(() => undefined, () => undefined);
+      await sb.from('communication_preferences').upsert({ org_id: orgId, lead_id: leadId, lo_id: loId, sms_opted_in: true, updated_at: new Date().toISOString() }, { onConflict: 'org_id,lead_id' }).then(() => undefined, () => undefined);
+      await sb.from('consent_audit_log').insert({ org_id: orgId, lead_id: leadId, lo_id: loId, event_type: 'sms_opt_in', channel: 'sms', source: 'sms_reply', old_value: 'false', new_value: 'true', consent_text: `Contact replied "${body.trim()}" to SMS` }).then(() => undefined, () => undefined);
+    }
     return twimlResponse();
   }
   if (HELP.includes(keyword)) {
