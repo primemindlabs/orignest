@@ -32,6 +32,8 @@ import { BorrowerEngagementBanner } from '@/components/ghost/BorrowerEngagementB
 import { TcpaWindowBadge } from '@/components/loan/TcpaWindowBadge';
 import { LeadToolsMenu } from './LeadToolsMenu';
 import { ConditionsManager, type Condition } from '@/components/loan/ConditionsManager';
+import { BrainPanel } from '@/components/brain/BrainPanel';
+import { FeatureGate } from '@/components/billing/FeatureGate';
 import { Smart1003Form } from './application/Smart1003Form';
 import { IncomeHubClient } from '@/app/(dashboard)/loans/[loanId]/income/IncomeHubClient';
 import {
@@ -232,6 +234,7 @@ export default async function LeadDetailPage({
     { key: 'conditions', label: 'Conditions' },
     { key: 'communications', label: 'Communications' },
     { key: 'notes', label: notes && notes.length > 0 ? `Notes (${notes.length})` : 'Notes' },
+    { key: 'memory', label: 'Brain' },
     { key: 'compliance', label: hasTridIssue ? 'Compliance ⚠' : 'Compliance', alert: hasTridIssue },
   ] as const;
 
@@ -772,6 +775,19 @@ export default async function LeadDetailPage({
             />
           </div>
         </div>
+      )}
+
+      {activeTab === 'memory' && (
+        <FeatureGate feature="ashley_brain">
+          <BrainPanel
+            entityType="borrower"
+            entityId={lead.id}
+            entityName={
+              `${(lead as { first_name?: string }).first_name ?? ''} ${(lead as { last_name?: string }).last_name ?? ''}`.trim() ||
+              'this borrower'
+            }
+          />
+        </FeatureGate>
       )}
     </div>
   );

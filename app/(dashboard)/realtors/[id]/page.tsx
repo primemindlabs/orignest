@@ -10,6 +10,8 @@ import { HeatScoreRing } from '@/components/realtors/HeatScoreRing';
 import { HeatBandBadge } from '@/components/realtors/HeatBandBadge';
 import { NotesEditor } from './NotesEditor';
 import { RealtorEngagement } from './RealtorEngagement';
+import { BrainPanel } from '@/components/brain/BrainPanel';
+import { FeatureGate } from '@/components/billing/FeatureGate';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Realtor' };
@@ -156,6 +158,15 @@ export default async function RealtorDetailPage({ params }: { params: { id: stri
         <h2 className="text-[14px] font-semibold text-[var(--c-text)] mb-2">Notes</h2>
         <NotesEditor realtorId={r.id} initial={r.relationship_notes ?? ''} />
       </div>
+
+      {/* Ashley Brain™ — relationship memory */}
+      <FeatureGate feature="ashley_brain">
+        <BrainPanel
+          entityType="realtor"
+          entityId={r.id}
+          entityName={`${r.first_name ?? ''} ${r.last_name ?? ''}`.trim() || 'this realtor'}
+        />
+      </FeatureGate>
     </div>
   );
 }

@@ -131,6 +131,14 @@ export function CommandPalette() {
       shortcut: '⌘T',
     },
     {
+      id: 'nav-brain',
+      label: 'Ask Ashley Brain™',
+      description: 'Search everything Ashley remembers about your relationships',
+      icon: <Brain size={14} className="text-blue" />,
+      category: 'Navigate',
+      action: () => navigate('/brain'),
+    },
+    {
       id: 'nav-dashboard',
       label: 'Go to Dashboard',
       icon: <LayoutDashboard size={14} className="text-blue" />,

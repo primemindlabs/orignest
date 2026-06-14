@@ -11,6 +11,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { BriefItem, BriefItemActionType } from './types';
+import { getEntityMemories } from '@/lib/brain/getEntityMemories';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -314,5 +315,22 @@ export async function generateBriefItems(
   const candidates = await gatherCandidates(sb, orgId, loId);
   candidates.sort((a, b) => a.priority - b.priority || (a.days_until_deadline ?? 99) - (b.days_until_deadline ?? 99));
   const top = candidates.slice(0, 5);
-  return enhanceCopy(top);
+  const enhanced = await enhanceCopy(top);
+
+  // Phase 127 — attach what Ashley already knows about each surfaced borrower so
+  // the brief reads like an assistant who's done the homework. Best-effort: if
+  // the brain isn't provisioned yet, the brief ships exactly as before.
+  try {
+    await Promise.all(
+      enhanced.map(async (item) => {
+        if (!item.lead_id) return;
+        const mems = await getEntityMemories(sb, loId, 'borrower', item.lead_id, { limit: 3 });
+        if (mems.length) item.brain = mems.map((m) => m.memory_text);
+      }),
+    );
+  } catch {
+    /* brain not available — leave the brief untouched */
+  }
+
+  return enhanced;
 }

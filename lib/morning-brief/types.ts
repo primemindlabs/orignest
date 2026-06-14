@@ -24,6 +24,7 @@ export type BriefItem = {
   borrower_name?: string;
   loan_amount?: number;
   days_until_deadline?: number;
+  brain?: string[]; // Phase 127 — top Ashley Brain™ memories for this contact
 };
 
 export type MorningBrief = {

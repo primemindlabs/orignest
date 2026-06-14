@@ -44,6 +44,11 @@ export function MorningBriefCard({
           {item.headline}
         </p>
         <p className="text-[12px] text-[var(--c-label2)] leading-snug mt-0.5 line-clamp-2">{item.body}</p>
+        {item.brain?.[0] && (
+          <p className="text-[11px] text-[var(--c-label3)] leading-snug mt-1 line-clamp-1">
+            Ashley knows: {item.brain[0]}
+          </p>
+        )}
       </div>
 
       <div className="flex items-center gap-1.5 flex-shrink-0">

@@ -72,8 +72,21 @@ create policy "lo_insert_own_logs" on public.ashley_brain_logs
   for insert with check (lo_id = auth.uid());
 create policy "lo_read_own_logs" on public.ashley_brain_logs
   for select using (lo_id = auth.uid());
--- NO UPDATE POLICY. NO DELETE POLICY. EVER. Hard-enforced:
+-- NO content mutation. NO DELETE. EVER. Hard-enforced:
 revoke update, delete, truncate on public.ashley_brain_logs from anon, authenticated, service_role;
+-- ...but the server-side extraction pipeline (service role) must be able to mark
+-- a log processed. A COLUMN-LEVEL grant keeps the legal record (content,
+-- entity_*, log_type, raw_metadata) immutable while permitting only the
+-- processing-bookkeeping columns to change.
+grant update (processed, processed_at, extracted_memory_ids) on public.ashley_brain_logs to service_role;
+
+-- Dedupe key for the read-only ingestion sweep that mirrors existing activity
+-- (communications / realtor_touches / lead_notes) into the brain as logs.
+-- raw_metadata.source_ref = '<table>:<row-uuid>'. App-level dedupe also guards
+-- this, so it is safe whether or not this index is present on the live DB.
+create unique index if not exists idx_brain_logs_source_ref
+  on public.ashley_brain_logs ((raw_metadata->>'source_ref'))
+  where raw_metadata ? 'source_ref';
 
 -- ── Embeddings: pgvector store for semantic recall ──────────────────────────
 create table if not exists public.ashley_brain_embeddings (
