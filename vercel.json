@@ -12,6 +12,9 @@
     { "path": "/api/cron/extract-brain-memories", "schedule": "40 12 * * *" },
     { "path": "/api/cron/generate-autopilot-queue", "schedule": "50 12 * * *" },
     { "path": "/api/cron/autopilot-execute", "schedule": "*/10 * * * *" },
+    { "path": "/api/cron/business-pulse", "schedule": "0 11 * * *" },
+    { "path": "/api/cron/goldmine-market-rates", "schedule": "0 13 * * 4" },
+    { "path": "/api/cron/goldmine-scan", "schedule": "0 9 * * 0" },
     { "path": "/api/cron/recalculate-roi", "schedule": "0 6 * * *" },
     { "path": "/api/cron/calculate-funnel", "schedule": "10 6 * * *" },
     { "path": "/api/cron/partner-summaries", "schedule": "0 14 1 * *" }
