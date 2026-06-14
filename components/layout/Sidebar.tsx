@@ -59,10 +59,12 @@ const NAV: NavGroup[] = [
       // now campaign types inside it (their pages remain, just not standalone nav).
       { href: '/campaigns/manager', label: 'Campaigns' },
       { href: '/social', label: 'Social Media' },
+      { href: '/marketing/content-studio', label: 'Content Studio' },
       { href: '/co-marketing', label: 'Co-Marketing' },
       { href: '/co-marketing/generate', label: 'Co-Marketing Generator' },
       { href: '/marketing/market-update', label: 'Realtor Market Update' },
       { href: '/outreach', label: 'Birthday & Anniversary' },
+      { href: '/goldmine', label: 'Database Goldmine' },
       { href: '/co-marketing/listings', label: 'Listings' },
       { href: '/ads', label: 'Ad Center' },
     ],
@@ -105,6 +107,7 @@ const NAV: NavGroup[] = [
   {
     key: 'management', label: 'Management', icon: BarChart3, adminOnly: true, items: [
       { href: '/branch', label: 'Branch Dashboard' },
+      { href: '/branch/pulse', label: 'Business Pulse' },
       { href: '/branch/team', label: 'Team Performance' },
       { href: '/ae-book', label: 'AE Book of Business' },
       { href: '/ae-management', label: 'Wholesale Team' },
