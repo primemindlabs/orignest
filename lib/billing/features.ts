@@ -9,7 +9,7 @@ export type EffectiveTier = 'starter' | 'growth' | 'team';
 export const FEATURE_KEYS = [
   'pipeline', 'loan_file', 'borrower_portal', 'realtor_portal',
   'ai_morning_brief', 'condition_prediction', 'document_auto_pop', 'smart_checklist', 'basic_campaigns',
-  'power_dialer', 'campaign_manager', 'ad_center', 'ai_draft_engine', 'ashley_brain',
+  'power_dialer', 'campaign_manager', 'ad_center', 'ai_draft_engine', 'ashley_brain', 'ashley_autopilot',
   'branch_manager', 'ai_content_studio', 'course_builder', 'api_access',
 ] as const;
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -17,17 +17,17 @@ export type FeatureKey = (typeof FEATURE_KEYS)[number];
 const CORE: Record<FeatureKey, boolean> = {
   pipeline: true, loan_file: true, borrower_portal: true, realtor_portal: true,
   ai_morning_brief: true, condition_prediction: true, document_auto_pop: true, smart_checklist: true, basic_campaigns: true,
-  power_dialer: false, campaign_manager: false, ad_center: false, ai_draft_engine: false, ashley_brain: false,
+  power_dialer: false, campaign_manager: false, ad_center: false, ai_draft_engine: false, ashley_brain: false, ashley_autopilot: false,
   branch_manager: false, ai_content_studio: false, course_builder: false, api_access: false,
 };
 
 export const FEATURE_MATRIX: Record<EffectiveTier, Record<FeatureKey, boolean>> = {
   starter: { ...CORE },
-  growth: { ...CORE, power_dialer: true, campaign_manager: true, ad_center: true, ai_draft_engine: true, ashley_brain: true },
+  growth: { ...CORE, power_dialer: true, campaign_manager: true, ad_center: true, ai_draft_engine: true, ashley_brain: true, ashley_autopilot: true },
   team: Object.fromEntries(FEATURE_KEYS.map((k) => [k, true])) as Record<FeatureKey, boolean>,
 };
 
-const GROWTH_FEATURES: FeatureKey[] = ['power_dialer', 'campaign_manager', 'ad_center', 'ai_draft_engine', 'ashley_brain'];
+const GROWTH_FEATURES: FeatureKey[] = ['power_dialer', 'campaign_manager', 'ad_center', 'ai_draft_engine', 'ashley_brain', 'ashley_autopilot'];
 const TEAM_FEATURES: FeatureKey[] = ['branch_manager', 'ai_content_studio', 'course_builder', 'api_access'];
 
 export function hasFeature(tier: EffectiveTier, feature: FeatureKey): boolean {
@@ -48,6 +48,7 @@ export const FEATURE_COPY: Partial<Record<FeatureKey, { title: string; benefit: 
   ad_center: { title: 'Ad Center', benefit: 'Launch compliant Facebook & Google lead ads and track ROI all the way to closed loans.' },
   ai_draft_engine: { title: 'AI Draft Engine', benefit: 'Let Ashley draft your follow-ups, emails, and texts in your voice — in seconds.' },
   ashley_brain: { title: 'Ashley Brain™', benefit: 'Ashley remembers everything about every borrower, realtor, and partner — preferences, goals, life events — and surfaces it before every call and in your morning brief.' },
+  ashley_autopilot: { title: 'Ashley Autopilot™', benefit: 'Every morning, Ashley reviews your whole book and surfaces the 5–8 highest-leverage actions — each pre-drafted and ready. One tap to execute.' },
   branch_manager: { title: 'Branch Manager', benefit: 'Team leaderboards, per-LO scorecards, and branch-wide pipeline analytics in one view.' },
   ai_content_studio: { title: 'AI Content Studio', benefit: 'Generate social posts, market updates, and co-branded content on autopilot.' },
   course_builder: { title: 'Course Builder', benefit: 'Build and assign training courses to onboard and level up your team.' },

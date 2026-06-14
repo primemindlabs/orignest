@@ -29,6 +29,7 @@ import { GettingStartedCard } from '@/components/dashboard/GettingStartedCard';
 import { FunnelWidget } from '@/components/funnel/FunnelWidget';
 import { MorningBriefPanel } from '@/components/morning-brief/MorningBriefPanel';
 import { QuickActions } from '@/components/dashboard/QuickActions';
+import { AutopilotQueue } from '@/components/autopilot/AutopilotQueue';
 import { ensureApplicationSlug } from '@/lib/auth/slug';
 
 export const dynamic = 'force-dynamic';
@@ -191,6 +192,7 @@ export default async function DashboardPage() {
       <div style={{ padding: '11px 13px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         <GettingStartedCard orgId={orgId} clerkUserId={userId} />
         {isFinancial && <QuickActions applyUrl={applyUrl} />}
+        {isFinancial && <AutopilotQueue />}
         {isFinancial && <MorningBriefPanel />}
 
         {isFinancial ? (

@@ -10,6 +10,8 @@
     { "path": "/api/cron/realtor-heat-scores", "schedule": "20 12 * * *" },
     { "path": "/api/cron/velocity-predictions", "schedule": "30 12 * * *" },
     { "path": "/api/cron/extract-brain-memories", "schedule": "40 12 * * *" },
+    { "path": "/api/cron/generate-autopilot-queue", "schedule": "50 12 * * *" },
+    { "path": "/api/cron/autopilot-execute", "schedule": "*/10 * * * *" },
     { "path": "/api/cron/recalculate-roi", "schedule": "0 6 * * *" },
     { "path": "/api/cron/calculate-funnel", "schedule": "10 6 * * *" },
     { "path": "/api/cron/partner-summaries", "schedule": "0 14 1 * *" }
