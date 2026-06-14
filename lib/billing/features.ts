@@ -14,17 +14,22 @@ export const FEATURE_KEYS = [
 ] as const;
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
 
-const CORE: Record<FeatureKey, boolean> = {
-  pipeline: true, loan_file: true, borrower_portal: true, realtor_portal: true,
-  ai_morning_brief: true, condition_prediction: true, document_auto_pop: true, smart_checklist: true, basic_campaigns: true,
-  power_dialer: false, campaign_manager: false, ad_center: false, ai_draft_engine: false, ashley_brain: false, ashley_autopilot: false, database_goldmine: false, content_studio: false,
-  branch_manager: false, ai_content_studio: false, course_builder: false, api_access: false, business_pulse: false,
-};
+// ─────────────────────────────────────────────────────────────────────────────
+// PRODUCT DECISION (2026-06): Ashley IQ ships as ONE fully-unlocked operating
+// system. Every capability is available on every plan — plans differentiate on
+// seats and support, NOT on locked features. There is no feature paywall.
+//
+// This single map is the source of truth for ALL feature gating: hasFeature(),
+// requireFeature() (server + crons), and /api/billing/plan → usePlan()/FeatureGate
+// (client) all read from it. To re-introduce per-tier gating later, give each tier
+// its own map again (e.g. starter: { ...CORE }, growth: { ...CORE, power_dialer: true }).
+// ─────────────────────────────────────────────────────────────────────────────
+const ALL_FEATURES = Object.fromEntries(FEATURE_KEYS.map((k) => [k, true])) as Record<FeatureKey, boolean>;
 
 export const FEATURE_MATRIX: Record<EffectiveTier, Record<FeatureKey, boolean>> = {
-  starter: { ...CORE },
-  growth: { ...CORE, power_dialer: true, campaign_manager: true, ad_center: true, ai_draft_engine: true, ashley_brain: true, ashley_autopilot: true, database_goldmine: true, content_studio: true },
-  team: Object.fromEntries(FEATURE_KEYS.map((k) => [k, true])) as Record<FeatureKey, boolean>,
+  starter: ALL_FEATURES,
+  growth: ALL_FEATURES,
+  team: ALL_FEATURES,
 };
 
 const GROWTH_FEATURES: FeatureKey[] = ['power_dialer', 'campaign_manager', 'ad_center', 'ai_draft_engine', 'ashley_brain', 'ashley_autopilot', 'database_goldmine', 'content_studio'];
