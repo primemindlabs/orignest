@@ -9,7 +9,9 @@ export async function detectNewArriveLeads(ctx: SignalCtx): Promise<DraftAction[
   const windowStart = ctx.targetDate.getTime() - NEW_WINDOW_HOURS * 3_600_000;
   const out: DraftAction[] = [];
   for (const lead of ctx.leads) {
-    if (!lead.referral_source || !/arrive/i.test(lead.referral_source)) continue;
+    // Phase 94 tags Arrive imports via leads.lead_source = 'arrive' (NOT referral_source).
+    const source = lead.lead_source ?? lead.referral_source ?? '';
+    if (!/arrive/i.test(source)) continue;
     if (lead.last_contacted_at) continue; // already contacted
     if (new Date(lead.created_at).getTime() < windowStart) continue; // not "new"
     const name = fullName(lead);

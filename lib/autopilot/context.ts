@@ -16,6 +16,7 @@ export interface AutopilotLead {
   date_of_birth: string | null;
   referral_realtor_id: string | null;
   referral_source: string | null;
+  lead_source: string | null;
   last_contacted_at: string | null;
   created_at: string;
 }
@@ -48,7 +49,7 @@ export async function buildSignalContext(
 ): Promise<SignalCtx> {
   const { data } = await sb
     .from('leads')
-    .select('id, first_name, last_name, phone, email, stage, date_of_birth, referral_realtor_id, referral_source, last_contacted_at, created_at')
+    .select('id, first_name, last_name, phone, email, stage, date_of_birth, referral_realtor_id, referral_source, lead_source, last_contacted_at, created_at')
     .eq('org_id', orgId)
     .eq('assigned_to', loId)
     .limit(5000);
