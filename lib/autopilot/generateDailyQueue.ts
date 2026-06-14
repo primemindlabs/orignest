@@ -16,6 +16,7 @@ import { detectBirthdays } from './signals/birthdays';
 import { detectFalloutRisk } from './signals/falloutRisk';
 import { detectPostCloseEquity } from './signals/postCloseEquity';
 import { detectNewArriveLeads } from './signals/newArriveLeads';
+import { detectGoldmine } from './signals/goldmine';
 
 const DETECTORS: { name: string; run: (ctx: SignalCtx) => Promise<DraftAction[]> }[] = [
   { name: 'aging_conditions', run: detectAgingConditions },
@@ -26,6 +27,7 @@ const DETECTORS: { name: string; run: (ctx: SignalCtx) => Promise<DraftAction[]>
   { name: 'fallout_risk', run: detectFalloutRisk },
   { name: 'post_close_equity', run: detectPostCloseEquity },
   { name: 'new_arrive_leads', run: detectNewArriveLeads },
+  { name: 'goldmine', run: detectGoldmine },
 ];
 
 const MAX_ACTIONS_PER_DAY = 12;

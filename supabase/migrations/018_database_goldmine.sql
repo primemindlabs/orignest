@@ -32,6 +32,8 @@ create table if not exists public.goldmine_opportunities (
 );
 create index if not exists idx_goldmine_status on public.goldmine_opportunities (lo_id, status, priority_score desc);
 create index if not exists idx_goldmine_signal on public.goldmine_opportunities (lo_id, signal_type, surfaced_at desc);
+-- Upsert key: one live row per (LO, contact, signal_type) — the weekly scan refreshes in place.
+create unique index if not exists idx_goldmine_unique on public.goldmine_opportunities (lo_id, contact_id, signal_type);
 
 alter table public.goldmine_opportunities enable row level security;
 create policy "lo_own_opportunities" on public.goldmine_opportunities

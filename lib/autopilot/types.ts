@@ -34,7 +34,8 @@ export type AutopilotSignalType =
   | 'fallout_risk'
   | 'post_close_equity'
   | 'realtor_dormant'
-  | 'new_arrive_lead';
+  | 'new_arrive_lead'
+  | 'goldmine';
 
 /** A recommended action before it's inserted (no id / lo_id / org_id yet). */
 export interface DraftAction {
@@ -90,6 +91,7 @@ export function smsCategoryForSignal(
       return 'loan_updates';
     case 'birthday':
     case 'post_close_equity':
+    case 'goldmine':
       return 'marketing';
     default:
       return 'reminders';
