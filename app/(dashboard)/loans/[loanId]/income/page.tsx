@@ -15,8 +15,14 @@ export default async function IncomePage({ params }: { params: { loanId: string 
   if (!orgId) redirect('/onboarding');
 
   const sb = createAdminClient();
-  const { data: lead } = await sb.from('leads').select('id, first_name, last_name').eq('id', params.loanId).eq('org_id', orgId).maybeSingle();
+  const { data: lead } = await sb.from('leads').select('id, first_name, last_name, loan_type').eq('id', params.loanId).eq('org_id', orgId).maybeSingle();
   if (!lead) notFound();
+
+  // Pre-select the worksheet that fits this loan type so it's ready inline.
+  const lt = (lead.loan_type ?? '').toLowerCase();
+  const defaultType = lt.includes('dscr') ? 'rental_schedule_e'
+    : (lt.includes('bank_stmt') || lt.includes('self')) ? 'self_employed_sole_prop'
+    : 'w2_salary';
 
   return (
     <div className="max-w-2xl space-y-5">
@@ -25,7 +31,7 @@ export default async function IncomePage({ params }: { params: { loanId: string 
         <h1 className="text-[22px] font-bold text-[var(--c-text)] tracking-tight">Income Calculator</h1>
         <p className="text-[13px] text-[var(--c-label2)] mt-0.5">Fannie/Freddie qualifying-income worksheets — W-2, self-employed (1084/91), Schedule E rental, Social Security gross-up, and 24-month variable. Each calculation is saved as an immutable audit record.</p>
       </div>
-      <IncomeHubClient leadId={params.loanId} />
+      <IncomeHubClient leadId={params.loanId} defaultType={defaultType} />
     </div>
   );
 }

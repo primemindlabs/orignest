@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Briefcase, Home, Landmark, Percent, ArrowRight } from 'lucide-react';
+import { IncomeDocUpload } from '@/components/income/IncomeDocUpload';
 import {
   selfEmployedMonthly, rentalMonthly, grossUp, dti,
   type SelfEmployedYear,
@@ -116,6 +117,14 @@ export default function IncomeClient() {
           );
         })}
       </div>
+
+      <IncomeDocUpload onExtracted={(ex) => {
+        const f = ex.fields ?? {};
+        if (ex.doc_type === 'tax_return') {
+          setTab('self_employed');
+          setY1((p) => ({ ...p, netProfit: f.schedule_c_net_profit != null ? String(f.schedule_c_net_profit) : p.netProfit, depreciation: f.depreciation != null ? String(f.depreciation) : p.depreciation, businessUseOfHome: f.business_use_of_home != null ? String(f.business_use_of_home) : p.businessUseOfHome }));
+        }
+      }} />
 
       {tab === 'self_employed' && (
       <Card icon={Briefcase} title="Self-Employed (Fannie 1084 / Freddie 91)" subtitle="2-year average with Schedule C add-backs">

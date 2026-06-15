@@ -5,6 +5,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronDown, Plus, Calculator } from 'lucide-react';
 import { INCOME_TYPE_LABELS } from '@/lib/income/calculators';
+import { IncomeDocUpload } from '@/components/income/IncomeDocUpload';
+import type { IncomeExtraction } from '@/lib/income/extractFromDoc';
+
+// Map an AI doc extraction → the worksheet type + prefilled fields.
+function mapExtraction(ex: IncomeExtraction): { type: string; vals: Record<string, unknown> } | null {
+  const f = ex.fields ?? {};
+  const keep = (o: Record<string, unknown>) => Object.fromEntries(Object.entries(o).filter(([, v]) => v != null && v !== ''));
+  switch (ex.doc_type) {
+    case 'tax_return':
+      return { type: 'self_employed_sole_prop', vals: keep({ y1_net_profit_loss: f.schedule_c_net_profit, y1_depreciation: f.depreciation, y1_business_use_of_home: f.business_use_of_home }) };
+    case 'w2':
+      return { type: 'w2_salary', vals: keep({ prior_year_w2: f.box1_wages }) };
+    case 'paystub':
+      return { type: 'w2_salary', vals: keep({ ytd_earnings: f.ytd_gross, ytd_as_of_date: f.pay_date }) };
+    default:
+      return null; // 1099 / bank_statement / unknown — estimate is shown, no exact worksheet map
+  }
+}
 
 type FieldKind = 'number' | 'date' | 'check' | 'select';
 interface Field { key: string; label: string; kind?: FieldKind; options?: string[] }
@@ -61,10 +79,10 @@ const usd = (n: number) => Number(n).toLocaleString('en-US', { style: 'currency'
 
 interface Calc { id: string; income_type: string; borrower_type: string; calculated_income: number; fannie_income: number | null; freddie_income: number | null; calculation_notes: string | null; created_at: string }
 
-export function IncomeHubClient({ leadId }: { leadId: string }) {
+export function IncomeHubClient({ leadId, defaultType }: { leadId: string; defaultType?: string }) {
   const [calcs, setCalcs] = useState<Calc[]>([]);
-  const [adding, setAdding] = useState(false);
-  const [type, setType] = useState<string>('w2_salary');
+  const [adding, setAdding] = useState(true);
+  const [type, setType] = useState<string>(defaultType && FORMS[defaultType] ? defaultType : 'w2_salary');
   const [borrower, setBorrower] = useState<'primary' | 'co_borrower'>('primary');
   const [vals, setVals] = useState<Record<string, unknown>>({});
   const [busy, setBusy] = useState(false);
@@ -106,6 +124,10 @@ export function IncomeHubClient({ leadId }: { leadId: string }) {
 
       {adding && (
         <div className="bg-[var(--c-surface)] border border-[var(--c-border)] rounded-[14px] p-4 space-y-3">
+          <IncomeDocUpload onExtracted={(ex) => {
+            const m = mapExtraction(ex);
+            if (m) { setType(m.type); setVals(m.vals); }
+          }} />
           <div className="grid grid-cols-2 gap-2">
             <label className="block"><span className="text-[11px] text-[var(--c-label2)]">Income type</span><select value={type} onChange={(e) => { setType(e.target.value); setVals({}); }} className={inp}>{Object.keys(FORMS).map((t) => <option key={t} value={t}>{INCOME_TYPE_LABELS[t]}</option>)}</select></label>
             <label className="block"><span className="text-[11px] text-[var(--c-label2)]">Borrower</span><select value={borrower} onChange={(e) => setBorrower(e.target.value as 'primary' | 'co_borrower')} className={inp}><option value="primary">Primary</option><option value="co_borrower">Co-borrower</option></select></label>
