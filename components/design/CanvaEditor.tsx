@@ -12,6 +12,7 @@ import {
   Bold, LayoutTemplate, Sparkles,
 } from 'lucide-react';
 import { templatesForSurface, ASPECT_DIM, type StudioTemplate } from '@/lib/design/studioTemplates';
+import { AddImageMenu } from './AddImageMenu';
 import {
   buildDocFromTemplate, renderDocToBlob, docCaption, newId, FONT_STACK,
   type DesignDoc, type El, type TextEl, type ShapeEl, type ImageEl, type Background,
@@ -47,7 +48,6 @@ export function CanvaEditor({ surface, lo, partners }: { surface: StudioTemplate
   scaleRef.current = scale;
   const stageRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<DragState | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const selected = doc.elements.find((e) => e.id === selectedId) ?? null;
 
@@ -73,24 +73,21 @@ export function CanvaEditor({ surface, lo, partners }: { surface: StudioTemplate
     const { x, y } = centerBox(360, 360);
     addElement({ id: newId(), type: 'shape', shape, name: shape === 'rect' ? 'Rectangle' : 'Ellipse', x, y, w: 360, h: shape === 'ellipse' ? 360 : 220, fill: '#2563eb', radius: 24 });
   }
-  function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const src = reader.result as string;
-      const img = new window.Image();
-      img.onload = () => {
-        const maxW = Math.round(doc.width * 0.6);
-        const w = Math.min(maxW, img.width);
-        const h = Math.round(w * (img.height / img.width));
-        const { x, y } = centerBox(w, h);
-        addElement({ id: newId(), type: 'image', name: 'Image', x, y, w, h, src, fit: 'cover', radius: 12 });
-      };
-      img.src = src;
+  // Add an image from any src (data URL, AI-generated data URL, or remote URL).
+  function addImageFromUrl(src: string) {
+    const img = new window.Image();
+    img.onload = () => {
+      const maxW = Math.round(doc.width * 0.6);
+      const w = Math.min(maxW, img.width || maxW);
+      const h = Math.round(w * ((img.height || maxW) / (img.width || maxW)));
+      const { x, y } = centerBox(w, h);
+      addElement({ id: newId(), type: 'image', name: 'Image', x, y, w, h, src, fit: 'cover', radius: 12 });
     };
-    reader.readAsDataURL(file);
-    e.target.value = '';
+    img.onerror = () => {
+      const { x, y } = centerBox(360, 360);
+      addElement({ id: newId(), type: 'image', name: 'Image', x, y, w: 360, h: 360, src, fit: 'cover', radius: 12 });
+    };
+    img.src = src;
   }
 
   function removeSelected() {
@@ -225,8 +222,7 @@ export function CanvaEditor({ surface, lo, partners }: { surface: StudioTemplate
           <ToolBtn onClick={addText} icon={<Type size={15} />} label="Text" />
           <ToolBtn onClick={() => addShape('rect')} icon={<Square size={15} />} label="Rect" />
           <ToolBtn onClick={() => addShape('ellipse')} icon={<Circle size={15} />} label="Circle" />
-          <ToolBtn onClick={() => fileRef.current?.click()} icon={<ImageIcon size={15} />} label="Image" />
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onPickImage} />
+          <AddImageMenu onAddImage={addImageFromUrl} />
           <div className="w-px h-6 bg-border mx-1" />
           <button onClick={exportPng} disabled={exporting} className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg text-white disabled:opacity-50" style={{ background: '#0F1D2E' }}>
             <Download size={14} /> {exporting ? 'Exporting…' : 'PNG'}
