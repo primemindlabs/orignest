@@ -15,64 +15,83 @@ import type { LoanContext } from '@/lib/ui/fieldAdapter';
 interface SubItem { label: string; href: string; showIf?: (ctx: LoanContext) => boolean }
 interface NavSection { key: string; label: string; href: string; icon: React.ElementType; sub?: SubItem[] }
 
-// Only real, implemented pages are linked here — every entry below resolves to a
-// built page (no "under construction" placeholders). Stub routes still exist on
-// disk but are intentionally unlinked.
 const LOAN_NAV: NavSection[] = [
   { key: 'overview', label: 'Overview', href: '', icon: LayoutDashboard },
-  { key: 'application', label: 'Application (1003)', href: '/apply-1003', icon: FileText },
   {
-    key: 'pricing', label: 'Pricing & Scenarios', href: '/scenarios', icon: DollarSign,
+    key: 'application', label: 'Application', href: '/application', icon: FileText,
     sub: [
-      { label: 'Scenario Builder', href: '/scenarios' },
-      { label: 'Loan Proposal', href: '/proposal' },
-      { label: 'Construction Loan', href: '/construction' },
+      { label: '1003 — Borrower', href: '/application/borrower' },
+      { label: '1003 — Co-Borrower', href: '/application/co-borrower', showIf: (c) => c.has_co_borrower },
+      { label: '1003 — Employment', href: '/application/employment' },
+      { label: '1003 — Income', href: '/application/income' },
+      { label: '1003 — Assets', href: '/application/assets' },
+      { label: '1003 — Real Estate Owned', href: '/application/real-estate', showIf: (c) => c.has_reo },
+      { label: '1003 — Loan & Property', href: '/application/loan-property' },
+      { label: '1003 — Declarations', href: '/application/declarations' },
+      { label: 'HMDA Data', href: '/application/hmda' },
     ],
   },
   {
-    key: 'property', label: 'Property', href: '/property/flood-zone', icon: Home,
+    key: 'pricing', label: 'Pricing', href: '/pricing', icon: DollarSign,
     sub: [
+      { label: 'Rate Options', href: '/pricing/rate-options' },
+      { label: 'Rate Lock', href: '/pricing/rate-lock' },
+      { label: 'Break-Even Analysis', href: '/pricing/break-even' },
+    ],
+  },
+  {
+    key: 'property', label: 'Property', href: '/property', icon: Home,
+    sub: [
+      { label: 'Property Details', href: '/property/details' },
+      { label: 'Appraisal', href: '/property/appraisal' },
       { label: 'Flood Zone', href: '/property/flood-zone' },
-      { label: 'HOA Warrantability', href: '/hoa', showIf: (c) => ['Condo', 'PUD'].includes(c.property_type) },
-      { label: 'Appraisal Waiver Check', href: '/waiver-check' },
+      { label: 'HOA Certification', href: '/property/hoa', showIf: (c) => ['Condo', 'PUD'].includes(c.property_type) },
     ],
   },
   {
-    key: 'underwriting', label: 'Underwriting', href: '/underwriting/dti', icon: Shield,
+    key: 'underwriting', label: 'Underwriting', href: '/underwriting', icon: Shield,
     sub: [
       { label: 'DTI Worksheet', href: '/underwriting/dti' },
+      { label: 'Income Analysis', href: '/underwriting/income' },
+      { label: 'Assets & Reserves', href: '/underwriting/assets' },
       { label: 'Credit Analysis', href: '/underwriting/credit' },
       { label: 'Risk Score', href: '/underwriting/risk' },
       { label: 'Conditions', href: '/underwriting/conditions' },
       { label: 'UW Decision', href: '/underwriting/decision' },
-      { label: 'Pre-Submission Check', href: '/dti-check' },
-      { label: 'LOE Builder', href: '/loe' },
     ],
   },
   {
-    key: 'docs-compliance', label: 'Docs & Compliance', href: '/docs-compliance/smart-checklist', icon: FolderCheck,
+    key: 'disclosures', label: 'Disclosures', href: '/disclosures', icon: FileCheck,
     sub: [
+      { label: 'Loan Estimates', href: '/disclosures/loan-estimates' },
+      { label: 'CD Balancer', href: '/disclosures/cd-balancer' },
+      { label: 'Changed Circumstances', href: '/disclosures/changed-circumstances' },
+      { label: 'Wire Safety', href: '/disclosures/wire-safety' },
+      { label: 'Audit Export', href: '/disclosures/audit' },
+    ],
+  },
+  {
+    key: 'docs-compliance', label: 'Docs & Compliance', href: '/docs-compliance', icon: FolderCheck,
+    sub: [
+      { label: 'Documents', href: '/docs-compliance/documents' },
       { label: 'Smart Checklist', href: '/docs-compliance/smart-checklist' },
       { label: 'AI Auto-Population', href: '/docs-compliance/auto-extract' },
       { label: 'Conditions', href: '/docs-compliance/conditions' },
-      { label: 'Identity Verification', href: '/identity' },
-      { label: 'Documents & Signatures', href: '/signatures' },
-      { label: 'CD Balancer', href: '/disclosures/cd-balancer' },
+      { label: 'Expirations', href: '/docs-compliance/expirations' },
+      { label: 'Dual Role Check', href: '/docs-compliance/dual-role-check' },
+      { label: 'Adverse Action', href: '/docs-compliance/adverse-action' },
+      { label: 'Fair Lending Flags', href: '/docs-compliance/fair-lending-flags' },
     ],
   },
   {
-    key: 'closing', label: 'Closing', href: '/title', icon: FileCheck,
-    sub: [
-      { label: 'Title & Closing', href: '/title' },
-      { label: 'Closing Post', href: '/closing-post' },
-    ],
-  },
-  {
-    key: 'portal-comms', label: 'Portal & Comms', href: '/portal-comms/chat', icon: MessageSquare,
+    key: 'portal-comms', label: 'Portal & Comms', href: '/portal-comms', icon: MessageSquare,
     sub: [
       { label: 'Loan Chat', href: '/portal-comms/chat' },
       { label: 'Borrower Portal', href: '/portal-comms/borrower-portal' },
-      { label: 'Internal Team Chat', href: '/internal-chat' },
+      { label: 'Realtor Access', href: '/portal-comms/realtor-access' },
+      { label: 'Education Suite', href: '/portal-comms/education-suite' },
+      { label: 'Milestone Communications', href: '/portal-comms/milestone-communications' },
+      { label: 'Rate Alerts & Monitoring', href: '/portal-comms/rate-alerts' },
       { label: 'Competitor Analysis', href: '/portal-comms/competitor-analysis' },
     ],
   },
@@ -84,10 +103,7 @@ export function LoanSidebar({ loanId, loanContext }: { loanId: string; loanConte
 
   function sectionActive(section: NavSection): boolean {
     if (section.href === '') return pathname === base;
-    // A section is active if its header href OR any of its sub hrefs matches —
-    // sub hrefs no longer share a common prefix with the header.
-    const hrefs = [section.href, ...(section.sub ?? []).map((s) => s.href)];
-    return hrefs.some((h) => pathname.startsWith(base + h));
+    return pathname.startsWith(base + section.href);
   }
 
   return (

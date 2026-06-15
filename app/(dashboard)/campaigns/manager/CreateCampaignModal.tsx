@@ -148,7 +148,7 @@ export function CreateCampaignModal({
               className="w-full rounded-[10px] border border-[rgba(60,60,67,0.15)] px-3 py-2.5 text-[14px] focus:outline-none focus:ring-2 focus:ring-blue/40"
             />
           </div>
-          <p className="text-[12px] text-label-3">Steps are TCPA/RESPA-aware — no rates, payments, or guarantees. You can edit everything before it's saved.</p>
+          <p className="text-[12px] text-label-3">Steps are TCPA/RESPA-aware — no rates, payments, or guarantees. You can edit everything before it&apos;s saved.</p>
         </div>
       ) : plan ? (
         <div className="space-y-4">
