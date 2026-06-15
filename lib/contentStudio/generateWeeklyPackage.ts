@@ -10,6 +10,7 @@ import { checkPostCompliance } from '@/lib/compliance/postCompliance';
 import { auditPostCompliance } from './auditPostCompliance';
 import { templateFor, type TemplateCtx } from './templates';
 import { WEEKLY_TOPICS, type GeneratedPost, type LOProfile, type Platform } from './types';
+import { parsePostJson } from './sanitizePost';
 
 const MODEL = 'claude-haiku-4-5';
 
@@ -40,20 +41,13 @@ function buildPostPrompt(topic: { day: string; platform: Platform; type: string 
 }
 
 function parsePostResponse(text: string): { post_text: string; hashtags: string | null; image_prompt: string | null } {
-  try {
-    const parsed = JSON.parse(text.trim());
-    if (parsed && typeof parsed.post_text === 'string') {
-      return {
-        post_text: parsed.post_text.trim(),
-        hashtags: typeof parsed.hashtags === 'string' ? parsed.hashtags : null,
-        image_prompt: typeof parsed.image_prompt === 'string' ? parsed.image_prompt : null,
-      };
-    }
-  } catch {
-    /* fall through to heuristic parse */
-  }
-  const tags = (text.match(/#[A-Za-z0-9_]+/g) ?? []).join(' ');
-  const body = text.replace(/#[A-Za-z0-9_]+/g, '').trim();
+  // Handles minified JSON, ```json-fenced JSON, and prose-wrapped objects.
+  const parsed = parsePostJson(text);
+  if (parsed) return parsed;
+  // Heuristic fallback: never let a raw `json {` / fence token leak into the post.
+  const cleaned = text.replace(/^\s*```[a-zA-Z0-9]*\s*/i, '').replace(/```\s*$/i, '').replace(/^\s*json\b/i, '').trim();
+  const tags = (cleaned.match(/#[A-Za-z0-9_]+/g) ?? []).join(' ');
+  const body = cleaned.replace(/#[A-Za-z0-9_]+/g, '').trim();
   return { post_text: body, hashtags: tags || null, image_prompt: null };
 }
 

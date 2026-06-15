@@ -93,11 +93,19 @@ const NAV: NavGroup[] = [
   },
 ];
 
-const STORAGE_KEY = 'ashley-iq-sidebar-state';
+const COOKIE_KEY = 'ashley_sidebar';
 
-interface SidebarProps { userRole?: string; orgName?: string }
+function persistSidebar(state: { collapsed: boolean; expanded: string[] }) {
+  try {
+    document.cookie = `${COOKIE_KEY}=${encodeURIComponent(JSON.stringify(state))}; path=/; max-age=31536000; samesite=lax`;
+  } catch {
+    /* ignore */
+  }
+}
 
-export function Sidebar({ userRole, orgName }: SidebarProps) {
+interface SidebarProps { userRole?: string; orgName?: string; initialCollapsed?: boolean; initialExpanded?: string[] }
+
+export function Sidebar({ userRole, orgName, initialCollapsed, initialExpanded }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useClerk();
@@ -123,20 +131,10 @@ export function Sidebar({ userRole, orgName }: SidebarProps) {
     }
   }
 
-  const [collapsed, setCollapsed] = useState(false);
-  const [expanded, setExpanded] = useState<string[]>([]);
-  const [hydrated, setHydrated] = useState(false);
-
-  // Hydrate persisted state; default collapsed on narrow screens.
-  useEffect(() => {
-    let saved: { collapsed?: boolean; expanded?: string[] } | null = null;
-    try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) saved = JSON.parse(raw); } catch { /* ignore */ }
-    const initialCollapsed = saved?.collapsed ?? (typeof window !== 'undefined' && window.innerWidth < 1280);
-    setCollapsed(initialCollapsed);
-    setExpanded(saved?.expanded ?? (activeGroup ? [activeGroup] : []));
-    setHydrated(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Seed from server-provided (cookie) state so the first client render matches SSR
+  // exactly — no post-hydration snap. Falls back to opening just the active group.
+  const [collapsed, setCollapsed] = useState(initialCollapsed ?? false);
+  const [expanded, setExpanded] = useState<string[]>(initialExpanded ?? (activeGroup ? [activeGroup] : []));
 
   // Keep the active group expanded as the route changes.
   useEffect(() => {
@@ -144,12 +142,11 @@ export function Sidebar({ userRole, orgName }: SidebarProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeGroup]);
 
-  // Drive content reflow + persist.
+  // Drive content reflow (same element the SSR width var lives on) + persist to cookie.
   useEffect(() => {
-    if (!hydrated) return;
-    document.documentElement.style.setProperty('--sidebar-w', collapsed ? '64px' : '220px');
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ collapsed, expanded })); } catch { /* ignore */ }
-  }, [collapsed, expanded, hydrated]);
+    document.getElementById('app-shell')?.style.setProperty('--sidebar-w', collapsed ? '64px' : '220px');
+    persistSidebar({ collapsed, expanded });
+  }, [collapsed, expanded]);
 
   function toggleGroup(key: string) {
     setExpanded((e) => (e.includes(key) ? e.filter((k) => k !== key) : [...e, key]));

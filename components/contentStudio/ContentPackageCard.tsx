@@ -7,6 +7,7 @@ import { auditPostCompliance } from '@/lib/contentStudio/auditPostCompliance';
 import { ComplianceWarning } from './ComplianceWarning';
 import { PostPreview } from './PostPreview';
 import type { ContentPostRow, Platform } from '@/lib/contentStudio/types';
+import { cleanPostText } from '@/lib/contentStudio/sanitizePost';
 
 const PLATFORM_ICON: Record<Platform, typeof IconBrandLinkedin> = {
   linkedin: IconBrandLinkedin,
@@ -22,7 +23,7 @@ type Props = {
 };
 
 export function ContentPackageCard({ post, onAction }: Props) {
-  const display = post.edited_text ?? post.post_text;
+  const display = cleanPostText(post.edited_text ?? post.post_text);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(display);
   const [busy, setBusy] = useState(false);

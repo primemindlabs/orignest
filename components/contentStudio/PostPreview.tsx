@@ -7,6 +7,7 @@
  */
 import { IconBrandLinkedin, IconBrandInstagram, IconBrandFacebook } from '@tabler/icons-react';
 import type { ContentPostRow, Platform } from '@/lib/contentStudio/types';
+import { cleanPostText } from '@/lib/contentStudio/sanitizePost';
 
 const PLATFORM_ICON: Record<Platform, typeof IconBrandLinkedin> = {
   linkedin: IconBrandLinkedin,
@@ -42,7 +43,7 @@ function brandFromFooter(footer: string): { name: string; initials: string } {
 }
 
 export function PostPreview({ post }: { post: ContentPostRow }) {
-  const text = post.edited_text ?? post.post_text;
+  const text = cleanPostText(post.edited_text ?? post.post_text);
   const theme = THEMES[post.content_type] ?? DEFAULT_THEME;
   const headline = deriveHeadline(text);
   const Icon = PLATFORM_ICON[post.platform];

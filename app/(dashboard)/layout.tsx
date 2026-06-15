@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
@@ -52,11 +53,27 @@ export default async function DashboardLayout({ children }: { children: React.Re
     ? `${profile.first_name ?? ''} ${profile.last_name ?? ''}`.trim()
     : undefined;
 
+  // Read persisted sidebar state server-side so the first paint already has the
+  // correct width + expanded groups — no post-hydration snap ("jumping").
+  let sidebarCollapsed = false;
+  let sidebarExpanded: string[] | undefined;
+  try {
+    const raw = cookies().get('ashley_sidebar')?.value;
+    if (raw) {
+      const parsed = JSON.parse(decodeURIComponent(raw));
+      if (typeof parsed.collapsed === 'boolean') sidebarCollapsed = parsed.collapsed;
+      if (Array.isArray(parsed.expanded)) sidebarExpanded = parsed.expanded;
+    }
+  } catch {
+    /* default to expanded */
+  }
+  const sidebarW = sidebarCollapsed ? '64px' : '220px';
+
   return (
     <CommandPaletteProvider>
       <NavDrawerProvider>
-        <div className="flex h-screen overflow-hidden bg-bg">
-          <Sidebar userRole={userRole} orgName={org?.name ?? undefined} />
+        <div id="app-shell" className="flex h-screen overflow-hidden bg-bg" style={{ '--sidebar-w': sidebarW } as React.CSSProperties}>
+          <Sidebar userRole={userRole} orgName={org?.name ?? undefined} initialCollapsed={sidebarCollapsed} initialExpanded={sidebarExpanded} />
           <div className="flex-1 flex flex-col min-w-0 transition-[margin] duration-150 lg:ml-[var(--sidebar-w)]">
             <Topbar role={userRole} />
             <main className="flex-1 overflow-auto pt-14 animate-fade-in">
