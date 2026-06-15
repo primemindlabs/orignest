@@ -9,7 +9,7 @@ import { Logo } from '@/components/brand/Logo';
 import { isGroupVisible } from '@/lib/navigation/roles';
 import { useNavDrawer } from '@/components/layout/NavDrawerContext';
 import {
-  LayoutDashboard, GitBranch, Repeat, Megaphone, Sparkles, BarChart3, ShieldCheck, Settings,
+  LayoutDashboard, Sun, Briefcase, MessagesSquare, Palette, Percent, Sparkles, BarChart3, ShieldCheck, Settings,
   ChevronDown, PanelLeftClose, PanelLeftOpen, LogOut, X,
 } from 'lucide-react';
 
@@ -23,87 +23,58 @@ interface NavItem { href: string; label: string }
 interface NavGroup { key: string; label: string; icon: React.ElementType; href?: string; items?: NavItem[]; adminOnly?: boolean }
 
 const NAV: NavGroup[] = [
+  { key: 'today', label: 'Today', icon: Sun, href: '/today' },
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
   {
-    key: 'pipeline', label: 'Pipeline', icon: GitBranch, items: [
-      { href: '/pipeline', label: 'Pipeline Board' },
-      { href: '/speed-to-lead', label: 'Respond Now' },
+    key: 'work', label: 'Work', icon: Briefcase, items: [
+      { href: '/pipeline', label: 'Loans' },
       { href: '/leads', label: 'Leads' },
-      { href: '/leads/import', label: 'Import Pipeline' },
+      { href: '/speed-to-lead', label: 'Respond Now' },
       { href: '/my-tasks', label: 'My Queue' },
+      { href: '/relationships', label: 'Borrowers' },
+      { href: '/realtors', label: 'Realtors' },
+      { href: '/lenders', label: 'Lenders & AEs' },
+      { href: '/applications', label: 'Documents' },
       { href: '/rate-locks', label: 'Rate Locks' },
       { href: '/credit-alerts', label: 'Credit Alerts' },
-      { href: '/my-book', label: 'My Book' },
-      { href: '/inbox', label: 'Conversations' },
-      { href: '/team-chat', label: 'Team Chat' },
-      { href: '/voicemails', label: 'Voicemails' },
-      { href: '/calendar', label: 'Calendar' },
-      { href: '/applications', label: 'File Room' },
-      { href: '/dscr-calculator', label: 'DSCR Calculator' },
     ],
   },
   {
-    key: 'relationships', label: 'Relationships', icon: Repeat, items: [
-      { href: '/relationships', label: 'Borrowers' },
-      { href: '/relationships/heat', label: 'Borrower Heat' },
-      { href: '/equity-loop', label: 'Equity Loop' },
-      { href: '/partners', label: 'Realtors & Partners' },
-      { href: '/realtors', label: 'Realtor Intelligence' },
-      { href: '/discover', label: 'Find New Realtors' },
-      { href: '/ae-connect', label: 'AE Connect' },
-    ],
-  },
-  {
-    key: 'marketing', label: 'Marketing', icon: Megaphone, items: [
-      // Phase 34: Campaigns is the primary entry; Rate Drop + Market Updates are
-      // now campaign types inside it (their pages remain, just not standalone nav).
+    key: 'communicate', label: 'Communicate', icon: MessagesSquare, items: [
+      { href: '/inbox', label: 'Inbox' },
       { href: '/campaigns/manager', label: 'Campaigns' },
-      { href: '/social', label: 'Social Media' },
-      { href: '/marketing/content-studio', label: 'Content Studio' },
-      { href: '/co-marketing', label: 'Co-Marketing' },
-      { href: '/co-marketing/generate', label: 'Co-Marketing Generator' },
-      { href: '/marketing/market-update', label: 'Realtor Market Update' },
-      { href: '/outreach', label: 'Birthday & Anniversary' },
-      { href: '/goldmine', label: 'Database Goldmine' },
-      { href: '/co-marketing/listings', label: 'Listings' },
-      { href: '/ads', label: 'Ad Center' },
+      { href: '/dialer/power', label: 'Dialer' },
+      { href: '/calendar', label: 'Calendar' },
     ],
   },
   {
-    key: 'tools', label: 'Tools', icon: Sparkles, items: [
-      { href: '/ai-coach', label: 'AI Coach' },
-      { href: '/pricing', label: 'Rate & Pricing' },
-      { href: '/deal-desk', label: 'AE Deal Desk' },
-      { href: '/dialer/power', label: 'Power Dialer' },
-      { href: '/pre-approval', label: 'Pre-Approval' },
+    key: 'create', label: 'Create', icon: Palette, items: [
+      { href: '/marketing/content-studio', label: 'Content Studio' },
+      { href: '/ads', label: 'Ads & Social' },
+      { href: '/co-marketing', label: 'Co-Marketing' },
+    ],
+  },
+  {
+    key: 'analyze', label: 'Analyze', icon: Percent, items: [
+      { href: '/pricing', label: 'Pricing Engine' },
+      { href: '/dscr', label: 'Non-QM & Commercial' },
       { href: '/scenarios', label: 'Scenario AI' },
       { href: '/income', label: 'Income Calculators' },
-      { href: '/dscr', label: 'DSCR / Non-QM' },
-      { href: '/dscr-analyzer', label: 'DSCR Analyzer (5–9 unit)' },
-      { href: '/rate-sheets', label: 'Rate Sheet Parser' },
-      { href: '/training', label: 'Training Center' },
-      { href: '/training/library', label: 'Training Library' },
-      { href: '/training/ask', label: 'Ask Ashley' },
-      { href: '/refi-watch', label: 'Refi Watch' },
-      { href: '/equity', label: 'Equity Tracker' },
-      { href: '/settings/automations', label: 'Milestone Automations' },
+      { href: '/reports', label: 'Reports' },
+      { href: '/analytics/funnel', label: 'Conversion Funnel' },
+      { href: '/analytics/referral-roi', label: 'Referral ROI' },
     ],
   },
   {
-    key: 'analytics', label: 'Insights', icon: BarChart3, items: [
-      { href: '/reports', label: 'Reports' },
-      { href: '/impact', label: "Ashley's Impact" },
-      { href: '/analytics/funnel', label: 'Conversion Funnel' },
-      { href: '/analytics/referral-roi', label: 'Referral ROI' },
-      { href: '/referral-attribution', label: 'Attribution' },
-      { href: '/commissions', label: 'Commissions' },
-      { href: '/buyer-referrals', label: 'Buyer Referrals' },
-      { href: '/investors', label: 'Investors' },
-      { href: '/reviews', label: 'Reviews' },
-      { href: '/leaderboard', label: 'Leaderboard' },
-      { href: '/scorecard', label: 'My Scorecard' },
+    key: 'manage', label: 'Manage', icon: Settings, items: [
+      { href: '/training', label: 'Training' },
+      { href: '/team', label: 'Team' },
+      { href: '/commissions', label: 'Comp Calculator' },
+      { href: '/ai-coach', label: 'AI Coach' },
+      { href: '/settings', label: 'Settings' },
     ],
   },
+  // ── Admin / Branch Manager only ──
   {
     key: 'management', label: 'Management', icon: BarChart3, adminOnly: true, items: [
       { href: '/branch', label: 'Branch Dashboard' },
@@ -119,14 +90,6 @@ const NAV: NavGroup[] = [
       { href: '/settings/compliance', label: 'Compliance & Templates' },
       { href: '/compliance/tcpa', label: 'TCPA & Comm Center' },
       { href: '/compliance/dnc', label: 'Do Not Call List' },
-    ],
-  },
-  {
-    key: 'settings', label: 'Settings', icon: Settings, adminOnly: true, items: [
-      { href: '/settings', label: 'Settings' },
-      { href: '/team', label: 'Team' },
-      { href: '/settings/billing', label: 'Billing' },
-      { href: '/settings/system-status', label: 'System Status' },
     ],
   },
 ];
