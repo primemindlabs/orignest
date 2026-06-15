@@ -2,9 +2,11 @@
 
 /** Phase 34.5 — Campaign Manager: stats + library + the org's campaigns. */
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
-import { Sparkles, Check, Library, Layers } from 'lucide-react';
+import { Sparkles, Check, Library, Layers, Plus } from 'lucide-react';
+import { CreateCampaignModal } from './CreateCampaignModal';
 
 interface LibTpl { id: string; name: string; type: string; category: string | null; description: string | null; total_steps: number | null }
 interface MyCampaign { id: string; name: string; type: string; category: string | null; status: string; total_steps: number | null; enrolled_count: number | null }
@@ -26,6 +28,8 @@ export function CampaignManagerClient() {
   const [cat, setCat] = useState('all');
   const [activating, setActivating] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const router = useRouter();
 
   const load = useCallback(async () => {
     const res = await fetch('/api/campaign-manager');
@@ -48,6 +52,23 @@ export function CampaignManagerClient() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-[22px] font-bold text-[var(--c-text)] tracking-tight">Campaigns</h1>
+          <p className="text-[13px] text-[var(--c-label2)] mt-0.5">Build your own with AI, or activate a ready-made template.</p>
+        </div>
+        <Button variant="primary" onClick={() => setShowCreate(true)}>
+          <Plus size={15} /> Create campaign
+        </Button>
+      </div>
+
+      <CreateCampaignModal
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        onCreated={(id) => { setShowCreate(false); router.push(`/campaigns/manager/${id}`); }}
+      />
+
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         {[
