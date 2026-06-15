@@ -2,7 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { redirect } from 'next/navigation';
-import { Megaphone, Sparkles, Users, TrendingUp, Library } from 'lucide-react';
+import { Megaphone, Sparkles, Users, TrendingUp, Library, Wand2 } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { AdCenterClient } from './AdCenterClient';
@@ -77,6 +77,18 @@ export default async function AdCenterPage() {
           <div><p className="text-[14px] font-semibold text-[#1C1C1E]">Attribution</p><p className="text-[12px] text-[#8A8A8E]">Leads & ROAS by campaign</p></div>
         </Link>
       </div>
+
+      {/* Design Studio CTA — Canva-like visual ad creative */}
+      <Link href="/social/studio" className="flex items-center gap-4 bg-gradient-to-r from-[#0F1D2E] to-[#1a2a3f] rounded-2xl px-5 py-4 hover:opacity-95 transition-opacity">
+        <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+          <Wand2 size={20} className="text-[#C9A95C]" />
+        </div>
+        <div className="flex-1">
+          <p className="text-[15px] font-bold text-white">Design Studio</p>
+          <p className="text-[13px] text-white/70">Canva-style ad creative — pick a template, edit live, brand it, and export.</p>
+        </div>
+        <Sparkles size={18} className="text-white/80" />
+      </Link>
 
       {/* Main content */}
       <div className="bg-white border border-black/[0.06] shadow-sm rounded-2xl p-6">

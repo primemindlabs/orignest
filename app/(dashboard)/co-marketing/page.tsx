@@ -2,7 +2,8 @@ import { auth } from '@clerk/nextjs/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { redirect } from 'next/navigation';
-import { Handshake } from 'lucide-react';
+import { Handshake, Wand2, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { CoMarketingClient } from './CoMarketingClient';
 import type { ReferralPartner, Profile } from '@/types';
@@ -62,6 +63,18 @@ export default async function CoMarketingPage() {
           </div>
         ))}
       </div>
+
+      {/* Design Studio CTA */}
+      <Link href="/co-marketing/studio" className="flex items-center gap-4 bg-gradient-to-r from-[#0F1D2E] to-[#1a2a3f] rounded-2xl px-5 py-4 hover:opacity-95 transition-opacity">
+        <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+          <Wand2 size={20} className="text-[#C9A95C]" />
+        </div>
+        <div className="flex-1">
+          <p className="text-[15px] font-bold text-white">Design Studio</p>
+          <p className="text-[13px] text-white/70">Canva-style co-branded flyers &amp; social posts — pick a template, edit live, export.</p>
+        </div>
+        <ArrowRight size={18} className="text-white/80" />
+      </Link>
 
       {/* Main */}
       <div className="bg-white border border-black/[0.06] shadow-sm rounded-2xl p-6">

@@ -2,7 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { redirect } from 'next/navigation';
-import { Share2, Sparkles } from 'lucide-react';
+import { Share2, Sparkles, Wand2 } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { SocialClient } from './SocialClient';
@@ -44,9 +44,14 @@ export default async function SocialPage() {
             AI-powered content creation for LinkedIn, Instagram, Facebook, and X.
           </p>
         </div>
-        <Link href="/social/ideas" className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl text-[13px] font-medium border border-black/[0.08] text-[#1C1C1E] hover:bg-black/[0.03] transition-colors">
-          <Sparkles size={14} className="text-[#C9A95C]" /> Content Studio
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/social/studio" className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl text-[13px] font-semibold text-white hover:opacity-90 transition-opacity" style={{ background: '#5856D6' }}>
+            <Wand2 size={14} /> Design Studio
+          </Link>
+          <Link href="/social/ideas" className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl text-[13px] font-medium border border-black/[0.08] text-[#1C1C1E] hover:bg-black/[0.03] transition-colors">
+            <Sparkles size={14} className="text-[#C9A95C]" /> Content Studio
+          </Link>
+        </div>
       </div>
 
       {/* KPI row */}
