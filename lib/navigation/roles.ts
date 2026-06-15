@@ -29,14 +29,14 @@ export function normalizeRole(role: string | null | undefined): AppRole {
  * Keys correspond to the NavGroup.key values in Sidebar.tsx.
  */
 // Group keys correspond to NavGroup.key in Sidebar.tsx (MLO redesign sections:
-// today / dashboard / work / communicate / create / analyze / manage + admin groups).
+// today / dashboard / pipeline / contacts / communicate / create / analyze / manage + admin groups).
 export const ROLE_GROUP_VISIBILITY: Partial<Record<AppRole, string[]>> = {
-  loa: ['today', 'dashboard', 'work', 'communicate', 'manage'],
-  processor: ['today', 'dashboard', 'work', 'manage'],
-  underwriter: ['today', 'dashboard', 'work', 'manage'],
+  loa: ['today', 'dashboard', 'pipeline', 'contacts', 'communicate', 'manage'],
+  processor: ['today', 'dashboard', 'pipeline', 'manage'],
+  underwriter: ['today', 'dashboard', 'pipeline', 'manage'],
   brand_manager: ['today', 'dashboard', 'create', 'analyze'],
-  ae: ['today', 'dashboard', 'work', 'analyze', 'management'],
-  ae_manager: ['today', 'dashboard', 'analyze', 'management'],
+  ae: ['today', 'dashboard', 'pipeline', 'contacts', 'analyze', 'management'],
+  ae_manager: ['today', 'dashboard', 'contacts', 'analyze', 'management'],
 };
 
 /** Whether a nav group (by key + adminOnly flag) is visible to a role. */

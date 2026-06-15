@@ -9,7 +9,7 @@ import { Logo } from '@/components/brand/Logo';
 import { isGroupVisible } from '@/lib/navigation/roles';
 import { useNavDrawer } from '@/components/layout/NavDrawerContext';
 import {
-  LayoutDashboard, Sun, Briefcase, MessagesSquare, Palette, Percent, Sparkles, BarChart3, ShieldCheck, Settings,
+  LayoutDashboard, Sun, GitBranch, Users, MessagesSquare, Palette, Percent, Sparkles, BarChart3, ShieldCheck, Settings,
   ChevronDown, PanelLeftClose, PanelLeftOpen, LogOut, X,
 } from 'lucide-react';
 
@@ -26,17 +26,19 @@ const NAV: NavGroup[] = [
   { key: 'today', label: 'Today', icon: Sun, href: '/today' },
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
   {
-    key: 'work', label: 'Work', icon: Briefcase, items: [
+    key: 'pipeline', label: 'Pipeline', icon: GitBranch, items: [
       { href: '/pipeline', label: 'Loans' },
       { href: '/leads', label: 'Leads' },
       { href: '/speed-to-lead', label: 'Respond Now' },
       { href: '/my-tasks', label: 'My Queue' },
+      { href: '/applications', label: 'Documents' },
+    ],
+  },
+  {
+    key: 'contacts', label: 'Contacts', icon: Users, items: [
       { href: '/relationships', label: 'Borrowers' },
       { href: '/realtors', label: 'Realtors' },
       { href: '/lenders', label: 'Lenders & AEs' },
-      { href: '/applications', label: 'Documents' },
-      { href: '/rate-locks', label: 'Rate Locks' },
-      { href: '/credit-alerts', label: 'Credit Alerts' },
     ],
   },
   {
@@ -57,12 +59,10 @@ const NAV: NavGroup[] = [
   {
     key: 'analyze', label: 'Analyze', icon: Percent, items: [
       { href: '/pricing', label: 'Pricing Engine' },
-      { href: '/dscr', label: 'Non-QM & Commercial' },
       { href: '/scenarios', label: 'Scenario AI' },
       { href: '/income', label: 'Income Calculators' },
+      { href: '/dscr', label: 'Non-QM & Commercial' },
       { href: '/reports', label: 'Reports' },
-      { href: '/analytics/funnel', label: 'Conversion Funnel' },
-      { href: '/analytics/referral-roi', label: 'Referral ROI' },
     ],
   },
   {
