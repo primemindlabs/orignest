@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { LayoutGrid, Download, Mail, ShieldCheck } from 'lucide-react';
+import { Download, Mail, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   PROGRAMS, availablePrograms, computeResults, CONFORMING_LIMIT,
@@ -94,11 +94,6 @@ export default function ScenariosClient() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-2.5">
-        <LayoutGrid size={22} className="text-blue" />
-        <h1 className="text-[24px] font-bold text-label tracking-tight">Scenario Comparison</h1>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-5">
         {/* Left — borrower profile */}
         <div className="bg-white rounded-2xl border border-black/[0.06] shadow-card p-5 space-y-4">

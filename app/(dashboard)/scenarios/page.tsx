@@ -1,10 +1,10 @@
 export const dynamic = 'force-dynamic';
 
 import type { Metadata } from 'next';
-import ScenariosClient from './ScenariosClient';
+import { ScenariosTabs } from './ScenariosTabs';
 
-export const metadata: Metadata = { title: 'Scenario Comparison' };
+export const metadata: Metadata = { title: 'Scenario AI' };
 
 export default function ScenariosPage() {
-  return <ScenariosClient />;
+  return <ScenariosTabs />;
 }

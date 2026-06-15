@@ -7,6 +7,8 @@ import 'server-only';
 import Anthropic from '@anthropic-ai/sdk';
 
 export interface ScenarioInputs {
+  /** Free-text scenario description (natural-language entry). */
+  free_text?: string;
   fico_score?: number; co_borrower_fico?: number;
   income_type?: string; monthly_income?: number; dti?: number; reserves_months?: number;
   loan_type?: string; purpose?: string; loan_amount?: number; property_value?: number; ltv?: number;
@@ -64,7 +66,11 @@ ${ctx.state_licenses?.length ? `\n## Licensed states: ${ctx.state_licenses.join(
 const INCOME_LABEL: Record<string, string> = { w2: 'W-2', self_employed_bank_stmt: 'Self-employed (bank statement)', self_employed_1099: '1099', dscr: 'DSCR (rental income)', asset_depletion: 'Asset depletion', itin: 'ITIN' };
 
 export function buildUserPrompt(i: ScenarioInputs): string {
-  const L: string[] = ['Analyze this loan scenario:', '', '**Borrower**'];
+  const L: string[] = ['Analyze this loan scenario:', ''];
+  if (i.free_text && i.free_text.trim()) {
+    L.push('**Scenario (in the LO’s words)**', i.free_text.trim(), '');
+  }
+  L.push('**Borrower**');
   if (i.fico_score) L.push(`- FICO: ${i.fico_score}${i.co_borrower_fico ? ` / co-borrower ${i.co_borrower_fico}` : ''}`);
   if (i.income_type) L.push(`- Income type: ${INCOME_LABEL[i.income_type] ?? i.income_type}`);
   if (i.monthly_income) L.push(`- Qualifying income: $${i.monthly_income.toLocaleString()}/mo`);
