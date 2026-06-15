@@ -203,9 +203,9 @@ export default async function TodayPage() {
       leadId: lead.id,
       leadName: `${lead.first_name} ${lead.last_name}`,
       title: `${lead.first_name} ${lead.last_name}'s application is incomplete`,
-      subtitle: 'Missing required fields to process',
-      ctaLabel: 'Resume',
-      ctaHref: `/leads/${lead.id}?tab=application`,
+      subtitle: 'Open the smart 1003 to finish & share with the borrower',
+      ctaLabel: 'Open 1003',
+      ctaHref: `/loans/${lead.id}/apply-1003`,
       metadata: { leadId: lead.id },
     });
   }

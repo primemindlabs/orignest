@@ -30,8 +30,7 @@ const NAV: NavGroup[] = [
       { href: '/pipeline', label: 'Loans' },
       { href: '/leads', label: 'Leads' },
       { href: '/speed-to-lead', label: 'Respond Now' },
-      { href: '/my-tasks', label: 'My Queue' },
-      { href: '/applications', label: 'Documents' },
+      { href: '/my-tasks', label: 'To-Do' },
     ],
   },
   {
@@ -45,7 +44,7 @@ const NAV: NavGroup[] = [
     key: 'communicate', label: 'Communicate', icon: MessagesSquare, items: [
       { href: '/inbox', label: 'Inbox' },
       { href: '/campaigns/manager', label: 'Campaigns' },
-      { href: '/dialer/power', label: 'Dialer' },
+      { href: '/dialer', label: 'Dialer' },
       { href: '/calendar', label: 'Calendar' },
     ],
   },
