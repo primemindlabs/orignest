@@ -11,6 +11,8 @@ import {
 const usd = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 const num = (v: string) => Number(v) || 0;
 
+type IncomeTab = 'self_employed' | 'rental' | 'gross_up' | 'dti';
+
 function Field({ label, value, onChange, prefix }: { label: string; value: string; onChange: (v: string) => void; prefix?: string }) {
   return (
     <label className="block">
@@ -74,8 +76,18 @@ export default function IncomeClient() {
   const [dtiIn, setDtiIn] = useState({ income: '', housing: '', debts: '' });
   const d = dti({ monthlyIncome: num(dtiIn.income), proposedHousingPayment: num(dtiIn.housing), otherMonthlyDebts: num(dtiIn.debts) });
 
+  const [tab, setTab] = useState<IncomeTab>('self_employed');
+
+  // Inner-tab navigation — one worksheet at a time (house inner-tab page style).
+  const TABS: { key: IncomeTab; label: string; icon: any }[] = [
+    { key: 'self_employed', label: 'Self-Employed', icon: Briefcase },
+    { key: 'rental', label: 'Rental', icon: Home },
+    { key: 'gross_up', label: 'Gross-Up', icon: Landmark },
+    { key: 'dti', label: 'DTI Ratios', icon: Percent },
+  ];
+
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-5 max-w-3xl">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-[22px] font-semibold text-label tracking-tight">Income Calculators</h1>
@@ -86,6 +98,26 @@ export default function IncomeClient() {
         </Link>
       </div>
 
+      {/* Inner tab bar */}
+      <div className="flex gap-0 border-b border-border overflow-x-auto">
+        {TABS.map((t) => {
+          const Icon = t.icon;
+          const active = tab === t.key;
+          return (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${active ? 'text-[#8A6310]' : 'text-label-2 hover:text-black'}`}
+              style={active ? { borderColor: '#C9A95C' } : { borderColor: 'transparent' }}
+            >
+              <Icon className="w-3.5 h-3.5" strokeWidth={1.75} />
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {tab === 'self_employed' && (
       <Card icon={Briefcase} title="Self-Employed (Fannie 1084 / Freddie 91)" subtitle="2-year average with Schedule C add-backs">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -107,7 +139,9 @@ export default function IncomeClient() {
           {se.declining && <p className="text-[11px] text-danger mt-1.5">⚠ Income declined year-over-year — underwriter review recommended.</p>}
         </div>
       </Card>
+      )}
 
+      {tab === 'rental' && (
       <Card icon={Home} title="Rental Income (Schedule E, 75%)" subtitle="75% of gross rent less full PITIA">
         <div className="grid grid-cols-2 gap-4">
           <Field label="Gross monthly rent" prefix="$" value={rent.gross} onChange={(v) => setRent({ ...rent, gross: v })} />
@@ -118,7 +152,9 @@ export default function IncomeClient() {
           <Result label={r.isLiability ? 'Net monthly (liability)' : 'Net monthly income'} value={usd(r.netMonthly)} accent={!r.isLiability} />
         </div>
       </Card>
+      )}
 
+      {tab === 'gross_up' && (
       <Card icon={Landmark} title="Non-Taxable Gross-Up" subtitle="Social Security & other tax-free income">
         <div className="grid grid-cols-2 gap-4">
           <Field label="Monthly non-taxable income" prefix="$" value={ss.amount} onChange={(v) => setSs({ ...ss, amount: v })} />
@@ -128,7 +164,9 @@ export default function IncomeClient() {
           <Result label="Grossed-up qualifying income" value={usd(grossed)} accent />
         </div>
       </Card>
+      )}
 
+      {tab === 'dti' && (
       <Card icon={Percent} title="DTI Ratios" subtitle="Front-end (housing) and back-end (total debt)">
         <div className="grid grid-cols-3 gap-4">
           <Field label="Monthly income" prefix="$" value={dtiIn.income} onChange={(v) => setDtiIn({ ...dtiIn, income: v })} />
@@ -141,6 +179,7 @@ export default function IncomeClient() {
           {d.backEnd > 43 && <p className="text-[11px] text-danger mt-1.5">Back-end DTI exceeds 43% — may require compensating factors / non-QM.</p>}
         </div>
       </Card>
+      )}
     </div>
   );
 }

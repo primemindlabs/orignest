@@ -2,7 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { redirect } from 'next/navigation';
-import { Megaphone, Sparkles, Users, TrendingUp } from 'lucide-react';
+import { Megaphone, Sparkles, Users, TrendingUp, Library } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { AdCenterClient } from './AdCenterClient';
@@ -58,11 +58,15 @@ export default async function AdCenterPage() {
         ))}
       </div>
 
-      {/* Phase 33 — compliant builder + co-marketing + attribution entry points */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* Phase 33 — compliant builder + library + co-marketing + attribution entry points */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Link href="/ads/builder" className="flex items-center gap-3 bg-white border border-black/[0.06] shadow-sm rounded-2xl px-4 py-3.5 hover:border-[#C9A95C]/40 transition-colors">
           <div className="w-9 h-9 rounded-xl bg-[#C9A95C]/15 flex items-center justify-center flex-shrink-0"><Sparkles size={17} className="text-[#C9A95C]" /></div>
           <div><p className="text-[14px] font-semibold text-[#1C1C1E]">Compliant Ad Builder</p><p className="text-[12px] text-[#8A8A8E]">AI copy + compliance review + export</p></div>
+        </Link>
+        <Link href="/ads/library" className="flex items-center gap-3 bg-white border border-black/[0.06] shadow-sm rounded-2xl px-4 py-3.5 hover:border-[#C9A95C]/40 transition-colors">
+          <div className="w-9 h-9 rounded-xl bg-[#C9A95C]/15 flex items-center justify-center flex-shrink-0"><Library size={17} className="text-[#C9A95C]" /></div>
+          <div><p className="text-[14px] font-semibold text-[#1C1C1E]">Creative Library</p><p className="text-[12px] text-[#8A8A8E]">Saved ad copy — reuse &amp; duplicate</p></div>
         </Link>
         <Link href="/ads/co-marketing" className="flex items-center gap-3 bg-white border border-black/[0.06] shadow-sm rounded-2xl px-4 py-3.5 hover:border-[#C9A95C]/40 transition-colors">
           <div className="w-9 h-9 rounded-xl bg-[#C9A95C]/15 flex items-center justify-center flex-shrink-0"><Users size={17} className="text-[#C9A95C]" /></div>

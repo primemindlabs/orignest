@@ -9,10 +9,11 @@ import { exportToCSV, exportToPDF } from '@/lib/reports/export';
 import {
   presetRange, priorRange, pipelineByStage, overviewMetrics, pctDelta, monthlyVolume,
   stageFunnel, recentFunded, pipelineRows, slowestStage, partnerPerformance, teamPerformance,
-  fmtDollars, type RangePreset, type RLead, type RRealtor, type RProfile,
+  mortgageCallReport, MCR_KINDS,
+  fmtDollars, type RangePreset, type RLead, type RRealtor, type RProfile, type McrKind,
 } from '@/lib/reports/compute';
 
-type Tab = 'overview' | 'pipeline' | 'partners' | 'team';
+type Tab = 'overview' | 'pipeline' | 'partners' | 'team' | 'mcr';
 const PRINT_CSS = `@media print {
   .no-print { display: none !important; }
   body * { visibility: hidden; }
@@ -28,6 +29,7 @@ export function ReportsClient({
   const isManager = ['branch_manager', 'admin', 'manager'].includes(role);
   const [tab, setTab] = useState<Tab>('overview');
   const [preset, setPreset] = useState<RangePreset>('this_month');
+  const [mcrKind, setMcrKind] = useState<McrKind>('activity');
 
   const now = useMemo(() => new Date(nowISO), [nowISO]);
   const realtorById = useMemo(() => new Map(realtors.map((r) => [r.id, r])), [realtors]);
@@ -48,6 +50,7 @@ export function ReportsClient({
       slowest: slowestStage(leads, now),
       partners: partnerPerformance(leads, realtors, range),
       team: isManager ? teamPerformance(leads, team, range) : [],
+      mcr: mortgageCallReport(leads, range),
     };
   }, [preset, now, leads, realtors, realtorById, team, compRate, isManager]);
 
@@ -56,6 +59,7 @@ export function ReportsClient({
     { key: 'pipeline', label: 'Pipeline' },
     { key: 'partners', label: 'Partners' },
     ...(isManager ? [{ key: 'team' as Tab, label: 'Team' }] : []),
+    { key: 'mcr', label: 'Mortgage Call Report' },
   ];
 
   function handleCsv() {
@@ -77,6 +81,17 @@ export function ReportsClient({
         pipeline_volume: Math.round(p.pipeline_volume), funded_volume: Math.round(p.funded_volume),
         pull_through_pct: p.pull_through != null ? Math.round(p.pull_through) : '', avg_loan_size: Math.round(p.avg_loan_size),
       })), name);
+    } else if (tab === 'mcr') {
+      if (mcrKind === 'activity') {
+        exportToCSV(d.mcr.activity.map((r) => ({ line: r.label, count: r.count, amount: Math.round(r.amount) })), `mcr-activity-${preset}`);
+      } else {
+        const rows = mcrKind === 'by_state' ? d.mcr.byState : d.mcr.byPurpose;
+        exportToCSV(rows.map((r) => ({
+          [mcrKind === 'by_state' ? 'state' : 'purpose']: r.key,
+          apps_received: r.appsReceived, apps_amount: Math.round(r.appsAmount),
+          closed: r.closed, closed_amount: Math.round(r.closedAmount),
+        })), `mcr-${mcrKind}-${preset}`);
+      }
     } else {
       exportToCSV(d.team.map((t) => ({
         lo: t.name, funded_volume: Math.round(t.funded_volume), loans: t.funded_count,
@@ -144,7 +159,108 @@ export function ReportsClient({
 
         {/* TEAM */}
         {tab === 'team' && isManager && <TeamTable rows={d.team} />}
+
+        {/* MORTGAGE CALL REPORT */}
+        {tab === 'mcr' && <McrView report={d.mcr} kind={mcrKind} onKind={setMcrKind} range={d.range} />}
       </div>
+    </div>
+  );
+}
+
+// ── NMLS Mortgage Call Report view ────────────────────────────────────────────
+function mcrMoney(n: number): string {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n || 0);
+}
+
+function McrView({
+  report, kind, onKind, range,
+}: {
+  report: ReturnType<typeof mortgageCallReport>;
+  kind: McrKind;
+  onKind: (k: McrKind) => void;
+  range: { start: Date; end: Date };
+}) {
+  const fmtDate = (dt: Date) => dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return (
+    <div className="space-y-4">
+      {/* Sub-kind selector — the "kind of mortgage call report" */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="inline-flex rounded-[10px] border border-border bg-white p-0.5 no-print">
+          {MCR_KINDS.map((k) => (
+            <button
+              key={k.key}
+              onClick={() => onKind(k.key)}
+              className={`px-3.5 py-1.5 text-[13px] font-medium rounded-[8px] transition-colors ${kind === k.key ? 'text-white' : 'text-label-2 hover:text-black'}`}
+              style={kind === k.key ? { background: '#C9A95C' } : undefined}
+            >
+              {k.label}
+            </button>
+          ))}
+        </div>
+        <p className="text-[12px] text-label-3">
+          Reporting period {fmtDate(range.start)} – {fmtDate(range.end)} · NMLS RMLA Section I
+        </p>
+      </div>
+
+      {kind === 'activity' && (
+        <div className="bg-white rounded-2xl border border-black/[0.06] shadow-card overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-black/[0.06] bg-bg">
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-label-3 uppercase">Line</th>
+                <th className="text-right px-4 py-3 text-[11px] font-semibold text-label-3 uppercase">Count</th>
+                <th className="text-right px-4 py-3 text-[11px] font-semibold text-label-3 uppercase">Dollar Amount</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/[0.04]">
+              {report.activity.map((r) => (
+                <tr key={r.label} className="hover:bg-bg">
+                  <td className={`px-4 py-3 text-sm text-label ${r.indent ? 'pl-9 text-label-2' : 'font-medium'}`}>{r.label}</td>
+                  <td className="px-4 py-3 text-sm text-label text-right tabular-nums">{r.count}</td>
+                  <td className="px-4 py-3 text-sm text-label text-right tabular-nums">{mcrMoney(r.amount)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {(kind === 'by_state' || kind === 'by_purpose') && (
+        <div className="bg-white rounded-2xl border border-black/[0.06] shadow-card overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-black/[0.06] bg-bg">
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-label-3 uppercase">{kind === 'by_state' ? 'State' : 'Loan Purpose'}</th>
+                <th className="text-right px-4 py-3 text-[11px] font-semibold text-label-3 uppercase">Apps</th>
+                <th className="text-right px-4 py-3 text-[11px] font-semibold text-label-3 uppercase">App $</th>
+                <th className="text-right px-4 py-3 text-[11px] font-semibold text-label-3 uppercase">Closed</th>
+                <th className="text-right px-4 py-3 text-[11px] font-semibold text-label-3 uppercase">Closed $</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/[0.04]">
+              {(kind === 'by_state' ? report.byState : report.byPurpose).length === 0 ? (
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-sm text-label-3">No activity in this period.</td></tr>
+              ) : (
+                (kind === 'by_state' ? report.byState : report.byPurpose).map((r) => (
+                  <tr key={r.key} className="hover:bg-bg">
+                    <td className="px-4 py-3 text-sm text-label font-medium">{r.key}</td>
+                    <td className="px-4 py-3 text-sm text-label text-right tabular-nums">{r.appsReceived}</td>
+                    <td className="px-4 py-3 text-sm text-label text-right tabular-nums">{mcrMoney(r.appsAmount)}</td>
+                    <td className="px-4 py-3 text-sm text-label text-right tabular-nums">{r.closed}</td>
+                    <td className="px-4 py-3 text-sm text-label text-right tabular-nums">{mcrMoney(r.closedAmount)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <p className="text-[11px] text-label-3">
+        Figures are derived from CRM pipeline data for internal preparation only. Denied/withdrawn lines are dated by
+        application creation, and “in process at period end” is a current snapshot. Reconcile against your LOS before
+        filing the official NMLS Mortgage Call Report.
+      </p>
     </div>
   );
 }

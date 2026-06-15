@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { GraduationCap, Plus, X, ShieldCheck, CheckCircle2, Award, Trash2 } from 'lucide-react';
+import { GraduationCap, Plus, X, ShieldCheck, CheckCircle2, Award, Trash2, Sparkles, Loader2, Wand2 } from 'lucide-react';
 
 export interface Course {
   id: string;
@@ -27,6 +27,7 @@ export interface Enrollment {
 export default function TrainingClient({ courses, enrollments, isAdmin }: { courses: Course[]; enrollments: Enrollment[]; isAdmin: boolean }) {
   const [playing, setPlaying] = useState<Course | null>(null);
   const [building, setBuilding] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const enrollMap = new Map(enrollments.map((e) => [e.course_id, e]));
 
   return (
@@ -37,9 +38,14 @@ export default function TrainingClient({ courses, enrollments, isAdmin }: { cour
           <p className="text-[13px] text-label-2 mt-0.5">Courses, quizzes &amp; compliance certifications</p>
         </div>
         {isAdmin && (
-          <button onClick={() => setBuilding(true)} className="btn-primary inline-flex items-center gap-1.5 text-[13px] font-semibold px-3.5 py-2">
-            <Plus className="w-4 h-4" /> New course
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setGenerating(true)} className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-3.5 py-2 rounded-lg text-white" style={{ background: '#0F1D2E' }}>
+              <Sparkles className="w-4 h-4 text-gold" /> Generate with AI
+            </button>
+            <button onClick={() => setBuilding(true)} className="btn-primary inline-flex items-center gap-1.5 text-[13px] font-semibold px-3.5 py-2">
+              <Plus className="w-4 h-4" /> New course
+            </button>
+          </div>
         )}
       </div>
 
@@ -80,6 +86,147 @@ export default function TrainingClient({ courses, enrollments, isAdmin }: { cour
 
       {playing && <CoursePlayer course={playing} enrollment={enrollMap.get(playing.id)} onClose={() => setPlaying(null)} />}
       {building && <CourseBuilder onClose={() => setBuilding(false)} />}
+      {generating && <AICourseGenerator onClose={() => setGenerating(false)} />}
+    </div>
+  );
+}
+
+// ── AI course generator (Udemy/Thinkific-style) ───────────────────────────────
+interface DraftCourse {
+  title: string;
+  description: string;
+  category: string;
+  lessons: { title: string; content: string }[];
+  questions: { q: string; options: string[]; correct: number }[];
+}
+
+function AICourseGenerator({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
+  const [topic, setTopic] = useState('');
+  const [audience, setAudience] = useState('loan officers');
+  const [lessonCount, setLessonCount] = useState(5);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [draft, setDraft] = useState<DraftCourse | null>(null);
+  const inputCls = 'w-full text-[13px] rounded-lg border border-border px-3 py-2 bg-surface text-label focus:outline-none focus:border-[#C9A95C]';
+
+  const SUGGESTIONS = [
+    'FHA loans from application to closing',
+    'Self-employed borrower income analysis',
+    'TRID timeline & disclosure compliance',
+    'Handling rate objections and closing',
+    'DSCR investor loans 101',
+  ];
+
+  async function generate() {
+    if (!topic.trim()) return toast.error('Enter a topic');
+    setLoading(true);
+    setDraft(null);
+    try {
+      const res = await fetch('/api/training/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, audience, lessonCount }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error ?? 'Generation failed');
+      setDraft(j.course as DraftCourse);
+      toast.success('Course drafted — review and save');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Generation failed');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function save() {
+    if (!draft) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/training/courses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...draft, pass_threshold: 80, is_published: true }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? 'Save failed');
+      toast.success('Course published');
+      onClose();
+      router.refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Save failed');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
+      <div className="bg-surface rounded-2xl border border-border w-full max-w-2xl max-h-[88vh] flex flex-col card-shadow" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <h2 className="text-[16px] font-semibold text-label inline-flex items-center gap-2">
+            <Wand2 className="w-4 h-4 text-[#C9A95C]" /> Generate a course with AI
+          </h2>
+          <button onClick={onClose} className="text-label-3 hover:text-label"><X className="w-5 h-5" /></button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+          {/* Inputs */}
+          <div className="space-y-3">
+            <div>
+              <label className="text-[12px] font-semibold text-label-2">Course topic</label>
+              <input className={inputCls + ' mt-1'} placeholder="e.g. VA loans for first-time buyers" value={topic} onChange={(e) => setTopic(e.target.value)} />
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {SUGGESTIONS.map((s) => (
+                  <button key={s} onClick={() => setTopic(s)} className="text-[11px] px-2 py-1 rounded-full bg-fill text-label-2 hover:text-black transition-colors">{s}</button>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[12px] font-semibold text-label-2">Audience</label>
+                <input className={inputCls + ' mt-1'} value={audience} onChange={(e) => setAudience(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-[12px] font-semibold text-label-2">Lessons</label>
+                <select className={inputCls + ' mt-1'} value={lessonCount} onChange={(e) => setLessonCount(Number(e.target.value))}>
+                  {[3, 4, 5, 6, 7, 8].map((n) => <option key={n} value={n}>{n} lessons</option>)}
+                </select>
+              </div>
+            </div>
+            <button onClick={generate} disabled={loading} className="w-full inline-flex items-center justify-center gap-2 text-[13px] font-semibold px-4 py-2.5 rounded-lg text-white disabled:opacity-50" style={{ background: '#0F1D2E' }}>
+              {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating course…</> : <><Sparkles className="w-4 h-4 text-gold" /> {draft ? 'Regenerate' : 'Generate course'}</>}
+            </button>
+          </div>
+
+          {/* Draft preview */}
+          {draft && (
+            <div className="border-t border-border pt-4 space-y-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-[15px] font-semibold text-label">{draft.title}</h3>
+                  <span className="text-[10px] text-label-3 capitalize border border-border rounded px-1.5 py-0.5">{draft.category}</span>
+                </div>
+                <p className="text-[12.5px] text-label-2 mt-0.5">{draft.description}</p>
+              </div>
+              <div className="space-y-2.5">
+                {draft.lessons.map((l, i) => (
+                  <div key={i} className="rounded-lg border border-border p-3">
+                    <p className="text-[13px] font-semibold text-label">{i + 1}. {l.title}</p>
+                    <p className="text-[12px] text-label-2 mt-1 whitespace-pre-wrap leading-relaxed line-clamp-4">{l.content}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[12px] font-semibold text-label-2">Quiz · {draft.questions.length} questions</p>
+              <p className="text-[11px] text-label-3">Saved as a published course with an 80% pass mark. You can edit it later from the catalog.</p>
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-2 px-5 py-3 border-t border-border">
+          <button onClick={onClose} className="text-[13px] font-medium text-label-2 px-4 py-2">Cancel</button>
+          <button onClick={save} disabled={!draft || saving} className="btn-primary text-[13px] font-semibold px-4 py-2 disabled:opacity-50">{saving ? 'Saving…' : 'Save & publish'}</button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -31,7 +31,7 @@ export default async function ReportsPage() {
   // Managers see the whole org; everyone else sees their own book.
   let leadsQ = sb
     .from('leads')
-    .select('id, first_name, last_name, stage, loan_amount, loan_type, lead_source, created_at, closing_date, actual_close_date, stage_changed_at, assigned_to, referral_realtor_id')
+    .select('id, first_name, last_name, stage, loan_amount, loan_type, lead_source, created_at, closing_date, actual_close_date, stage_changed_at, assigned_to, referral_realtor_id, loan_purpose, property_state')
     .eq('org_id', orgId)
     .limit(5000);
   if (!isManager && profileId) leadsQ = leadsQ.eq('assigned_to', profileId);

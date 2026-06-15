@@ -33,6 +33,8 @@ export interface RLead {
   stage_changed_at: string | null;
   assigned_to: string | null;
   referral_realtor_id: string | null;
+  loan_purpose: string | null;
+  property_state: string | null;
 }
 
 export interface RRealtor {
@@ -280,6 +282,91 @@ export function partnerPerformance(leads: RLead[], realtors: RRealtor[], r: Date
     })
     .filter((p) => p.referrals > 0 || p.funded_count > 0 || p.pipeline_volume > 0)
     .sort((a, b) => b.funded_volume - a.funded_volume);
+}
+
+// ── NMLS Mortgage Call Report (RMLA Section I) ────────────────────────────────
+// The quarterly NMLS Mortgage Call Report's Residential Mortgage Loan Activity
+// section. Computed from leads against the REAL schema; decision-date columns
+// (denied/withdrawn timestamps) don't exist, so those lines are dated by created_at
+// and "in process at period end" is a current snapshot — labeled as approximate.
+export type McrKind = 'activity' | 'by_state' | 'by_purpose';
+
+export const MCR_KINDS: { key: McrKind; label: string }[] = [
+  { key: 'activity', label: 'Loan Activity (RMLA)' },
+  { key: 'by_state', label: 'By State' },
+  { key: 'by_purpose', label: 'By Loan Purpose' },
+];
+
+export interface McrLine { label: string; count: number; amount: number; indent?: boolean }
+export interface McrBreakdownRow { key: string; appsReceived: number; appsAmount: number; closed: number; closedAmount: number }
+export interface McrReport {
+  activity: McrLine[];
+  byState: McrBreakdownRow[];
+  byPurpose: McrBreakdownRow[];
+}
+
+const MCR_PURCHASE = 'purchase';
+const MCR_REFI = ['rate_term_refinance', 'cash_out_refinance'];
+
+function mcrPurposeLabel(p: string | null): string {
+  if (p === 'purchase') return 'Purchase';
+  if (p === 'rate_term_refinance') return 'Refinance — Rate/Term';
+  if (p === 'cash_out_refinance') return 'Refinance — Cash-Out';
+  return 'Other / Not specified';
+}
+
+export function mortgageCallReport(leads: RLead[], r: DateRange): McrReport {
+  const received = leads.filter((l) => createdInRange(l, r));
+  const closed = leads.filter((l) => fundedInRange(l, r));
+  const denied = leads.filter((l) => l.stage === 'declined' && createdInRange(l, r));
+  const withdrawn = leads.filter((l) => l.stage === 'withdrawn' && createdInRange(l, r));
+  const inProcessEnd = leads.filter((l) => ACTIVE_STAGES.includes(l.stage) && new Date(l.created_at) <= r.end);
+
+  const line = (label: string, ls: RLead[], indent = false): McrLine => ({ label, count: ls.length, amount: sumAmt(ls), indent });
+
+  const activity: McrLine[] = [
+    line('Applications received', received),
+    line('Loans closed / funded', closed),
+    line('Purchase', closed.filter((l) => l.loan_purpose === MCR_PURCHASE), true),
+    line('Refinance', closed.filter((l) => l.loan_purpose != null && MCR_REFI.includes(l.loan_purpose)), true),
+    line('Applications denied', denied),
+    line('Applications withdrawn', withdrawn),
+    line('Loans in process at period end', inProcessEnd),
+  ];
+
+  const blank = (key: string): McrBreakdownRow => ({ key, appsReceived: 0, appsAmount: 0, closed: 0, closedAmount: 0 });
+
+  const stateMap = new Map<string, McrBreakdownRow>();
+  for (const l of received) {
+    const k = (l.property_state || 'Unknown').toUpperCase();
+    const row = stateMap.get(k) ?? blank(k);
+    row.appsReceived++; row.appsAmount += l.loan_amount ?? 0;
+    stateMap.set(k, row);
+  }
+  for (const l of closed) {
+    const k = (l.property_state || 'Unknown').toUpperCase();
+    const row = stateMap.get(k) ?? blank(k);
+    row.closed++; row.closedAmount += l.loan_amount ?? 0;
+    stateMap.set(k, row);
+  }
+  const byState = [...stateMap.values()].sort((a, b) => b.closedAmount - a.closedAmount || b.appsReceived - a.appsReceived);
+
+  const purposeMap = new Map<string, McrBreakdownRow>();
+  for (const l of received) {
+    const k = mcrPurposeLabel(l.loan_purpose);
+    const row = purposeMap.get(k) ?? blank(k);
+    row.appsReceived++; row.appsAmount += l.loan_amount ?? 0;
+    purposeMap.set(k, row);
+  }
+  for (const l of closed) {
+    const k = mcrPurposeLabel(l.loan_purpose);
+    const row = purposeMap.get(k) ?? blank(k);
+    row.closed++; row.closedAmount += l.loan_amount ?? 0;
+    purposeMap.set(k, row);
+  }
+  const byPurpose = [...purposeMap.values()].sort((a, b) => b.closedAmount - a.closedAmount);
+
+  return { activity, byState, byPurpose };
 }
 
 // ── team performance (BM) ─────────────────────────────────────────────────────
