@@ -10,7 +10,7 @@ import { isGroupVisible } from '@/lib/navigation/roles';
 import { useNavDrawer } from '@/components/layout/NavDrawerContext';
 import {
   LayoutDashboard, Sun, GitBranch, Users, MessagesSquare, Palette, Percent, Sparkles, BarChart3, ShieldCheck, Settings,
-  ChevronDown, PanelLeftClose, PanelLeftOpen, LogOut, X,
+  ChevronDown, PanelLeftClose, PanelLeftOpen, LogOut, X, HeartHandshake,
 } from 'lucide-react';
 
 /**
@@ -31,12 +31,14 @@ const NAV: NavGroup[] = [
       { href: '/leads', label: 'Leads' },
       { href: '/speed-to-lead', label: 'Respond Now' },
       { href: '/my-tasks', label: 'To-Do' },
+      { href: '/rate-locks', label: 'Rate Locks' },
     ],
   },
   {
     key: 'contacts', label: 'Contacts', icon: Users, items: [
       { href: '/relationships', label: 'Borrowers' },
       { href: '/realtors', label: 'Realtors' },
+      { href: '/discover', label: 'Realtor Discovery' },
       { href: '/lenders', label: 'Lenders & AEs' },
     ],
   },
@@ -45,6 +47,7 @@ const NAV: NavGroup[] = [
       { href: '/inbox', label: 'Inbox' },
       { href: '/campaigns/manager', label: 'Campaigns' },
       { href: '/dialer', label: 'Dialer' },
+      { href: '/ai-agents', label: 'Ashley Autopilot' },
       { href: '/calendar', label: 'Calendar' },
     ],
   },
@@ -58,10 +61,21 @@ const NAV: NavGroup[] = [
   {
     key: 'analyze', label: 'Analyze', icon: Percent, items: [
       { href: '/pricing', label: 'Pricing Engine' },
+      { href: '/rate-sheets', label: 'Rate Sheets' },
       { href: '/scenarios', label: 'Scenario AI' },
       { href: '/income', label: 'Income Calculators' },
       { href: '/dscr', label: 'Non-QM & Commercial' },
+      { href: '/dscr-analyzer', label: 'DSCR Analyzer' },
       { href: '/reports', label: 'Reports' },
+    ],
+  },
+  {
+    key: 'retention', label: 'Retention', icon: HeartHandshake, items: [
+      { href: '/brain', label: 'Ashley Brain' },
+      { href: '/goldmine', label: 'Database Goldmine' },
+      { href: '/equity-loop', label: 'Equity Loop' },
+      { href: '/credit-alerts', label: 'Credit Alerts' },
+      { href: '/credit-repair', label: 'Credit Repair' },
     ],
   },
   {
