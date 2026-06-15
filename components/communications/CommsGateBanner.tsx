@@ -5,7 +5,7 @@
 // Self-contained: fetches its own status, links to /settings/profile to resolve.
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Lock, ArrowRight } from 'lucide-react';
+import { ShieldAlert, ArrowRight } from 'lucide-react';
 
 interface GateStatus {
   allowed: boolean;
@@ -34,11 +34,11 @@ export function CommsGateBanner({ className = '' }: { className?: string }) {
     <div
       className={`flex items-start gap-2.5 px-3.5 py-2.5 rounded-[10px] border border-orange/25 bg-orange/8 ${className}`}
     >
-      <Lock size={15} className="text-orange flex-shrink-0 mt-0.5" />
+      <ShieldAlert size={15} className="text-orange flex-shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0">
-        <p className="text-[12px] font-semibold text-black">Communication locked</p>
+        <p className="text-[12px] font-semibold text-black">Add your NMLS # for compliant messaging</p>
         <p className="text-[12px] text-label-2 mt-0.5">
-          {status.reason ?? 'Configure your sender identity before sending borrower communications.'}
+          {status.reason ?? 'Add your NMLS number (or mark yourself exempt) so borrower messages carry it. You can still send in the meantime.'}
         </p>
       </div>
       <Link

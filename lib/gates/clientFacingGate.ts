@@ -17,8 +17,17 @@ export function isValidNmls(nmls: string | null | undefined): boolean {
   return !!nmls && NMLS_REGEX.test(nmls.trim());
 }
 
-/** True when the LO may send borrower comms: valid NMLS on file OR a self-attested exemption. */
-export async function nmlsGate(sb: SupabaseClient<any, any, any>, profileId: string): Promise<boolean> {
+/**
+ * Phase 138 — the NMLS gate is WARNING-ONLY and never blocks a send. Call sites are
+ * left in place; this returns true so nothing is hard-blocked. Use `nmlsReady` for the
+ * actual readiness status that drives the warning nudge.
+ */
+export async function nmlsGate(_sb: SupabaseClient<any, any, any>, _profileId: string): Promise<boolean> {
+  return true;
+}
+
+/** Live NMLS readiness for STATUS/warnings (valid NMLS on file OR self-attested exemption). */
+export async function nmlsReady(sb: SupabaseClient<any, any, any>, profileId: string): Promise<boolean> {
   const { data } = await sb
     .from('profiles')
     .select('nmls_id, comms_exempt, comms_exempt_reason')
@@ -51,7 +60,7 @@ export async function getGateStatus(
   nmlsId?: string | null,
 ): Promise<GateStatus> {
   // A valid NMLS passed in short-circuits; otherwise fall back to the exemption-aware check.
-  const nmls_set = nmlsId !== undefined && isValidNmls(nmlsId) ? true : await nmlsGate(sb, profileId);
+  const nmls_set = nmlsId !== undefined && isValidNmls(nmlsId) ? true : await nmlsReady(sb, profileId);
   const ae_passed = await aeGate(sb, profileId);
   const blocking: string[] = [];
   if (!nmls_set) blocking.push('Add your NMLS number — or mark yourself NMLS-exempt — in Settings → Profile.');

@@ -12,6 +12,7 @@ import { AskAshleyWidget } from '@/components/dashboard/AskAshleyWidget';
 import { TrialBanner } from '@/components/billing/TrialBanner';
 import { ActionRail } from '@/components/dashboard/ActionRail';
 import { NotificationToaster } from '@/components/notifications/NotificationToaster';
+import { NmlsNudge } from '@/components/layout/NmlsNudge';
 
 export const dynamic = 'force-dynamic';
 
@@ -78,6 +79,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <Topbar role={userRole} />
             <main className="flex-1 overflow-auto pt-14 animate-fade-in">
               <TrialBanner />
+              <NmlsNudge />
               <ActionRail />
               <div className="p-4 sm:p-6">{children}</div>
             </main>

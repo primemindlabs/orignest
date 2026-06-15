@@ -68,15 +68,14 @@ export function commsLockedResponse(status: CommsGateStatus) {
 }
 
 /**
- * One-line route guard. Returns a 403 NextResponse when the signed-in LO is locked,
- * or null when the send may proceed. Usage:
- *   const locked = await commsGateGuard(sb, { clerkUserId: userId, orgId });
- *   if (locked) return locked;
+ * One-line route guard. Phase 138: the NMLS gate is now WARNING-ONLY — it never
+ * blocks a send. We keep the guard call sites intact (so it's trivial to re-enable
+ * a hard block later) but always allow the send through; the missing-NMLS prompt is
+ * surfaced pervasively in the UI via the NmlsNudge banner + /api/me/comms-gate.
  */
 export async function commsGateGuard(
-  sb: Admin,
-  args: { clerkUserId: string; orgId: string }
+  _sb: Admin,
+  _args: { clerkUserId: string; orgId: string }
 ): Promise<NextResponse | null> {
-  const status = await getCommsGateStatus(sb, args);
-  return status.allowed ? null : NextResponse.json(commsLockedResponse(status), { status: 403 });
+  return null;
 }
