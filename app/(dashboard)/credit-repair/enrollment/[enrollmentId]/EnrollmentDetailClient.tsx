@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, Phone, Mail } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { ArrowLeft, Phone, Mail, Send, Loader2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 interface ScorePoint { date: string; exp?: number; eqx?: number; tu?: number; avg?: number }
@@ -30,6 +32,26 @@ const RESP_COLORS: Record<string, string> = {
 
 export function EnrollmentDetailClient({ enrollment, disputes, tradelines }: { enrollment: Enrollment; disputes: Dispute[]; tradelines: Tradeline[] }) {
   const name = enrollment.leads ? `${enrollment.leads.first_name} ${enrollment.leads.last_name}` : 'Borrower';
+  const [inviting, setInviting] = useState(false);
+
+  async function sendInvite() {
+    setInviting(true);
+    try {
+      const res = await fetch('/api/credit-repair/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enrollmentId: enrollment.id }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error ?? 'Could not send invite');
+      const channels = (j.sent as string[] | undefined)?.map((s) => (s.startsWith('sms') ? 'text' : s)).join(' + ') || 'invite';
+      toast.success(`Credit-repair ${channels} sent to ${name}.`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not send invite');
+    } finally {
+      setInviting(false);
+    }
+  }
   const history = (Array.isArray(enrollment.score_history) ? enrollment.score_history : []) as ScorePoint[];
   const chartData = history.map((h) => ({ date: h.date, Experian: h.exp, Equifax: h.eqx, TransUnion: h.tu }));
 
@@ -45,6 +67,9 @@ export function EnrollmentDetailClient({ enrollment, disputes, tradelines }: { e
           <p className="text-sm text-label-2 capitalize">{enrollment.status.replace(/_/g, ' ')} · target {enrollment.target_score} · billing {enrollment.subscription_status}</p>
         </div>
         <div className="flex gap-2">
+          <button onClick={sendInvite} disabled={inviting} className="flex items-center gap-1.5 px-3 py-2 bg-gold-600 text-white text-sm font-semibold rounded-xl hover:bg-gold-700 disabled:opacity-60">
+            {inviting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />} {inviting ? 'Sending…' : 'Send to borrower'}
+          </button>
           {enrollment.leads?.phone && <a href={`tel:${enrollment.leads.phone}`} className="flex items-center gap-1.5 px-3 py-2 bg-blue text-white text-sm font-semibold rounded-xl hover:bg-blue/90"><Phone size={14} /> Call</a>}
           {enrollment.leads?.email && <a href={`mailto:${enrollment.leads.email}`} className="flex items-center gap-1.5 px-3 py-2 border border-black/[0.10] text-label-2 text-sm rounded-xl hover:bg-bg"><Mail size={14} /> Email</a>}
         </div>
