@@ -3,10 +3,10 @@
  * one-click unsubscribe). Append to every outbound marketing email.
  */
 import { createUnsubscribeToken } from '@/lib/email/unsubscribeToken';
+import { appBaseUrl } from '@/lib/appUrl';
 
 export function unsubscribeUrl(orgId: string | null, email: string, leadId?: string | null): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? '';
-  return `${base}/api/unsubscribe?token=${encodeURIComponent(createUnsubscribeToken(orgId, email, leadId))}`;
+  return `${appBaseUrl()}/api/unsubscribe?token=${encodeURIComponent(createUnsubscribeToken(orgId, email, leadId))}`;
 }
 
 export function emailFooter(opts: { companyName: string; address?: string | null; orgId: string | null; email: string; leadId?: string | null }): string {

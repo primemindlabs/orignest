@@ -6,6 +6,7 @@
  * Token: random 32 bytes; only SHA-256(token) stored. White-label LO snapshot. No SSN/DOB.
  */
 import { NextResponse } from 'next/server';
+import { appUrl } from '@/lib/appUrl';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { randomBytes, createHash } from 'crypto';
@@ -54,7 +55,7 @@ export async function POST(req: Request) {
   });
   if (error) { console.error('[certificates]', error); return NextResponse.json({ error: 'save_failed' }, { status: 500 }); }
 
-  const url = `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/certificate/${token}`;
+  const url = appUrl(`/certificate/${token}`);
   return NextResponse.json({ url });
 }
 

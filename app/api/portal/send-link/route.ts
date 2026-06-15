@@ -4,6 +4,7 @@ import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getMyProfileId } from '@/lib/teamChat/access';
 import { nmlsGate } from '@/lib/gates/clientFacingGate';
+import { appUrl } from '@/lib/appUrl';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -84,8 +85,7 @@ export async function POST(req: Request) {
   }
   if (!token) return NextResponse.json({ error: 'Could not create portal link' }, { status: 500 });
 
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? '';
-  const portalUrl = `${base}/status/${token}`;
+  const portalUrl = appUrl(`/status/${token}`);
   const body = `Hi ${lead.first_name ?? 'there'}! Your mortgage portal is ready — track your loan, upload documents, and message me anytime: ${portalUrl}`;
 
   // ── Gated Twilio send (record-only without creds) ───────────────────────────

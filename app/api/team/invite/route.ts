@@ -5,6 +5,7 @@
  * Token: random 32 bytes; only its SHA-256 hash is stored. Email is best-effort.
  */
 import { NextResponse } from 'next/server';
+import { appUrl } from '@/lib/appUrl';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { PLANS } from '@/lib/stripe/plans';
@@ -68,7 +69,7 @@ export async function POST(req: Request) {
   }, { onConflict: 'org_id,email' });
   if (error) return NextResponse.json({ error: 'Failed to create invite' }, { status: 500 });
 
-  const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/invite/${token}`;
+  const inviteUrl = appUrl(`/invite/${token}`);
 
   // Best-effort email (Resend). The shareable link is always returned so the
   // admin can send it manually even if email isn't wired.

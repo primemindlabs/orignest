@@ -5,6 +5,7 @@
  *   PATCH → verify wire instructions by phone (required before use) / revoke token
  */
 import { NextResponse } from 'next/server';
+import { appUrl } from '@/lib/appUrl';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -21,8 +22,7 @@ export async function GET(_req: Request, { params }: { params: { loanId: string 
     sb.from('title_documents').select('id, doc_type, doc_name, uploaded_by_name, uploaded_at, storage_path').eq('org_id', orgId).eq('loan_id', params.loanId).order('uploaded_at', { ascending: false }),
     sb.from('wire_instructions').select('id, account_last4, received_at, verified_at, verification_method, change_flag, change_flag_reason').eq('org_id', orgId).eq('loan_id', params.loanId).order('received_at', { ascending: false }),
   ]);
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? '';
-  return NextResponse.json({ token: token ? { ...token, url: `${base}/title-portal/${token.token}` } : null, documents: docs ?? [], wires: wires ?? [] });
+  return NextResponse.json({ token: token ? { ...token, url: appUrl(`/title-portal/${token.token}`) } : null, documents: docs ?? [], wires: wires ?? [] });
 }
 
 export async function POST(req: Request, { params }: { params: { loanId: string } }) {
@@ -35,8 +35,7 @@ export async function POST(req: Request, { params }: { params: { loanId: string 
   const { data: profile } = await sb.from('profiles').select('id').eq('clerk_user_id', userId).maybeSingle();
   const { data, error } = await sb.from('title_portal_tokens').insert({ org_id: orgId, loan_id: params.loanId, title_company_name: b.title_company_name, title_agent_name: b.title_agent_name ?? null, title_agent_email: b.title_agent_email ?? null, created_by: profile?.id ?? null }).select('token').single();
   if (error || !data) return NextResponse.json({ error: 'save_failed' }, { status: 500 });
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? '';
-  return NextResponse.json({ url: `${base}/title-portal/${data.token}` });
+  return NextResponse.json({ url: appUrl(`/title-portal/${data.token}`) });
 }
 
 export async function PATCH(req: Request, { params }: { params: { loanId: string } }) {

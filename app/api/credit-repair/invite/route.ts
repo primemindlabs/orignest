@@ -11,6 +11,7 @@ import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getMyProfileId } from '@/lib/teamChat/access';
 import { nmlsGate } from '@/lib/gates/clientFacingGate';
+import { appUrl } from '@/lib/appUrl';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -76,8 +77,7 @@ export async function POST(req: Request) {
   }
   if (!token) return NextResponse.json({ error: 'Could not create portal link' }, { status: 500 });
 
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? '';
-  const url = `${base}/status/${token}?tab=credit-repair`;
+  const url = appUrl(`/status/${token}?tab=credit-repair`);
   const first = lead?.first_name ?? 'there';
   const sent: string[] = [];
 

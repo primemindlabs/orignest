@@ -4,6 +4,7 @@
  *   POST → ensure/regenerate
  */
 import { NextResponse } from 'next/server';
+import { appUrl } from '@/lib/appUrl';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { ensureReferralCode } from '@/lib/referrals/referralCodes';
@@ -24,8 +25,7 @@ export async function GET() {
     sb.from('referral_events').select('id', { count: 'exact', head: true }).eq('org_id', orgId).eq('referral_code', code).eq('event_type', 'lead_created'),
     sb.from('referral_events').select('id', { count: 'exact', head: true }).eq('org_id', orgId).eq('referral_code', code).eq('event_type', 'loan_closed'),
   ]);
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? '';
-  return NextResponse.json({ code, url: `${base}/apply?ref=${code}`, stats: { leads_created: referred ?? 0, closed: converted ?? 0 } });
+  return NextResponse.json({ code, url: appUrl(`/apply?ref=${code}`), stats: { leads_created: referred ?? 0, closed: converted ?? 0 } });
 }
 
 export async function POST() {
