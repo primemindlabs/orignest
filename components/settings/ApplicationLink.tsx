@@ -2,15 +2,15 @@
 
 import { useState } from 'react';
 import { IconCopy, IconQrcode, IconShare, IconCheck } from '@tabler/icons-react';
+import { buildApplyUrl } from '@/lib/tenant/applyLinks';
 
 /**
- * Phase 90 — LO application-link card for Settings. Copy / QR / Share.
- * URL is built from the configured app domain (apex ashleyiq.com). QR image is
- * fetched from api.qrserver.com at click time (not bundled).
+ * Phase 90 / 137 — LO application-link card for Settings. Copy / QR / Share.
+ * URL is the branded {brokerage}.ashleyiq.com/{mlo} when subdomains are enabled,
+ * else the path form. QR image is fetched from api.qrserver.com at click time.
  */
-export function ApplicationLink({ slug }: { slug: string }) {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ashleyiq.com';
-  const url = `${base.replace(/\/$/, '')}/apply/${slug}`;
+export function ApplicationLink({ orgSlug, mloSlug }: { orgSlug: string; mloSlug: string }) {
+  const url = buildApplyUrl(orgSlug, mloSlug);
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
   const [copied, setCopied] = useState(false);
 

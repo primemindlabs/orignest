@@ -31,6 +31,8 @@ import { MorningBriefPanel } from '@/components/morning-brief/MorningBriefPanel'
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { AutopilotQueue } from '@/components/autopilot/AutopilotQueue';
 import { ensureApplicationSlug } from '@/lib/auth/slug';
+import { ensureOrgSlug } from '@/lib/tenant/orgSlug';
+import { buildApplyUrl } from '@/lib/tenant/applyLinks';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Command Center' };
@@ -73,8 +75,13 @@ export default async function DashboardPage() {
           application_slug: profile.application_slug,
         })
       : null;
-  const appBase = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://ashleyiq.com').replace(/\/$/, '');
-  const applyUrl = applySlug ? `${appBase}/apply/${applySlug}` : null;
+  // Phase 137 — branded {brokerage}.ashleyiq.com/{mlo} link (path fallback otherwise).
+  let applyUrl: string | null = null;
+  if (applySlug) {
+    const { data: orgRow } = await sb.from('organizations').select('id, name, slug').eq('id', orgId).maybeSingle();
+    const orgSlug = orgRow ? await ensureOrgSlug(sb, { id: orgRow.id, name: orgRow.name ?? null, slug: orgRow.slug ?? null }) : null;
+    if (orgSlug) applyUrl = buildApplyUrl(orgSlug, applySlug);
+  }
 
   // ── Active + recent-terminal leads (org-scoped, optionally narrowed to my book) ──
   let activeQ = sb

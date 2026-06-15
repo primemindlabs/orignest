@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { CreditCard, Users, Building2, Shield, Bell, ChevronRight, Sparkles, Plug, UserCircle, Percent, Lock } from 'lucide-react';
 import { CreditRepairSettingsCard } from './CreditRepairSettingsCard';
 import { ensureApplicationSlug } from '@/lib/auth/slug';
+import { ensureOrgSlug } from '@/lib/tenant/orgSlug';
 import { ApplicationLink } from '@/components/settings/ApplicationLink';
 import { GateReadinessCard } from '@/components/settings/GateReadinessCard';
 
@@ -101,6 +102,10 @@ export default async function SettingsPage() {
       })
     : null;
 
+  // Phase 137 — the brokerage slug ({brokerage} segment of the branded apply link).
+  const { data: orgRow } = await sb.from('organizations').select('id, name, slug').eq('id', orgId).maybeSingle();
+  const orgSlug = orgRow ? await ensureOrgSlug(sb, { id: orgRow.id, name: orgRow.name ?? null, slug: orgRow.slug ?? null }) : null;
+
   return (
     <div className="max-w-2xl space-y-6">
       <div>
@@ -144,7 +149,7 @@ export default async function SettingsPage() {
 
       <GateReadinessCard />
 
-      {applicationSlug && <ApplicationLink slug={applicationSlug} />}
+      {applicationSlug && orgSlug && <ApplicationLink orgSlug={orgSlug} mloSlug={applicationSlug} />}
 
       {/* Settings sections */}
       <div className="bg-surface rounded-card shadow-card border border-border overflow-hidden divide-y divide-border">

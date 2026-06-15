@@ -152,9 +152,13 @@ interface Props {
   leadId: string;
   initialValues: Record<string, unknown>;
   initialStatus: string;
+  /** Override the save endpoint (public token form passes /api/apply/smart/[token]). */
+  saveUrl?: string;
+  /** Public borrower mode: render a success screen on submit, hide "Save draft". */
+  publicMode?: boolean;
 }
 
-export function Smart1003Form({ leadId, initialValues, initialStatus }: Props) {
+export function Smart1003Form({ leadId, initialValues, initialStatus, saveUrl, publicMode }: Props) {
   const [values, setValues] = useState<Record<string, unknown>>(initialValues);
   const [status, setStatus] = useState(initialStatus);
   const [saving, setSaving] = useState(false);
@@ -207,7 +211,7 @@ export function Smart1003Form({ leadId, initialValues, initialStatus }: Props) {
         sections[f.section][f.key] = f.kind === 'number' ? Number(v) : v;
       }
       try {
-        const res = await fetch(`/api/leads/${leadId}/application`, {
+        const res = await fetch(saveUrl ?? `/api/leads/${leadId}/application`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sections, status: newStatus }),
@@ -225,11 +229,26 @@ export function Smart1003Form({ leadId, initialValues, initialStatus }: Props) {
         setSaving(false);
       }
     },
-    [values, leadId]
+    [values, leadId, saveUrl]
   );
 
   // Count visible fields for the progress hint.
   const totalConditional = conditionalFields.size;
+
+  // Public borrower mode: a clean confirmation once submitted.
+  if (publicMode && status === 'submitted') {
+    return (
+      <div className="bg-surface rounded-card shadow-card border border-border p-8 text-center">
+        <div className="mx-auto w-12 h-12 rounded-full bg-green/10 flex items-center justify-center mb-4">
+          <Check size={24} className="text-green" />
+        </div>
+        <h3 className="text-[18px] font-semibold text-black">Application submitted</h3>
+        <p className="text-[14px] text-label-2 mt-1.5 max-w-sm mx-auto">
+          Thank you — your loan officer has been notified and will review your application and reach out shortly.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -283,9 +302,16 @@ export function Smart1003Form({ leadId, initialValues, initialStatus }: Props) {
             Submitted
           </span>
         )}
-        <Button variant="outline" onClick={() => save('draft')} loading={saving}>
-          Save draft
-        </Button>
+        {!publicMode && (
+          <Button variant="outline" onClick={() => save('draft')} loading={saving}>
+            Save draft
+          </Button>
+        )}
+        {publicMode && (
+          <Button variant="outline" onClick={() => save('draft')} loading={saving}>
+            Save & finish later
+          </Button>
+        )}
         <Button onClick={() => save('submitted')} loading={saving}>
           Submit application
         </Button>

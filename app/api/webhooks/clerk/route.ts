@@ -130,9 +130,15 @@ export async function POST(req: Request) {
         // Update the creator's profile with this org
         const { data: org } = await sb
           .from('organizations')
-          .select('id')
+          .select('id, name, slug')
           .eq('clerk_org_id', id)
           .maybeSingle();
+
+        // Phase 137 — give the new org a unique URL slug for branded apply links.
+        if (org?.id) {
+          const { ensureOrgSlug } = await import('@/lib/tenant/orgSlug');
+          await ensureOrgSlug(sb, { id: org.id, name: org.name ?? name, slug: org.slug ?? null });
+        }
 
         if (org?.id) {
           await sb

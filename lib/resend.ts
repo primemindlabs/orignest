@@ -104,6 +104,36 @@ export async function sendSubscriptionCanceledEmail(params: {
 }
 
 /**
+ * Phase 137 — notify the assigned LO that a borrower submitted a branded 1003.
+ */
+export async function sendNewApplicationEmail(params: {
+  to: string;
+  officerName: string;
+  borrowerName: string;
+  leadId: string;
+  orgId?: string | null;
+}): Promise<void> {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ashleyiq.com';
+  await sendCompliantEmail({
+    to: params.to,
+    recipientEmail: params.to,
+    orgId: params.orgId ?? null,
+    leadId: params.leadId,
+    subject: `New 1003 submitted — ${params.borrowerName}`,
+    html: `
+      <div style="font-family: -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="background: #0F1D2E; color: white; padding: 16px 20px; border-radius: 10px; margin-bottom: 24px;">
+          <strong>New digital application received</strong>
+        </div>
+        <p>Hi ${params.officerName},</p>
+        <p><strong>${params.borrowerName}</strong> just completed a digital 1003 through your application link.</p>
+        <a href="${appUrl}/loans/${params.leadId}/application" style="display: inline-block; background: #007AFF; color: white; padding: 12px 24px; border-radius: 12px; text-decoration: none; font-weight: 600;">Review the application</a>
+      </div>
+    `,
+  });
+}
+
+/**
  * Send TRID alert email to assigned loan officer.
  */
 export async function sendTRIDAlertEmail(params: {

@@ -33,7 +33,7 @@ export async function GET() {
 
   const { data: leads } = await sb
     .from('leads')
-    .select('id, first_name, last_name, stage, closing_date, last_contacted_at, created_at')
+    .select('id, first_name, last_name, stage, closing_date, last_contacted_at, created_at, application_submitted_at')
     .eq('org_id', orgId)
     .eq('assigned_to', profile.id)
     .in('stage', ACTIVE)
@@ -61,6 +61,12 @@ export async function GET() {
     const since = l.last_contacted_at ?? l.created_at;
     const stale = Math.floor((Date.now() - new Date(since).getTime()) / 86_400_000);
     if (stale >= 5) items.push({ id: `stale-${l.id}`, type: 'follow_up', label: `${name(l)} — ${stale}d no activity`, href: `/leads/${l.id}`, urgency: 'normal', sort: 50 - Math.min(stale, 49) });
+
+    // Phase 137 — a borrower just submitted a digital 1003 (last 3 days): review it.
+    const sub = daysUntil(l.application_submitted_at);
+    if (sub !== null && sub <= 0 && sub >= -3) {
+      items.push({ id: `app-${l.id}`, type: 'new_application', label: `🆕 ${name(l)} submitted a 1003`, href: `/loans/${l.id}/application`, urgency: 'high', sort: -50 });
+    }
   }
 
   // Open conditions (missing docs proxy).

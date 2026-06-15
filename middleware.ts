@@ -1,5 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 
 const isPublicRoute = createRouteMatcher([
   '/',
@@ -40,7 +40,32 @@ const isPublicRoute = createRouteMatcher([
   '/portal/title/(.*)',     // Title agent portal — token-authenticated, closing-only
 ]);
 
+// Phase 137 — branded application portals on brokerage subdomains.
+// `{brokerage}.ashleyiq.com/{mlo}` is served by `/apply/o/{brokerage}/{mlo}`.
+// Reserved subdomains (the app itself) and /api + /_next + /apply paths are never
+// rewritten. Brokerage subdomains only serve public apply pages, so we rewrite and
+// return immediately — before any auth check.
+const ROOT_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN ?? 'ashleyiq.com';
+const RESERVED = new Set(['', 'www', 'app', 'api', 'admin', 'dev', 'staging', 'preview']);
+
+function subdomainRewrite(request: NextRequest): URL | null {
+  const host = (request.headers.get('host') ?? '').split(':')[0].toLowerCase();
+  if (!host.endsWith(`.${ROOT_DOMAIN}`)) return null;
+  const sub = host.slice(0, -(ROOT_DOMAIN.length + 1));
+  if (RESERVED.has(sub)) return null;
+
+  const p = request.nextUrl.pathname;
+  if (p.startsWith('/api') || p.startsWith('/_next') || p.startsWith('/apply') || p.includes('.')) return null;
+
+  const url = request.nextUrl.clone();
+  url.pathname = `/apply/o/${sub}${p === '/' ? '' : p}`;
+  return url;
+}
+
 export default clerkMiddleware(async (auth, request) => {
+  const rewrite = subdomainRewrite(request);
+  if (rewrite) return NextResponse.rewrite(rewrite);
+
   if (isPublicRoute(request)) return;
 
   // Clerk v5: `auth` is a function returning the auth object (`await` is a safe no-op
