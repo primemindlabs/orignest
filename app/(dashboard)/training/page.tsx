@@ -23,10 +23,19 @@ export default async function TrainingPage() {
   let courseQ = sb.from('lms_courses').select('*').eq('org_id', orgId).order('created_at', { ascending: false });
   if (!isAdmin) courseQ = courseQ.eq('is_published', true);
 
-  const [{ data: courses }, { data: enrollments }] = await Promise.all([
+  const [{ data: courses }, { data: enrollments }, { data: lessonProgress }] = await Promise.all([
     courseQ,
     sb.from('lms_enrollments').select('*').eq('org_id', orgId).eq('profile_id', profileId),
+    profileId
+      ? sb.from('lesson_progress').select('course_id, lesson_index').eq('org_id', orgId).eq('profile_id', profileId)
+      : Promise.resolve({ data: [] as { course_id: string; lesson_index: number }[] }),
   ]);
+
+  // course_id → [completed lesson indices]
+  const progress: Record<string, number[]> = {};
+  for (const p of lessonProgress ?? []) {
+    (progress[p.course_id as string] ??= []).push(p.lesson_index as number);
+  }
 
   const flatCourses: Course[] = (courses ?? []).map((c) => ({
     id: c.id as string,
@@ -60,7 +69,7 @@ export default async function TrainingPage() {
           </Link>
         )}
       </div>
-      <TrainingClient courses={flatCourses} enrollments={myEnrollments} isAdmin={isAdmin} />
+      <TrainingClient courses={flatCourses} enrollments={myEnrollments} progress={progress} isAdmin={isAdmin} />
     </div>
   );
 }
