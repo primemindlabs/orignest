@@ -6,6 +6,7 @@ import { Plus, Download, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { PageShell } from '@/components/ui/PageShell';
 import { Badge } from '@/components/ui/Badge';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { format } from 'date-fns';
@@ -129,7 +130,7 @@ export default async function LeadsPage({
   }
 
   return (
-    <div className="space-y-5 max-w-[1400px]">
+    <PageShell>
       {/* ── Header ──────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-4">
         <div>
@@ -336,6 +337,6 @@ export default async function LeadsPage({
           </div>
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

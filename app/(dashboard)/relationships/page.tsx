@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Users, DollarSign, Repeat, Bell } from 'lucide-react';
+import { PageShell } from '@/components/ui/PageShell';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Relationships' };
@@ -46,7 +47,7 @@ export default async function RelationshipsDashboardPage() {
   const alertCount = rows.filter((r) => r.alert).length;
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <PageShell>
       <div>
         <h1 className="text-[22px] font-bold text-black tracking-tight">Relationships</h1>
         <p className="text-label-2 text-sm mt-0.5">Your book of business — every borrower, ranked by opportunity.</p>
@@ -96,6 +97,6 @@ export default async function RelationshipsDashboardPage() {
         </table>
       </div>
       <p className="text-[12px] text-label-3">Equity and rate-delta populate as DeedMine AVM and current-rate feeds are connected. Borrowers auto-link across loans by email.</p>
-    </div>
+    </PageShell>
   );
 }

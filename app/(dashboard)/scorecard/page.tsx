@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import { buildLOScorecard } from '@/lib/lo/scorecard';
 import { channelConfig } from '@/lib/tenant/channelConfig';
 import { LicenseManager } from './LicenseManager';
+import { PageShell } from '@/components/ui/PageShell';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'My Scorecard' };
@@ -33,7 +34,7 @@ export default async function ScorecardPage() {
   const FUNNEL = card ? [['Apps', card.funnel.apps], ['Submitted', card.funnel.submitted], ['Clear to Close', card.funnel.ctc], ['Closed', card.funnel.closed]] as const : [];
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <PageShell>
       <div>
         <h1 className="text-[22px] font-bold text-[var(--c-text)] tracking-tight">My Scorecard</h1>
         <p className="text-[13px] text-[var(--c-label2)] mt-0.5">Year-to-date production · {cfg.label}</p>
@@ -75,6 +76,6 @@ export default async function ScorecardPage() {
       )}
 
       <LicenseManager initial={(licenses ?? []) as never} />
-    </div>
+    </PageShell>
   );
 }

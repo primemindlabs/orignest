@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ReportsClient } from '@/components/reports/ReportsClient';
+import { PageShell } from '@/components/ui/PageShell';
 import type { RLead, RRealtor, RProfile } from '@/lib/reports/compute';
 
 export const dynamic = 'force-dynamic';
@@ -44,7 +45,7 @@ export default async function ReportsPage() {
   ]);
 
   return (
-    <div className="max-w-5xl">
+    <PageShell>
       <ReportsClient
         role={effectiveRole}
         compRate={compRate}
@@ -53,6 +54,6 @@ export default async function ReportsPage() {
         realtors={(realtors ?? []) as RRealtor[]}
         team={(team ?? []) as RProfile[]}
       />
-    </div>
+    </PageShell>
   );
 }

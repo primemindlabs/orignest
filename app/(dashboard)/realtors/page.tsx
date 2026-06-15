@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { RealtorsHub } from '@/components/realtors/RealtorsHub';
+import { PageShell } from '@/components/ui/PageShell';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Realtors' };
@@ -44,8 +45,8 @@ export default async function RealtorsPage() {
   });
 
   return (
-    <div className="max-w-3xl">
+    <PageShell>
       <RealtorsHub realtors={realtorsWithHeat} assets={assets ?? []} />
-    </div>
+    </PageShell>
   );
 }
