@@ -16,6 +16,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { sendCompliantEmail } from '@/lib/resend';
 import { notify } from '@/lib/notifications/notify';
 import { EVENT_TYPE_LABEL, type OutreachEventType } from '@/lib/outreach/templates';
+import { commsGateGuard } from '@/lib/communications/nmlsGate';
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -38,6 +39,10 @@ export async function POST(_req: Request, { params }: Ctx) {
   if (!orgId) return NextResponse.json({ error: 'No org' }, { status: 403 });
 
   const sb = createAdminClient();
+
+  const locked = await commsGateGuard(sb, { clerkUserId: userId, orgId });
+  if (locked) return locked;
+
   const { data: item } = await sb
     .from('outreach_queue')
     .select('*')

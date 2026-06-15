@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Wand2 } from 'lucide-react';
-import { DesignStudio, type StudioLO, type StudioPartner } from '@/components/design/DesignStudio';
+import { CanvaEditor, type StudioLO, type StudioPartner } from '@/components/design/CanvaEditor';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Design Studio — Co-Marketing' };
@@ -48,7 +48,7 @@ export default async function CoMarketingStudioPage() {
       </div>
 
       <div className="bg-white border border-black/[0.06] shadow-sm rounded-2xl p-5">
-        <DesignStudio surface="co_marketing" lo={lo} partners={studioPartners} />
+        <CanvaEditor surface="co_marketing" lo={lo} partners={studioPartners} />
       </div>
     </div>
   );

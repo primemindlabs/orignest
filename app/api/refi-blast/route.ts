@@ -8,6 +8,7 @@ import { NextResponse } from 'next/server';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { buildBlastMessage, RESPA_DISCLAIMER_VERSION } from '@/lib/refi/constants';
+import { commsGateGuard } from '@/lib/communications/nmlsGate';
 
 export const runtime = 'nodejs';
 
@@ -43,6 +44,10 @@ export async function POST(req: Request) {
     if (!template) return NextResponse.json({ error: 'Message template required' }, { status: 400 });
 
     const sb = createAdminClient();
+
+    const locked = await commsGateGuard(sb, { clerkUserId: userId, orgId });
+    if (locked) return locked;
+
     const { data: caller } = await sb.from('profiles').select('id').eq('clerk_user_id', userId).maybeSingle();
 
     const { data: candidates } = await sb

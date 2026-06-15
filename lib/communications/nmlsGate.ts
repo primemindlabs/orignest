@@ -9,6 +9,7 @@
 // Internal/transactional system mail (billing, TRID alerts to staff) does NOT route
 // through this gate — only LO→borrower outbound does.
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { NextResponse } from 'next/server';
 
 type Admin = SupabaseClient<any, any, any>;
 
@@ -64,4 +65,18 @@ export function commsLockedResponse(status: CommsGateStatus) {
     code: 'COMMS_LOCKED',
     settings_url: '/settings/profile',
   };
+}
+
+/**
+ * One-line route guard. Returns a 403 NextResponse when the signed-in LO is locked,
+ * or null when the send may proceed. Usage:
+ *   const locked = await commsGateGuard(sb, { clerkUserId: userId, orgId });
+ *   if (locked) return locked;
+ */
+export async function commsGateGuard(
+  sb: Admin,
+  args: { clerkUserId: string; orgId: string }
+): Promise<NextResponse | null> {
+  const status = await getCommsGateStatus(sb, args);
+  return status.allowed ? null : NextResponse.json(commsLockedResponse(status), { status: 403 });
 }

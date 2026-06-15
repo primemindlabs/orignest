@@ -10,6 +10,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { personalizeMessage, interpolateTemplate } from '@/lib/campaigns/personalize';
+import { evaluateCommsGate } from '@/lib/communications/nmlsGate';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -57,11 +58,16 @@ export async function POST(req: Request) {
     const { data: step } = await sb.from('campaign_steps').select('*').eq('campaign_id', e.campaign_id).eq('step_number', e.current_step).maybeSingle();
     if (!step) { await sb.from('campaign_enrollments').update({ status: 'completed', exited_at: new Date().toISOString(), exit_reason: 'completed' }).eq('id', e.id); exited++; continue; }
 
-    // Resolve LO/company for personalization.
+    // Resolve LO/company for personalization. The assigned LO must be NMLS-ready
+    // (or exempt) before borrower SMS/email goes out under their identity.
     let loName = 'your loan officer';
+    let loLocked = false;
     if (lead.assigned_to) {
-      const { data: p } = await sb.from('profiles').select('first_name, last_name').eq('id', lead.assigned_to).maybeSingle();
-      if (p) loName = `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim() || loName;
+      const { data: p } = await sb.from('profiles').select('first_name, last_name, nmls_id, comms_exempt, comms_exempt_reason').eq('id', lead.assigned_to).maybeSingle();
+      if (p) {
+        loName = `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim() || loName;
+        loLocked = !evaluateCommsGate(p).allowed;
+      }
     }
     if (!orgName.has(e.org_id)) {
       const { data: o } = await sb.from('organizations').select('name').eq('id', e.org_id).maybeSingle();
@@ -84,11 +90,13 @@ export async function POST(req: Request) {
       if (!lead.phone) delivery = 'skipped_no_contact';
       else if (lead.sms_opt_out) delivery = 'skipped_unsubscribed';
       else if (!lead.sms_consent) delivery = 'skipped_tcpa';
+      else if (loLocked) delivery = 'skipped_comms_locked';
       else delivery = LIVE ? 'sent' : 'recorded';
       // TODO(delivery): when LIVE + consent, send via Twilio here.
     } else {
       if (!lead.email) delivery = 'skipped_no_contact';
       else if (lead.email_opt_out || lead.email_bounced) delivery = 'skipped_unsubscribed';
+      else if (loLocked) delivery = 'skipped_comms_locked';
       else delivery = LIVE ? 'sent' : 'recorded';
       // TODO(delivery): when LIVE, append emailFooter() (CAN-SPAM) + send via Resend.
     }

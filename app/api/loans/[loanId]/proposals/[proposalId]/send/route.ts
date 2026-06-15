@@ -5,6 +5,7 @@ import twilio from 'twilio';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { canSendSMS } from '@/lib/communications/canSendSMS';
+import { commsGateGuard } from '@/lib/communications/nmlsGate';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -23,6 +24,10 @@ export async function POST(request: Request, { params }: { params: { loanId: str
   if (!['email', 'sms'].includes(channel)) return NextResponse.json({ error: 'Invalid channel' }, { status: 400 });
 
   const sb = createAdminClient();
+
+  const locked = await commsGateGuard(sb, { clerkUserId: userId, orgId });
+  if (locked) return locked;
+
   const { data: proposal } = await sb
     .from('loan_proposals')
     .select('id, share_token, lead_id')

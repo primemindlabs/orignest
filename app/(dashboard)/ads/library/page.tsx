@@ -14,13 +14,17 @@ export default async function AdLibraryPage() {
   if (!orgId) redirect('/onboarding');
 
   const sb = createAdminClient();
-  const { data } = await sb
-    .from('ad_creatives')
-    .select('id, ad_type, platform, headline, primary_text, description, cta_type, nmls_number, apr_disclosure, created_at')
-    .eq('org_id', orgId)
-    .eq('is_archived', false)
-    .order('created_at', { ascending: false })
-    .limit(200);
+  const [{ data }, { data: org }, { data: profile }] = await Promise.all([
+    sb
+      .from('ad_creatives')
+      .select('id, ad_type, platform, headline, primary_text, description, cta_type, nmls_number, apr_disclosure, created_at')
+      .eq('org_id', orgId)
+      .eq('is_archived', false)
+      .order('created_at', { ascending: false })
+      .limit(200),
+    sb.from('organizations').select('name').eq('id', orgId).maybeSingle(),
+    sb.from('profiles').select('nmls_id').eq('clerk_user_id', userId).maybeSingle(),
+  ]);
 
   return (
     <div className="max-w-5xl mx-auto space-y-5">
@@ -34,12 +38,16 @@ export default async function AdLibraryPage() {
           </div>
           <div>
             <h1 className="text-[22px] font-bold text-black tracking-tight">Creative Library</h1>
-            <p className="text-[13px] text-label-2">Every saved ad creative — search, reuse, duplicate, and adapt.</p>
+            <p className="text-[13px] text-label-2">Ready-to-use ad templates plus every creative you save — preview, reuse, and adapt.</p>
           </div>
         </div>
       </div>
 
-      <AdLibraryClient initial={(data ?? []) as Creative[]} />
+      <AdLibraryClient
+        initial={(data ?? []) as Creative[]}
+        companyName={org?.name ?? 'Your Company'}
+        nmls={(profile?.nmls_id as string | null) ?? null}
+      />
     </div>
   );
 }

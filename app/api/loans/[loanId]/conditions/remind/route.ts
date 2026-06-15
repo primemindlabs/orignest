@@ -7,6 +7,7 @@ import twilio from 'twilio';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendCompliantEmail } from '@/lib/resend';
+import { commsGateGuard } from '@/lib/communications/nmlsGate';
 
 const CLEARED = ['cleared', 'waived', 'satisfied'];
 function twilioConfigured(): boolean {
@@ -21,6 +22,9 @@ export async function POST(_req: Request, { params }: { params: { loanId: string
   if (!orgId) return NextResponse.json({ error: 'No org' }, { status: 403 });
 
   const sb = createAdminClient();
+
+  const locked = await commsGateGuard(sb, { clerkUserId: userId, orgId });
+  if (locked) return locked;
 
   const { data: conditions } = await sb
     .from('loan_conditions')

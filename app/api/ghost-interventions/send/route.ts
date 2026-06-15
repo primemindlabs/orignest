@@ -9,6 +9,7 @@
 import { NextResponse } from 'next/server';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { commsGateGuard } from '@/lib/communications/nmlsGate';
 
 export const runtime = 'nodejs';
 
@@ -30,6 +31,9 @@ export async function POST(req: Request) {
     if (!message) return NextResponse.json({ error: 'message required' }, { status: 400 });
 
     const sb = createAdminClient();
+
+    const locked = await commsGateGuard(sb, { clerkUserId: userId, orgId });
+    if (locked) return locked;
 
     const { data: intervention } = await sb
       .from('ghost_interventions')
