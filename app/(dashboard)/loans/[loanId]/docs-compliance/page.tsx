@@ -3,6 +3,8 @@ import { getOrgContext } from '@/lib/auth/orgContext';
 import { redirect, notFound } from 'next/navigation';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getTRIDStatus, tridBusinessDaysRemaining } from '@/lib/compliance/trid';
+import { isTridExempt, TRID_EXEMPT_NOTE } from '@/lib/compliance/tridExempt';
+import { ShieldCheck } from 'lucide-react';
 import { TRIDClockWidget } from '@/components/trid/TRIDClockWidget';
 import { TRIDAlertBanner } from '@/components/trid/TRIDAlertBanner';
 import { RateLockCountdown } from '@/components/trid/RateLockCountdown';
@@ -18,12 +20,13 @@ export default async function Page({ params }: { params: { loanId: string } }) {
   const sb = createAdminClient();
   const { data: lead } = await sb
     .from('leads')
-    .select('id, first_name, last_name, stage, application_submitted_at, loan_estimate_sent_at, closing_disclosure_sent_at, closing_date')
+    .select('id, first_name, last_name, stage, loan_type, loan_category, application_submitted_at, loan_estimate_sent_at, closing_disclosure_sent_at, closing_date')
     .eq('id', params.loanId)
     .eq('org_id', orgId)
     .maybeSingle();
   if (!lead) notFound();
 
+  const tridExempt = isTridExempt(lead);
   const status = getTRIDStatus(lead as Parameters<typeof getTRIDStatus>[0]);
   const leDays = status.le_deadline ? tridBusinessDaysRemaining(status.le_deadline) : null;
   const cdDays = status.cd_deadline ? tridBusinessDaysRemaining(status.cd_deadline) : null;
@@ -55,12 +58,22 @@ export default async function Page({ params }: { params: { loanId: string } }) {
         <p className="text-[13px] text-[var(--c-label2)] mt-0.5">TRID delivery clock, rate lock, and the immutable event log.</p>
       </div>
 
-      {banners.map((b) => (
-        <TRIDAlertBanner key={b.type} type={b.type} deadline={b.deadline} daysRemaining={b.days} />
-      ))}
+      {tridExempt ? (
+        <div className="flex items-start gap-2.5 rounded-[12px] border border-[var(--c-border)] bg-[var(--c-fill)] px-4 py-3">
+          <ShieldCheck className="w-4 h-4 text-green flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-[13px] font-semibold text-[var(--c-text)]">TRID does not apply to this file</p>
+            <p className="text-[12px] text-[var(--c-label2)] mt-0.5">{TRID_EXEMPT_NOTE}</p>
+          </div>
+        </div>
+      ) : (
+        banners.map((b) => (
+          <TRIDAlertBanner key={b.type} type={b.type} deadline={b.deadline} daysRemaining={b.days} />
+        ))
+      )}
 
       <div className="flex flex-wrap items-start gap-4">
-        <div className="flex-1 min-w-[280px]"><TRIDClockWidget leadId={params.loanId} /></div>
+        {!tridExempt && <div className="flex-1 min-w-[280px]"><TRIDClockWidget leadId={params.loanId} /></div>}
         {lock?.lock_expires_at && lock.rate != null && lockDays !== null && (
           <div className="bg-[var(--c-surface)] border border-[var(--c-border)] rounded-[12px] p-4">
             <p className="text-[12px] font-semibold text-[var(--c-text)] mb-2">Rate lock</p>
@@ -70,7 +83,7 @@ export default async function Page({ params }: { params: { loanId: string } }) {
         )}
       </div>
 
-      <TRIDEventLog events={(events ?? []) as TridEventRow[]} />
+      {!tridExempt && <TRIDEventLog events={(events ?? []) as TridEventRow[]} />}
     </div>
   );
 }

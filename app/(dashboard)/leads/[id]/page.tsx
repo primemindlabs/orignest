@@ -46,6 +46,7 @@ import {
 } from '@/lib/formatters/mortgage';
 import { TRIDTimeline } from '@/components/compliance/TRIDTimeline';
 import { getTRIDStatus } from '@/lib/compliance/trid';
+import { isTridExempt, TRID_EXEMPT_NOTE } from '@/lib/compliance/tridExempt';
 import { maskSSN } from '@/lib/compliance/encryption';
 import { format, formatDistanceToNow } from 'date-fns';
 import type { LeadStage } from '@/types';
@@ -129,8 +130,10 @@ export default async function LeadDetailPage({
     (lead.loan_type ?? '').toLowerCase().includes(t)
   );
   const isConstructionLoan = (lead.loan_type ?? '').toLowerCase().includes('construction');
+  const tridExempt = isTridExempt(lead);
   const hasTridIssue =
-    trid.le === 'overdue' || trid.le === 'due_today' || trid.cd === 'overdue' || trid.cd === 'blocked';
+    !tridExempt &&
+    (trid.le === 'overdue' || trid.le === 'due_today' || trid.cd === 'overdue' || trid.cd === 'blocked');
 
   // LTV with fallback derivation (Fix 12)
   const displayLtv =
@@ -743,7 +746,13 @@ export default async function LeadDetailPage({
       )}
 
       {/* ════════════════════ COMPLIANCE (was TRID) ════════════════════ */}
-      {activeTab === 'compliance' && (
+      {activeTab === 'compliance' && tridExempt && (
+        <div className="bg-surface rounded-card shadow-card border border-border p-5">
+          <p className="text-[14px] font-semibold text-label">TRID does not apply to this file</p>
+          <p className="text-[13px] text-label-2 mt-1">{TRID_EXEMPT_NOTE}</p>
+        </div>
+      )}
+      {activeTab === 'compliance' && !tridExempt && (
         <div className="bg-surface rounded-card shadow-card border border-border p-5">
           <TRIDTimeline
             tridStatus={trid}
