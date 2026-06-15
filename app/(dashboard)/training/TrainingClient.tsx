@@ -56,7 +56,9 @@ function LessonMedia({ url }: { url: string }) {
   return <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-gold-700 mb-3"><PlayCircle className="w-4 h-4" /> Watch video</a>;
 }
 
-export default function TrainingClient({ courses, enrollments, progress, isAdmin }: { courses: Course[]; enrollments: Enrollment[]; progress: Record<string, number[]>; isAdmin: boolean }) {
+export interface LearnerStats { xp: number; streak: number; lessonsDone: number; coursesCompleted: number }
+
+export default function TrainingClient({ courses, enrollments, progress, stats, isAdmin }: { courses: Course[]; enrollments: Enrollment[]; progress: Record<string, number[]>; stats?: LearnerStats; isAdmin: boolean }) {
   const [playing, setPlaying] = useState<Course | null>(null);
   const [building, setBuilding] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -69,6 +71,22 @@ export default function TrainingClient({ courses, enrollments, progress, isAdmin
 
   return (
     <div className="space-y-6">
+      {stats && (
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-gradient-to-r from-[#0F1D2E] to-[#1a2a3f] text-white px-5 py-4">
+          <div className="flex-1 min-w-[160px]">
+            <p className="text-[13px] text-white/70">Keep your streak alive</p>
+            <p className="text-[17px] font-bold leading-tight">{stats.streak > 0 ? `${stats.streak}-day learning streak 🔥` : 'Start a streak today 🔥'}</p>
+          </div>
+          <div className="flex items-center gap-2.5">
+            {[['🔥', `${stats.streak}d`, 'Streak'], ['⭐', `${stats.xp}`, 'XP'], ['📚', `${stats.lessonsDone}`, 'Lessons'], ['🎓', `${stats.coursesCompleted}`, 'Completed']].map(([icon, val, label]) => (
+              <div key={label} className="text-center bg-white/10 rounded-xl px-3 py-1.5 min-w-[58px]">
+                <p className="text-[15px] font-bold leading-none">{icon} {val}</p>
+                <p className="text-[10px] text-white/60 mt-0.5">{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-[22px] font-semibold text-label tracking-tight">Training</h1>
@@ -380,6 +398,7 @@ function CoursePlayer({ course, enrollment, initialDone, onClose }: { course: Co
                 <h3 className="text-[18px] font-semibold text-label mb-3">{lesson.title}</h3>
                 {lesson.video_url && <LessonMedia url={lesson.video_url} />}
                 <p className="text-[13.5px] text-label-2 whitespace-pre-wrap leading-relaxed">{lesson.content}</p>
+                <LessonTutor lessonTitle={lesson.title} lessonContent={lesson.content} />
                 <div className="flex items-center gap-2 mt-6 pt-4 border-t border-border">
                   {done.has(view as number) ? (
                     <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-success"><CheckCircle2 className="w-4 h-4" /> Completed</span>
@@ -521,6 +540,55 @@ function CourseBuilder({ onClose }: { onClose: () => void }) {
           </div>
         </form>
       </div>
+    </div>
+  );
+}
+
+// Friendly AI tutor — ask Ashley about the current lesson (interactive, not just reading).
+function LessonTutor({ lessonTitle, lessonContent }: { lessonTitle: string; lessonContent: string }) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState('');
+  const [answer, setAnswer] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function ask() {
+    if (!q.trim()) return;
+    setBusy(true); setAnswer(null);
+    try {
+      const res = await fetch('/api/training/tutor', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lessonTitle, lessonContent, question: q }),
+      });
+      const j = await res.json();
+      setAnswer(j.answer ?? j.error ?? 'Try again in a moment.');
+    } catch { setAnswer('The tutor is taking a breather — try again in a moment.'); }
+    finally { setBusy(false); }
+  }
+
+  if (!open) {
+    return (
+      <button onClick={() => setOpen(true)} className="mt-4 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-gold-700 hover:text-gold-800">
+        <Sparkles className="w-3.5 h-3.5" /> Ask Ashley about this lesson
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-4 rounded-xl border border-gold-100 bg-gold-50/50 p-3.5">
+      <div className="flex items-center gap-1.5 mb-2 text-[12px] font-semibold text-gold-800"><Sparkles className="w-3.5 h-3.5" /> Ask Ashley</div>
+      <div className="flex gap-2">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') ask(); }}
+          placeholder="e.g. Can you explain DSCR in simple terms?"
+          className="flex-1 text-[13px] rounded-lg border border-border px-3 py-2 bg-white text-label focus:outline-none"
+        />
+        <button onClick={ask} disabled={busy || !q.trim()} className="btn-primary text-[13px] font-semibold px-3.5 py-2 disabled:opacity-50">
+          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Ask'}
+        </button>
+      </div>
+      {answer && <p className="mt-3 text-[13px] text-label whitespace-pre-wrap leading-relaxed">{answer}</p>}
     </div>
   );
 }

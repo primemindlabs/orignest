@@ -27,8 +27,8 @@ export default async function TrainingPage() {
     courseQ,
     sb.from('lms_enrollments').select('*').eq('org_id', orgId).eq('profile_id', profileId),
     profileId
-      ? sb.from('lesson_progress').select('course_id, lesson_index').eq('org_id', orgId).eq('profile_id', profileId)
-      : Promise.resolve({ data: [] as { course_id: string; lesson_index: number }[] }),
+      ? sb.from('lesson_progress').select('course_id, lesson_index, completed_at').eq('org_id', orgId).eq('profile_id', profileId)
+      : Promise.resolve({ data: [] as { course_id: string; lesson_index: number; completed_at: string }[] }),
   ]);
 
   // course_id → [completed lesson indices]
@@ -36,6 +36,21 @@ export default async function TrainingPage() {
   for (const p of lessonProgress ?? []) {
     (progress[p.course_id as string] ??= []).push(p.lesson_index as number);
   }
+
+  // ── Gamification (Duolingo-style): XP, streak, completions — derived, no new table ──
+  const lessonsDone = (lessonProgress ?? []).length;
+  const coursesCompleted = (enrollments ?? []).filter((e) => e.status === 'completed').length;
+  const xp = lessonsDone * 10 + coursesCompleted * 50;
+  // Consecutive-day streak from distinct completion dates (ending today or yesterday).
+  const days = new Set((lessonProgress ?? []).map((p) => (p.completed_at ? new Date(p.completed_at as string).toDateString() : '')).filter(Boolean));
+  let streak = 0;
+  const cursor = new Date();
+  if (!days.has(cursor.toDateString())) cursor.setDate(cursor.getDate() - 1); // allow "yesterday" to keep a streak alive
+  while (days.has(cursor.toDateString())) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  const stats = { xp, streak, lessonsDone, coursesCompleted };
 
   const flatCourses: Course[] = (courses ?? []).map((c) => ({
     id: c.id as string,
@@ -69,7 +84,7 @@ export default async function TrainingPage() {
           </Link>
         )}
       </div>
-      <TrainingClient courses={flatCourses} enrollments={myEnrollments} progress={progress} isAdmin={isAdmin} />
+      <TrainingClient courses={flatCourses} enrollments={myEnrollments} progress={progress} stats={stats} isAdmin={isAdmin} />
     </div>
   );
 }
