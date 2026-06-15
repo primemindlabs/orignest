@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
+import { AeForumClient } from '@/components/aeConnect/AeForumClient';
 import {
   Search, Star, Building2, Phone, Mail, Globe, ChevronRight,
   Filter, X, Plus, Info, SlidersHorizontal, CheckCircle2, AlertCircle,
@@ -146,7 +147,7 @@ export default function LendersClient({ orgLenders }: Props) {
   const [showFilters, setShowFilters] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showScenarioMatcher, setShowScenarioMatcher] = useState(false);
-  const [activeTab, setActiveTab] = useState<'directory' | 'performance'>('directory');
+  const [activeTab, setActiveTab] = useState<'directory' | 'performance' | 'forum'>('directory');
 
   const allLenders: UnifiedLender[] = useMemo(() => {
     const org = orgLenders.map(dbToUnified);
@@ -251,7 +252,7 @@ export default function LendersClient({ orgLenders }: Props) {
 
       {/* Tabs */}
       <div className="flex gap-1 bg-black/[0.04] rounded-xl p-1 w-fit">
-        {(['directory', 'performance'] as const).map((tab) => (
+        {(['directory', 'performance', 'forum'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -262,7 +263,7 @@ export default function LendersClient({ orgLenders }: Props) {
                 : 'text-label2 hover:text-label'
             )}
           >
-            {tab === 'directory' ? 'Directory' : 'Performance'}
+            {tab === 'directory' ? 'Directory' : tab === 'performance' ? 'Performance' : 'AE Forum'}
           </button>
         ))}
       </div>
@@ -558,8 +559,12 @@ export default function LendersClient({ orgLenders }: Props) {
             </div>
           )}
         </>
-      ) : (
+      ) : activeTab === 'performance' ? (
         <LenderPerformanceTable lenders={allLenders} />
+      ) : (
+        <Suspense fallback={<p className="text-sm text-label2">Loading forum…</p>}>
+          <AeForumClient />
+        </Suspense>
       )}
 
       {showAddModal && (
