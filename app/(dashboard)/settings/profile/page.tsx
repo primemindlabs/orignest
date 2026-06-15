@@ -17,7 +17,7 @@ export default async function ProfileSettingsPage() {
   const sb = createAdminClient();
   const { data: profile } = await sb
     .from('profiles')
-    .select('first_name, last_name, nmls_id, phone, title, email, avatar_url, comp_rate, monthly_volume_goal')
+    .select('first_name, last_name, nmls_id, phone, title, email, avatar_url, comp_rate, monthly_volume_goal, comms_exempt, comms_exempt_reason')
     .eq('clerk_user_id', userId)
     .eq('org_id', orgId)
     .maybeSingle();
@@ -33,6 +33,8 @@ export default async function ProfileSettingsPage() {
     avatar_url: profile?.avatar_url ?? null,
     comp_rate: profile?.comp_rate ?? null,
     monthly_volume_goal: profile?.monthly_volume_goal ?? null,
+    comms_exempt: profile?.comms_exempt ?? false,
+    comms_exempt_reason: profile?.comms_exempt_reason ?? null,
   };
 
   return (

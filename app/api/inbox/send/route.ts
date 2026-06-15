@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import twilio from 'twilio';
 import { createClient } from '@/lib/supabase/server';
 import { sendCompliantEmail } from '@/lib/resend';
+import { evaluateCommsGate, commsLockedResponse } from '@/lib/communications/nmlsGate';
 
 interface SendBody {
   leadId: string | null;
@@ -47,12 +48,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // ── Resolve profile ────────────────────────────────────────────────────────
   const { data: profile } = await sb
     .from('profiles')
-    .select('id, first_name, last_name, email')
+    .select('id, first_name, last_name, email, nmls_id, comms_exempt, comms_exempt_reason')
     .eq('clerk_user_id', userId)
     .maybeSingle();
 
   if (!profile) {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+  }
+
+  // ── NMLS soft-lock (Phase 134) ─────────────────────────────────────────────
+  // Block LO→borrower outbound until the sender has an NMLS number or has attested
+  // an exemption. Cleared in seconds at /settings/profile.
+  const gate = evaluateCommsGate(profile);
+  if (!gate.allowed) {
+    return NextResponse.json(commsLockedResponse(gate), { status: 403 });
   }
 
   // ── TCPA consent check for SMS ─────────────────────────────────────────────

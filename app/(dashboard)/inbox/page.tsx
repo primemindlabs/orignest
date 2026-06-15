@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { CommsGateBanner } from '@/components/communications/CommsGateBanner';
 import { formatDistanceToNow, format } from 'date-fns';
 import Link from 'next/link';
 
@@ -289,6 +290,9 @@ function Composer({ lead, thread, onSent }: ComposerProps) {
 
   return (
     <div className="border-t border-[rgba(60,60,67,0.10)] bg-white p-4 space-y-3">
+      {/* NMLS soft-lock (Phase 134) — shown when the LO's sender identity isn't configured */}
+      <CommsGateBanner />
+
       {/* TCPA warning */}
       {tcpaBlocked && (
         <div className="flex items-center gap-2 px-3 py-2 bg-red/8 border border-red/20 rounded-[10px] text-[12px] text-red font-medium">

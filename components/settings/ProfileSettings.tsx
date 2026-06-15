@@ -19,10 +19,19 @@ export interface ProfileData {
   avatar_url: string | null;
   comp_rate: number | null;
   monthly_volume_goal: number | null;
+  comms_exempt: boolean;
+  comms_exempt_reason: string | null;
 }
 
-function validateNmls(value: string): string | null {
-  if (!value) return 'NMLS # is required for compliance documents.';
+const EXEMPT_REASONS: { value: string; label: string }[] = [
+  { value: 'depository_registered', label: 'Registered MLO at a bank / credit union (covered by my institution’s NMLS)' },
+  { value: 'commercial_only', label: 'Commercial / business-purpose lending only (outside SAFE-Act licensing)' },
+  { value: 'other', label: 'Other — NMLS not required for my role' },
+];
+
+// NMLS is optional only when an exemption is attested; otherwise it must be valid.
+function validateNmls(value: string, exempt: boolean): string | null {
+  if (!value) return exempt ? null : 'NMLS # is required, or mark yourself NMLS-exempt below.';
   if (!NMLS_REGEX.test(value)) return 'NMLS # must be 6–7 digits.';
   return null;
 }
@@ -42,6 +51,9 @@ export function ProfileSettings({ profile, company }: { profile: ProfileData; co
   });
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url ?? null);
   const [nmlsError, setNmlsError] = useState<string | null>(null);
+  const [exempt, setExempt] = useState(profile.comms_exempt ?? false);
+  const [exemptReason, setExemptReason] = useState(profile.comms_exempt_reason ?? 'depository_registered');
+  const [exemptSaving, setExemptSaving] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
@@ -50,8 +62,33 @@ export function ProfileSettings({ profile, company }: { profile: ProfileData; co
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
 
+  // Save the exemption attestation through the dedicated comms-gate endpoint so it
+  // unlocks outbound communication immediately, independent of the profile save.
+  async function persistExemption(nextExempt: boolean, reason: string) {
+    setExemptSaving(true);
+    setError('');
+    try {
+      const res = await fetch('/api/me/comms-gate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ exempt: nextExempt, reason }),
+      });
+      const j = await res.json();
+      if (!res.ok) {
+        setError(j.error ?? 'Could not update exemption.');
+        return;
+      }
+      setExempt(nextExempt);
+      if (nextExempt) setNmlsError(null);
+    } catch {
+      setError('Network error.');
+    } finally {
+      setExemptSaving(false);
+    }
+  }
+
   async function handleSave() {
-    const err = validateNmls(form.nmls_id);
+    const err = validateNmls(form.nmls_id, exempt);
     if (err) {
       setNmlsError(err);
       return;
@@ -177,9 +214,57 @@ export function ProfileSettings({ profile, company }: { profile: ProfileData; co
           onChange={(e) => set('nmls_id', e.target.value.replace(/[^\d]/g, ''))}
           inputMode="numeric"
           maxLength={7}
-          className={inputCls + ' tabular-nums'}
+          disabled={exempt}
+          className={inputCls + ' tabular-nums disabled:bg-bg disabled:text-label-3'}
         />
       </SettingsField>
+
+      {/* NMLS exemption — unlocks outbound communication for LOs who don't carry an
+          individual NMLS number (bank-registered MLOs, commercial-only originators). */}
+      <div className="rounded-xl border border-black/[0.08] p-4 space-y-3" style={{ background: 'rgba(15,29,46,0.02)' }}>
+        <label className="flex items-start gap-2.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={exempt}
+            disabled={exemptSaving}
+            onChange={(e) => {
+              const next = e.target.checked;
+              if (next) persistExemption(true, exemptReason);
+              else persistExemption(false, exemptReason);
+            }}
+            className="mt-0.5 h-4 w-4 rounded accent-[#C9A95C]"
+          />
+          <span className="text-[13px] text-label">
+            <span className="font-semibold">I don’t carry an individual NMLS number.</span>{' '}
+            Attest an exemption to unlock borrower SMS &amp; email.
+          </span>
+        </label>
+
+        {exempt && (
+          <div className="pl-7 space-y-2">
+            <select
+              value={exemptReason}
+              disabled={exemptSaving}
+              onChange={(e) => {
+                setExemptReason(e.target.value);
+                persistExemption(true, e.target.value);
+              }}
+              className={inputCls}
+            >
+              {EXEMPT_REASONS.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+            <p className="flex items-start gap-1.5 text-[11px] text-label-3">
+              <IconInfoCircle size={13} className="flex-shrink-0 mt-px" />
+              You’re attesting this is accurate. If you later add an NMLS number, uncheck this. Compliance documents
+              still require a valid NMLS number where one applies.
+            </p>
+          </div>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <SettingsField label="Phone">
