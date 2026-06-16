@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export const dynamic = 'force-dynamic';
@@ -8,11 +8,11 @@ const VALID_STATUS = ['pending', 'sent', 'responded', 'not_interested', 'convert
 
 // GET — list opportunities (with borrower names) + summary stats.
 export async function GET(): Promise<NextResponse> {
-  const { userId, orgId } = await auth();
+  const { userId, orgId } = await getOrgContext();
   if (!userId || !orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const sb = createAdminClient();
-  const { data: org } = await sb.from('organizations').select('id').eq('clerk_org_id', orgId).maybeSingle();
+  const { data: org } = await sb.from('organizations').select('id').eq('id', orgId).maybeSingle();
   if (!org) return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
 
   const { data, error } = await sb
@@ -41,7 +41,7 @@ export async function GET(): Promise<NextResponse> {
 
 // POST — update an opportunity's outreach status.
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const { userId, orgId } = await auth();
+  const { userId, orgId } = await getOrgContext();
   if (!userId || !orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { opportunity_id, status } = (await req.json()) as { opportunity_id: string; status: string };
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   const sb = createAdminClient();
-  const { data: org } = await sb.from('organizations').select('id').eq('clerk_org_id', orgId).maybeSingle();
+  const { data: org } = await sb.from('organizations').select('id').eq('id', orgId).maybeSingle();
   if (!org) return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
 
   const { error } = await sb

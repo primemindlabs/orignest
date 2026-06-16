@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export const dynamic = 'force-dynamic';
 
 // POST /api/pre-approval/log — record that a pre-approval letter was generated.
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const { userId, orgId } = await auth();
+  const { userId, orgId } = await getOrgContext();
   if (!userId || !orgId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const { data: org } = await sb
     .from('organizations')
     .select('id')
-    .eq('clerk_org_id', orgId)
+    .eq('id', orgId)
     .maybeSingle();
   if (!org) return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
 

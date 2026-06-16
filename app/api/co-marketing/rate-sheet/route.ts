@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { getOrgContext } from '@/lib/auth/orgContext';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
@@ -17,7 +17,7 @@ interface RateSheetRequest {
 
 export async function POST(req: Request): Promise<NextResponse> {
   try {
-    const { userId, orgId } = await auth();
+    const { userId, orgId } = await getOrgContext();
     if (!userId || !orgId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -34,7 +34,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     const [{ data: partner }, { data: lo }, { data: org }] = await Promise.all([
       sb.from('referral_partners').select('*').eq('id', partnerId).maybeSingle(),
       sb.from('profiles').select('*').eq('id', loId).maybeSingle(),
-      sb.from('organizations').select('*').eq('clerk_org_id', orgId).maybeSingle(),
+      sb.from('organizations').select('*').eq('id', orgId).maybeSingle(),
     ]);
 
     if (!partner || !lo || !org) {

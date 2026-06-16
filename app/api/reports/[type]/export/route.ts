@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { runReport, ALLOWED_REPORT_TYPES, type ReportType } from '@/lib/reports';
 
@@ -28,14 +28,14 @@ function toCsv(type: ReportType, data: Record<string, any>): string {
 }
 
 export async function GET(req: NextRequest, { params }: { params: { type: string } }): Promise<NextResponse> {
-  const { userId, orgId } = await auth();
+  const { userId, orgId } = await getOrgContext();
   if (!userId || !orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const type = params.type as ReportType;
   if (!ALLOWED_REPORT_TYPES.includes(type)) return NextResponse.json({ error: 'Invalid report type' }, { status: 400 });
 
   const sb = createAdminClient();
-  const { data: org } = await sb.from('organizations').select('id, name').eq('clerk_org_id', orgId).maybeSingle();
+  const { data: org } = await sb.from('organizations').select('id, name').eq('id', orgId).maybeSingle();
   if (!org) return NextResponse.json({ error: 'Org not found' }, { status: 404 });
   const { data: profile } = await sb.from('profiles').select('id, role').eq('clerk_user_id', userId).eq('org_id', org.id).maybeSingle();
   if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 });

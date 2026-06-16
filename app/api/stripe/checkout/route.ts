@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { getOrgContext } from '@/lib/auth/orgContext';
 import { NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
 import { PLANS } from '@/lib/stripe/plans';
@@ -7,7 +7,7 @@ import type { SubscriptionPlan } from '@/types';
 
 export async function POST(req: Request) {
   try {
-    const { userId, orgId } = await auth();
+    const { userId, orgId } = await getOrgContext();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
       const { data } = await sb
         .from('organizations')
         .select('id, stripe_customer_id')
-        .eq('clerk_org_id', orgId)
+        .eq('id', orgId)
         .maybeSingle();
       orgRecord = data;
     }

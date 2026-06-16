@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { getOrgContext } from '@/lib/auth/orgContext';
 import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -9,7 +9,7 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export async function POST() {
   try {
-    const { userId, orgId } = await auth();
+    const { userId, orgId } = await getOrgContext();
     if (!userId || !orgId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -20,7 +20,7 @@ export async function POST() {
     const { data: org } = await sb
       .from('organizations')
       .select('id')
-      .eq('clerk_org_id', orgId)
+      .eq('id', orgId)
       .single();
 
     if (!org) return NextResponse.json({ error: 'Org not found' }, { status: 404 });

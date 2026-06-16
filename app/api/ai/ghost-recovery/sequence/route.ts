@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import Anthropic from '@anthropic-ai/sdk';
 
@@ -24,14 +24,14 @@ interface SequenceItem {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const { userId, orgId } = await auth();
+  const { userId, orgId } = await getOrgContext();
   if (!userId || !orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { queue_id } = (await req.json()) as { queue_id: string };
   if (!queue_id) return NextResponse.json({ error: 'queue_id required' }, { status: 400 });
 
   const sb = createAdminClient();
-  const { data: org } = await sb.from('organizations').select('id').eq('clerk_org_id', orgId).maybeSingle();
+  const { data: org } = await sb.from('organizations').select('id').eq('id', orgId).maybeSingle();
   if (!org) return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
 
   const { data: item } = await sb

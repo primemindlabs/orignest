@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export const dynamic = 'force-dynamic';
@@ -10,11 +10,11 @@ const ACTIVE_STAGES = ['new_inquiry', 'pre_qual', 'application', 'processing', '
 // GET /api/dialer/queue — callable leads enriched with the fields the priority
 // scorer needs (last contact, stage age, closing date, open-condition count).
 export async function GET(): Promise<NextResponse> {
-  const { userId, orgId } = await auth();
+  const { userId, orgId } = await getOrgContext();
   if (!userId || !orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const sb = createAdminClient();
-  const { data: org } = await sb.from('organizations').select('id').eq('clerk_org_id', orgId).maybeSingle();
+  const { data: org } = await sb.from('organizations').select('id').eq('id', orgId).maybeSingle();
   if (!org) return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
 
   const { data, error } = await sb

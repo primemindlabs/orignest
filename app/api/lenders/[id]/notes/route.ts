@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { getOrgContext } from '@/lib/auth/orgContext';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { z } from 'zod';
@@ -8,7 +8,7 @@ const noteSchema = z.object({
 });
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const { userId, orgId } = await auth();
+  const { userId, orgId } = await getOrgContext();
   if (!userId || !orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   let body: unknown;
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const { data: org } = await supabase
     .from('organizations')
     .select('id')
-    .eq('clerk_org_id', orgId)
+    .eq('id', orgId)
     .maybeSingle();
   if (!org) return NextResponse.json({ error: 'Org not found' }, { status: 404 });
 

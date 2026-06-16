@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { getOrgContext } from '@/lib/auth/orgContext';
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -14,7 +14,7 @@ interface RevokePayload {
  * Only admin/branch_manager can revoke.
  */
 export async function POST(request: Request) {
-  const { userId, orgId } = await auth();
+  const { userId, orgId } = await getOrgContext();
   if (!userId || !orgId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   const { data: org } = await sb
     .from('organizations')
     .select('id')
-    .eq('clerk_org_id', orgId)
+    .eq('id', orgId)
     .maybeSingle();
 
   if (!org) {

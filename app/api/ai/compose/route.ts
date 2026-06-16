@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { getOrgContext } from '@/lib/auth/orgContext';
 import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@/lib/supabase/server';
@@ -41,7 +41,7 @@ const CONTEXT_PROMPTS: Record<ContextType, string> = {
 
 export async function POST(req: Request) {
   try {
-    const { userId, orgId } = await auth();
+    const { userId, orgId } = await getOrgContext();
     if (!userId || !orgId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -158,7 +158,7 @@ export async function POST(req: Request) {
           const { data: orgRow } = await sbAdmin
             .from('organizations')
             .select('id')
-            .eq('clerk_org_id', orgId)
+            .eq('id', orgId)
             .maybeSingle();
 
           if (orgRow) {
