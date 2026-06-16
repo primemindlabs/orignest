@@ -31,6 +31,7 @@ export interface ContentPostRow extends Omit<GeneratedPost, 'status'> {
   id: string;
   package_id: string;
   edited_text: string | null;
+  image_url: string | null;
   lo_approved: boolean;
   scheduled_at: string | null;
   published_at: string | null;

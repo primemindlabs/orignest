@@ -49,6 +49,9 @@ export function PostPreview({ post }: { post: ContentPostRow }) {
   const Icon = PLATFORM_ICON[post.platform];
   const { name, initials } = brandFromFooter(post.nmls_footer);
 
+  const hasImage = !!post.image_url;
+  const inkColor = hasImage ? '#FFFFFF' : theme.ink;
+
   return (
     <div className="rounded-xl overflow-hidden border border-[#E8E4DE] bg-white">
       {/* Designed graphic */}
@@ -56,21 +59,33 @@ export function PostPreview({ post }: { post: ContentPostRow }) {
         className="relative aspect-square p-5 flex flex-col"
         style={{ background: `linear-gradient(145deg, ${theme.from} 0%, ${theme.to} 100%)` }}
       >
-        {/* decorative shapes */}
-        <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full opacity-20" style={{ background: theme.accent }} />
-        <div className="absolute right-6 bottom-20 w-16 h-16 rounded-full opacity-10" style={{ background: theme.accent }} />
+        {hasImage ? (
+          <>
+            {/* Real AI-generated image fills the graphic */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={post.image_url!} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            {/* Dark scrim so the headline stays legible over any photo */}
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.05) 45%, rgba(0,0,0,0.72) 100%)' }} />
+          </>
+        ) : (
+          <>
+            {/* decorative shapes */}
+            <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full opacity-20" style={{ background: theme.accent }} />
+            <div className="absolute right-6 bottom-20 w-16 h-16 rounded-full opacity-10" style={{ background: theme.accent }} />
+          </>
+        )}
 
         {/* brand row */}
         <div className="relative flex items-center gap-2">
           <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold" style={{ background: theme.accent, color: theme.from }}>{initials}</div>
-          <span className="text-[12px] font-semibold tracking-wide" style={{ color: theme.ink }}>{name}</span>
-          <Icon size={15} className="ml-auto opacity-80" style={{ color: theme.ink }} />
+          <span className="text-[12px] font-semibold tracking-wide" style={{ color: inkColor }}>{name}</span>
+          <Icon size={15} className="ml-auto opacity-80" style={{ color: inkColor }} />
         </div>
 
         {/* eyebrow + headline */}
         <div className="relative mt-auto">
           <span className="inline-block text-[10px] font-bold uppercase tracking-[0.14em] px-2 py-0.5 rounded-full mb-2.5" style={{ background: theme.accent, color: theme.from }}>{theme.eyebrow}</span>
-          <p className="text-[22px] leading-[1.18] font-bold" style={{ color: theme.ink }}>{headline}</p>
+          <p className="text-[22px] leading-[1.18] font-bold" style={{ color: inkColor }}>{headline}</p>
         </div>
 
         {/* accent rule */}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { IconBrandLinkedin, IconBrandInstagram, IconBrandFacebook, IconCopy, IconPencil, IconCheck, IconX, IconPhoto } from '@tabler/icons-react';
+import { IconBrandLinkedin, IconBrandInstagram, IconBrandFacebook, IconCopy, IconPencil, IconCheck, IconX, IconPhoto, IconSparkles, IconLoader2 } from '@tabler/icons-react';
 import { auditPostCompliance } from '@/lib/contentStudio/auditPostCompliance';
 import { ComplianceWarning } from './ComplianceWarning';
 import { PostPreview } from './PostPreview';
@@ -20,15 +20,32 @@ const DAY_LABEL = (d: string) => d.charAt(0).toUpperCase() + d.slice(1);
 type Props = {
   post: ContentPostRow;
   onAction: (id: string, action: 'edit' | 'skip' | 'publish', editedText?: string) => Promise<void>;
+  onUpdated: (post: ContentPostRow) => void;
 };
 
-export function ContentPackageCard({ post, onAction }: Props) {
+export function ContentPackageCard({ post, onAction, onUpdated }: Props) {
   const display = cleanPostText(post.edited_text ?? post.post_text);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(display);
   const [busy, setBusy] = useState(false);
+  const [imgBusy, setImgBusy] = useState(false);
   const [view, setView] = useState<'design' | 'text'>('design');
   const Icon = PLATFORM_ICON[post.platform];
+
+  const generateImage = async () => {
+    setImgBusy(true);
+    try {
+      const r = await fetch(`/api/content-studio/post/${post.id}/image`, { method: 'POST' });
+      const d = await r.json();
+      if (!r.ok) { toast.error(d.error ?? 'Could not generate image'); return; }
+      onUpdated(d.post as ContentPostRow);
+      toast.success(post.image_url ? 'New image generated' : 'Image generated');
+    } catch {
+      toast.error('Could not generate image');
+    } finally {
+      setImgBusy(false);
+    }
+  };
 
   const issues = auditPostCompliance(editing ? draft : display);
   const muted = post.status === 'skipped' || post.status === 'published';
@@ -80,7 +97,26 @@ export function ContentPackageCard({ post, onAction }: Props) {
 
       {post.hashtags && !editing && view === 'text' && <p className="text-sm text-[#876830] mt-2">{post.hashtags}</p>}
 
-      {post.image_prompt && !editing && (
+      {!editing && view === 'design' && (
+        <div className="mt-2 flex items-center gap-2 flex-wrap">
+          <button
+            onClick={generateImage}
+            disabled={imgBusy || muted}
+            className="flex items-center gap-1.5 border border-[#C9A95C]/40 bg-[#FFF8ED] text-[#876830] text-xs px-3 py-1.5 rounded-lg hover:bg-[#FDF1DD] disabled:opacity-40"
+          >
+            {imgBusy ? <IconLoader2 size={13} className="animate-spin" /> : <IconSparkles size={13} />}
+            {imgBusy ? 'Generating…' : post.image_url ? 'Regenerate image' : 'Generate AI image'}
+          </button>
+          {post.image_prompt && (
+            <span className="text-[11px] text-[#9A9A95] inline-flex items-center gap-1 min-w-0">
+              <IconPhoto size={12} className="flex-shrink-0" />
+              <span className="truncate max-w-[14rem]">{post.image_prompt}</span>
+            </span>
+          )}
+        </div>
+      )}
+
+      {post.image_prompt && !editing && view === 'text' && (
         <p className="text-xs text-[#6B7B8D] mt-2 flex items-start gap-1.5">
           <IconPhoto size={13} className="flex-shrink-0 mt-0.5" /> {post.image_prompt}
         </p>

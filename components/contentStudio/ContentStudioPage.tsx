@@ -89,7 +89,14 @@ export function ContentStudioPage({ initialPackage, initialPosts }: { initialPac
           <BufferConnectBanner />
           <PlatformTabs value={filter} onChange={setFilter} counts={counts} />
           <div className="space-y-3">
-            {visible.map((p) => <ContentPackageCard key={p.id} post={p} onAction={onAction} />)}
+            {visible.map((p) => (
+              <ContentPackageCard
+                key={p.id}
+                post={p}
+                onAction={onAction}
+                onUpdated={(np) => setPosts((ps) => ps.map((x) => (x.id === np.id ? np : x)))}
+              />
+            ))}
           </div>
         </div>
       )}
