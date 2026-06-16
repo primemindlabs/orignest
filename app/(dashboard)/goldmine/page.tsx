@@ -1,5 +1,6 @@
 // Phase 131 — Database Goldmine™ page (Pro/Growth tier).
 import type { Metadata } from 'next';
+import { BorrowerHubTabs } from '@/components/layout/HubTabs';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { IconPick } from '@tabler/icons-react';
@@ -21,6 +22,7 @@ export default async function GoldminePage() {
 
   return (
     <div className="p-6">
+      <BorrowerHubTabs />
       <div className="flex items-center gap-2 mb-1">
         <IconPick size={22} className="text-[#C9A95C]" />
         <h1 className="text-xl font-semibold text-[#1A1A1A]" style={{ fontFamily: 'var(--font-lora), Lora, serif' }}>

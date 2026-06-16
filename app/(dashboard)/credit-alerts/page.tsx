@@ -1,4 +1,5 @@
 import { getOrgContext } from '@/lib/auth/orgContext';
+import { BorrowerHubTabs } from '@/components/layout/HubTabs';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -33,6 +34,7 @@ export default async function CreditAlertsPage() {
 
   return (
     <div className="max-w-3xl space-y-5">
+      <BorrowerHubTabs />
       <div>
         <h1 className="text-[22px] font-bold text-[var(--c-text)] tracking-tight">Credit Alerts</h1>
         <p className="text-[13px] text-[var(--c-label2)] mt-0.5">{(enrollments ?? []).length} borrowers monitored · {all.length} alerts (30d) · {actioned} actioned · {pending} pending</p>

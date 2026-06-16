@@ -1,4 +1,5 @@
 import { getOrgContext } from '@/lib/auth/orgContext';
+import { LeadsTabs } from '@/components/layout/HubTabs';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { SpeedToLeadClient } from './SpeedToLeadClient';
@@ -12,6 +13,7 @@ export default async function SpeedToLeadPage() {
   if (!orgId) redirect('/onboarding');
   return (
     <div className="max-w-2xl">
+      <LeadsTabs />
       <div className="mb-5">
         <h1 className="text-[22px] font-bold text-[var(--c-text)] tracking-tight">Respond Now</h1>
         <p className="text-[13px] text-[var(--c-label2)] mt-0.5">New leads you haven&rsquo;t reached yet, oldest first. Speed wins loans — the first lender to respond closes far more often.</p>

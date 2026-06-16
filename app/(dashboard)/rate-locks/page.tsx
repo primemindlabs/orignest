@@ -1,4 +1,5 @@
 import { getOrgContext } from '@/lib/auth/orgContext';
+import { BorrowerHubTabs } from '@/components/layout/HubTabs';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ExpiringLocksWidget } from '@/components/rate-lock/ExpiringLocksWidget';
@@ -12,6 +13,7 @@ export default async function RateLocksPage() {
   if (!orgId) redirect('/onboarding');
   return (
     <div className="max-w-2xl">
+      <BorrowerHubTabs />
       <ExpiringLocksWidget />
     </div>
   );

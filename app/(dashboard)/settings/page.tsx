@@ -72,6 +72,12 @@ const SETTINGS_SECTIONS = [
     description: 'Connect your LOS (LendingPad, Arive) for loan status sync',
   },
   {
+    href: '/ai-agents',
+    icon: Sparkles,
+    label: 'Ashley Autopilot',
+    description: 'Always-on AI agents — morning briefing, speed-to-contact, rate watch, doc chase',
+  },
+  {
     href: '/settings/privacy',
     icon: Lock,
     label: 'Privacy & Data',

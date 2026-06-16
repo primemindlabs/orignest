@@ -1,4 +1,5 @@
 import { getOrgContext } from '@/lib/auth/orgContext';
+import { PricingTabs } from '@/components/layout/HubTabs';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { RateSheetParser } from '@/components/tools/RateSheetParser';
@@ -13,6 +14,7 @@ export default async function RateSheetsPage() {
 
   return (
     <div className="max-w-5xl">
+      <PricingTabs />
       <div className="mb-5">
         <h1 className="text-xl font-semibold text-gray-900">AI Rate Sheet Parser</h1>
         <p className="text-sm text-gray-500 mt-0.5">

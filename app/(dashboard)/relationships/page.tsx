@@ -1,4 +1,5 @@
 import { getOrgContext } from '@/lib/auth/orgContext';
+import { BorrowerHubTabs } from '@/components/layout/HubTabs';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -48,6 +49,7 @@ export default async function RelationshipsDashboardPage() {
 
   return (
     <PageShell>
+      <BorrowerHubTabs />
       <div>
         <h1 className="text-[22px] font-bold text-black tracking-tight">Relationships</h1>
         <p className="text-label-2 text-sm mt-0.5">Your book of business — every borrower, ranked by opportunity.</p>

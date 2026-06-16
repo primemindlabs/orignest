@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getOrgContext } from '@/lib/auth/orgContext';
+import { BorrowerHubTabs } from '@/components/layout/HubTabs';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
@@ -78,6 +79,7 @@ export default async function CreditRepairPage() {
 
   return (
     <>
+    <BorrowerHubTabs />
     <ConsumerCreditRepairPanel />
     <CreditRepairClient
       orgId={org.id}

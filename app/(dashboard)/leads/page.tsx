@@ -1,4 +1,5 @@
 import { auth } from '@clerk/nextjs/server';
+import { LeadsTabs } from '@/components/layout/HubTabs';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { redirect } from 'next/navigation';
@@ -131,6 +132,7 @@ export default async function LeadsPage({
 
   return (
     <PageShell>
+      <LeadsTabs />
       {/* ── Header ──────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-4">
         <div>

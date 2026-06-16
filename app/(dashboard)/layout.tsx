@@ -74,7 +74,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <CommandPaletteProvider>
       <NavDrawerProvider>
         <div id="app-shell" className="flex h-screen overflow-hidden bg-bg" style={{ '--sidebar-w': sidebarW } as React.CSSProperties}>
-          <Sidebar userRole={userRole} orgName={org?.name ?? undefined} initialCollapsed={sidebarCollapsed} initialExpanded={sidebarExpanded} />
+          <Sidebar userRole={userRole} orgName={org?.name ?? undefined} channel={(org?.channel as string | undefined) ?? undefined} initialCollapsed={sidebarCollapsed} initialExpanded={sidebarExpanded} />
           <div className="flex-1 flex flex-col min-w-0 transition-[margin] duration-150 lg:ml-[var(--sidebar-w)]">
             <Topbar role={userRole} />
             <main className="flex-1 overflow-auto pt-14 animate-fade-in">

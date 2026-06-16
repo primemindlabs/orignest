@@ -1,4 +1,5 @@
 import { getOrgContext } from '@/lib/auth/orgContext';
+import { BorrowerHubTabs } from '@/components/layout/HubTabs';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { EquityLoopClient } from '@/components/post-close/EquityLoopClient';
@@ -13,5 +14,5 @@ export default async function EquityLoopPage() {
   const { userId, orgId } = await getOrgContext();
   if (!userId) redirect('/sign-in');
   if (!orgId) redirect('/onboarding');
-  return <EquityLoopClient />;
+  return (<><BorrowerHubTabs /><EquityLoopClient /></>);
 }

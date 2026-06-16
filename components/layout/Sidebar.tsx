@@ -10,7 +10,7 @@ import { isGroupVisible } from '@/lib/navigation/roles';
 import { useNavDrawer } from '@/components/layout/NavDrawerContext';
 import {
   LayoutDashboard, Sun, GitBranch, Users, MessagesSquare, Palette, Percent, Sparkles, BarChart3, ShieldCheck, Settings,
-  ChevronDown, PanelLeftClose, PanelLeftOpen, LogOut, X, HeartHandshake,
+  ChevronDown, PanelLeftClose, PanelLeftOpen, LogOut, X, Building2,
 } from 'lucide-react';
 
 /**
@@ -20,7 +20,7 @@ import {
  * Gold left border marks the active group; no blue anywhere.
  */
 interface NavItem { href: string; label: string }
-interface NavGroup { key: string; label: string; icon: React.ElementType; href?: string; items?: NavItem[]; adminOnly?: boolean }
+interface NavGroup { key: string; label: string; icon: React.ElementType; href?: string; items?: NavItem[]; adminOnly?: boolean; directLenderOnly?: boolean }
 
 const NAV: NavGroup[] = [
   { key: 'today', label: 'Today', icon: Sun, href: '/today' },
@@ -29,9 +29,7 @@ const NAV: NavGroup[] = [
     key: 'pipeline', label: 'Pipeline', icon: GitBranch, items: [
       { href: '/pipeline', label: 'Loans' },
       { href: '/leads', label: 'Leads' },
-      { href: '/speed-to-lead', label: 'Respond Now' },
       { href: '/my-tasks', label: 'To-Do' },
-      { href: '/rate-locks', label: 'Rate Locks' },
     ],
   },
   {
@@ -47,7 +45,6 @@ const NAV: NavGroup[] = [
       { href: '/inbox', label: 'Inbox' },
       { href: '/campaigns/manager', label: 'Campaigns' },
       { href: '/dialer', label: 'Dialer' },
-      { href: '/ai-agents', label: 'Ashley Autopilot' },
       { href: '/calendar', label: 'Calendar' },
     ],
   },
@@ -61,21 +58,10 @@ const NAV: NavGroup[] = [
   {
     key: 'analyze', label: 'Analyze', icon: Percent, items: [
       { href: '/pricing', label: 'Pricing Engine' },
-      { href: '/rate-sheets', label: 'Rate Sheets' },
       { href: '/scenarios', label: 'Scenario AI' },
       { href: '/income', label: 'Income Calculators' },
       { href: '/dscr', label: 'Non-QM & Commercial' },
-      { href: '/dscr-analyzer', label: 'DSCR Analyzer' },
       { href: '/reports', label: 'Reports' },
-    ],
-  },
-  {
-    key: 'retention', label: 'Retention', icon: HeartHandshake, items: [
-      { href: '/brain', label: 'Ashley Brain' },
-      { href: '/goldmine', label: 'Database Goldmine' },
-      { href: '/equity-loop', label: 'Equity Loop' },
-      { href: '/credit-alerts', label: 'Credit Alerts' },
-      { href: '/credit-repair', label: 'Credit Repair' },
     ],
   },
   {
@@ -91,8 +77,12 @@ const NAV: NavGroup[] = [
   {
     key: 'management', label: 'Management', icon: BarChart3, adminOnly: true, items: [
       { href: '/branch', label: 'Branch Dashboard' },
-      { href: '/branch/pulse', label: 'Business Pulse' },
       { href: '/branch/team', label: 'Team Performance' },
+    ],
+  },
+  // ── Direct-lender only (AE / wholesale vertical) ──
+  {
+    key: 'wholesale', label: 'Wholesale', icon: Building2, directLenderOnly: true, items: [
       { href: '/ae-book', label: 'AE Book of Business' },
       { href: '/ae-management', label: 'Wholesale Team' },
     ],
@@ -117,9 +107,9 @@ function persistSidebar(state: { collapsed: boolean; expanded: string[] }) {
   }
 }
 
-interface SidebarProps { userRole?: string; orgName?: string; initialCollapsed?: boolean; initialExpanded?: string[] }
+interface SidebarProps { userRole?: string; orgName?: string; channel?: string; initialCollapsed?: boolean; initialExpanded?: string[] }
 
-export function Sidebar({ userRole, orgName, initialCollapsed, initialExpanded }: SidebarProps) {
+export function Sidebar({ userRole, orgName, channel, initialCollapsed, initialExpanded }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useClerk();
@@ -128,7 +118,11 @@ export function Sidebar({ userRole, orgName, initialCollapsed, initialExpanded }
 
   // Phase 57.1 — role-filtered nav. Generalists (lo / branch_manager / admin) keep
   // the full nav exactly as before; specialized roles get a tailored subset.
-  const groups = NAV.filter((g) => isGroupVisible(g.key, g.adminOnly, userRole));
+  const isDirectLender = channel === 'direct_lender' || channel === 'lender';
+  const groups = NAV.filter((g) => {
+    if (g.directLenderOnly && !isDirectLender) return false;
+    return isGroupVisible(g.key, g.adminOnly, userRole);
+  });
 
   // ── Active group via longest-prefix match across all items ──────────────────
   function prefixLen(href: string): number {
