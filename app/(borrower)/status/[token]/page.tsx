@@ -89,7 +89,7 @@ export default async function BorrowerPortalPage({ params }: { params: { token: 
   // Lead data — NO financial PII, credit score, SSN, income
   const { data: lead } = await sb
     .from('leads')
-    .select('id,first_name,email,stage,trid_status,le_sent_date,cd_sent_date,closing_date,assigned_to')
+    .select('id,first_name,email,stage,loan_estimate_sent_at,closing_disclosure_sent_at,closing_date,assigned_to')
     .eq('id', portalToken.lead_id)
     .eq('org_id', portalToken.org_id)
     .single();
@@ -211,8 +211,8 @@ export default async function BorrowerPortalPage({ params }: { params: { token: 
         status: d.status,
       }))}
       trid={
-        lead.trid_status !== 'pending'
-          ? { leSentDate: lead.le_sent_date, cdSentDate: lead.cd_sent_date, closingDate: lead.closing_date }
+        lead.loan_estimate_sent_at || lead.closing_disclosure_sent_at
+          ? { leSentDate: lead.loan_estimate_sent_at, cdSentDate: lead.closing_disclosure_sent_at, closingDate: lead.closing_date }
           : null
       }
       lo={lo ? { name: `${lo.first_name} ${lo.last_name}`, phone: lo.phone, nmls: lo.nmls_id, avatarUrl: lo.avatar_url, title: lo.title } : null}

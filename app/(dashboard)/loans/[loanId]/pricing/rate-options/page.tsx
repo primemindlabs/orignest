@@ -46,7 +46,7 @@ export default async function Page({ params }: { params: { loanId: string } }) {
   const sb = createAdminClient();
   const { data: lead } = await sb
     .from('leads')
-    .select('id, credit_score, loan_type, loan_purpose, loan_amount, estimated_value, purchase_price, down_payment, ltv')
+    .select('id, credit_score, loan_type, loan_purpose, loan_amount, estimated_value, down_payment, ltv')
     .eq('id', params.loanId)
     .eq('org_id', orgId)
     .maybeSingle();
@@ -57,12 +57,7 @@ export default async function Page({ params }: { params: { loanId: string } }) {
   const loanType = lead.loan_type ? String(lead.loan_type).toLowerCase() : null;
   const loanPurpose = normalizePurpose(lead.loan_purpose ?? null);
   const loanAmount = lead.loan_amount != null ? Number(lead.loan_amount) : 0;
-  const propertyValue =
-    lead.estimated_value != null
-      ? Number(lead.estimated_value)
-      : lead.purchase_price != null
-        ? Number(lead.purchase_price)
-        : 0;
+  const propertyValue = lead.estimated_value != null ? Number(lead.estimated_value) : 0;
 
   let ltv: number | null = lead.ltv != null ? Number(lead.ltv) : null;
   if ((ltv == null || !Number.isFinite(ltv)) && loanAmount > 0 && propertyValue > 0) {

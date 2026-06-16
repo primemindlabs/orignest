@@ -1,7 +1,7 @@
-import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getOrgContext } from '@/lib/auth/orgContext';
 
 export const runtime = 'nodejs';
 
@@ -21,7 +21,7 @@ interface CoachRequest {
 
 export async function POST(req: Request) {
   try {
-    const { userId, orgId } = await auth();
+    const { userId, orgId } = await getOrgContext();
     if (!userId || !orgId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
