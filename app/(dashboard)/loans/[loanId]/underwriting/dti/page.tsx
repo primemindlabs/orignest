@@ -2,6 +2,8 @@ import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect, notFound } from 'next/navigation';
 import { DtiWorksheet } from './DtiWorksheet';
+import { DscrWorksheet } from './DscrWorksheet';
+import { isTridExempt } from '@/lib/compliance/tridExempt';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,8 +13,21 @@ export default async function DtiPage({ params }: { params: { loanId: string } }
   if (!orgId) redirect('/onboarding');
 
   const sb = createAdminClient();
-  const { data: lead } = await sb.from('leads').select('id').eq('id', params.loanId).eq('org_id', orgId).maybeSingle();
+  const { data: lead } = await sb.from('leads').select('id, loan_type, loan_category').eq('id', params.loanId).eq('org_id', orgId).maybeSingle();
   if (!lead) notFound();
+
+  // DSCR / non-QM / commercial qualify on the property's DSCR ratio, not borrower DTI.
+  if (isTridExempt(lead)) {
+    return (
+      <div className="max-w-2xl space-y-4">
+        <div>
+          <h1 className="text-[20px] font-bold text-[var(--c-text)] tracking-tight">DSCR Analysis</h1>
+          <p className="text-[13px] text-[var(--c-label2)] mt-0.5">This business-purpose loan qualifies on property cash flow (rent ÷ PITIA), not borrower DTI.</p>
+        </div>
+        <DscrWorksheet initial={{ monthlyRent: 0, pitia: 0 }} />
+      </div>
+    );
+  }
 
   let { data: dti } = await sb.from('dti_worksheets').select('*').eq('lead_id', params.loanId).maybeSingle();
   if (!dti) {

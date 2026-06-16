@@ -51,7 +51,9 @@ const LOAN_NAV: NavSection[] = [
   {
     key: 'underwriting', label: 'Underwriting', href: '/underwriting', icon: Shield,
     sub: [
-      { label: 'DTI Worksheet', href: '/underwriting/dti' },
+      // DSCR / non-QM business-purpose loans qualify on the property's DSCR ratio, not borrower DTI.
+      { label: 'DTI Worksheet', href: '/underwriting/dti', showIf: (c) => !c.is_business_purpose },
+      { label: 'DSCR Analysis', href: '/underwriting/dti', showIf: (c) => c.is_business_purpose },
       { label: 'Income Analysis', href: '/underwriting/income' },
       { label: 'Assets & Reserves', href: '/underwriting/assets' },
       { label: 'Credit Analysis', href: '/underwriting/credit' },

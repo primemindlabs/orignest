@@ -25,6 +25,9 @@ export type LoanContext = {
   loan_amount: number;
   is_self_employed: boolean;
   is_military: boolean;
+  /** residential | non_agency | commercial — drives TRID/DTI vs DSCR adaptation. */
+  loan_category: 'residential' | 'non_agency' | 'commercial';
+  is_business_purpose: boolean;
 };
 
 // ── Vocabulary maps: real leads.* values → LoanContext enums ─────────────────
@@ -72,6 +75,11 @@ export interface ApplicationLike {
 
 export function deriveLoanContext(lead: LeadLike, app?: ApplicationLike | null): LoanContext {
   const loan_program = PROGRAM_MAP[lead.loan_type ?? ''] ?? 'Conventional';
+  const lt = (lead.loan_type ?? '').toLowerCase();
+  const loan_category: LoanContext['loan_category'] =
+    lt.startsWith('commercial') ? 'commercial'
+    : (lt.startsWith('dscr') || lt.startsWith('non_qm') || lt.includes('bank_stmt') || lt.includes('1099') || lt.includes('asset_depletion') || lt.includes('itin')) ? 'non_agency'
+    : 'residential';
   const transaction_type = TRANSACTION_MAP[lead.loan_purpose ?? ''] ?? 'Purchase';
   const occupancy = OCCUPANCY_MAP[lead.occupancy_type ?? ''] ?? 'Primary';
   const property_type = PROPERTY_MAP[lead.property_type ?? ''] ?? 'SFR';
@@ -104,5 +112,7 @@ export function deriveLoanContext(lead: LeadLike, app?: ApplicationLike | null):
     loan_amount,
     is_self_employed: employment_type === 'Self-Employed',
     is_military: loan_program === 'VA' || employment_type === 'Military',
+    loan_category,
+    is_business_purpose: loan_category === 'non_agency' || loan_category === 'commercial',
   };
 }
