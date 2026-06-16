@@ -231,9 +231,24 @@ function Composer({ lead, thread, onSent }: ComposerProps) {
   const [sending, setSending] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [attachment, setAttachment] = useState<{ name: string; content: string } | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const tcpaBlocked = channel === 'sms' && lead && !lead.sms_consent;
+
+  function onPickAttachment(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) { setError('Attachment too large (max 8 MB).'); e.target.value = ''; return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      setAttachment({ name: file.name, content: dataUrl.split(',')[1] ?? '' });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }
 
   async function handleSend() {
     if (!body.trim() || sending || tcpaBlocked) return;
@@ -248,6 +263,7 @@ function Composer({ lead, thread, onSent }: ComposerProps) {
           channel,
           body: body.trim(),
           toAddress: channel === 'sms' ? lead?.phone : lead?.email,
+          attachment: channel === 'email' ? attachment : null,
         }),
       });
       if (!res.ok) {
@@ -255,6 +271,7 @@ function Composer({ lead, thread, onSent }: ComposerProps) {
         setError(e ?? 'Send failed');
       } else {
         setBody('');
+        setAttachment(null);
         onSent();
       }
     } catch {
@@ -351,12 +368,17 @@ function Composer({ lead, thread, onSent }: ComposerProps) {
         />
         <div className="flex items-center gap-1.5 flex-shrink-0 pb-0.5">
           {channel === 'email' && (
-            <button
-              className="p-1.5 rounded-[8px] text-label-3 hover:text-label-2 hover:bg-[rgba(60,60,67,0.07)] transition-colors"
-              aria-label="Attach file"
-            >
-              <Paperclip size={15} />
-            </button>
+            <>
+              <input ref={fileRef} type="file" className="hidden" onChange={onPickAttachment} />
+              <button
+                onClick={() => fileRef.current?.click()}
+                className={clsx('p-1.5 rounded-[8px] transition-colors', attachment ? 'text-blue bg-blue/10' : 'text-label-3 hover:text-label-2 hover:bg-[rgba(60,60,67,0.07)]')}
+                aria-label="Attach file"
+                title={attachment ? attachment.name : 'Attach file'}
+              >
+                <Paperclip size={15} />
+              </button>
+            </>
           )}
           <button
             onClick={handleAiDraft}
@@ -517,7 +539,10 @@ export default function InboxPage() {
         <div className="px-4 pt-4 pb-3 border-b border-[rgba(60,60,67,0.08)]">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-[17px] font-bold text-black">Inbox</h2>
-            <button className="flex items-center gap-1 h-7 px-2.5 rounded-[8px] bg-blue text-white text-[12px] font-medium hover:bg-blue/90 transition-colors">
+            <button
+              onClick={() => document.getElementById('inbox-search')?.focus()}
+              className="flex items-center gap-1 h-7 px-2.5 rounded-[8px] bg-blue text-white text-[12px] font-medium hover:bg-blue/90 transition-colors"
+            >
               <Plus size={13} />
               New
             </button>
@@ -526,6 +551,7 @@ export default function InboxPage() {
           <div className="relative">
             <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-label-3" />
             <input
+              id="inbox-search"
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

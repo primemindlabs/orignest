@@ -35,6 +35,7 @@ export async function sendCompliantEmail(params: {
   orgId?: string | null;
   recipientEmail?: string;
   leadId?: string | null;
+  attachments?: { filename: string; content: string }[];
 }): Promise<{ id?: string } | undefined> {
   const { complianceFooterHtml, complianceFooterText, requirePhysicalAddress } = await import('@/lib/email/footer');
   const recipient = params.recipientEmail ?? (Array.isArray(params.to) ? params.to[0] : params.to);
@@ -48,6 +49,7 @@ export async function sendCompliantEmail(params: {
   if (params.html == null && params.text == null) requirePhysicalAddress(); // gate even when body is templated elsewhere
   if (params.replyTo) payload.replyTo = params.replyTo;
   if (params.headers) payload.headers = params.headers;
+  if (params.attachments?.length) payload.attachments = params.attachments;
 
   const resend = getResend();
   const { data } = await resend.emails.send(payload as unknown as Parameters<typeof resend.emails.send>[0]);

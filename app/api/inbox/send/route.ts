@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgContext } from '@/lib/auth/orgContext';
 import twilio from 'twilio';
 import { createClient } from '@/lib/supabase/server';
 import { sendCompliantEmail } from '@/lib/resend';
-import { evaluateCommsGate, commsLockedResponse } from '@/lib/communications/nmlsGate';
 
 interface SendBody {
   leadId: string | null;
@@ -11,10 +10,11 @@ interface SendBody {
   body: string;
   toAddress: string;
   subject?: string;
+  attachment?: { name: string; content: string } | null;
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const { userId, orgId } = await auth();
+  const { userId, orgId } = await getOrgContext();
   if (!userId || !orgId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -34,11 +34,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const sb = createClient();
 
-  // ── Resolve org UUID ───────────────────────────────────────────────────────
+  // ── Resolve org UUID (getOrgContext returns the Supabase uuid directly) ──────
   const { data: org } = await sb
     .from('organizations')
     .select('id')
-    .eq('clerk_org_id', orgId)
+    .eq('id', orgId)
     .maybeSingle();
 
   if (!org) {
@@ -56,13 +56,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
   }
 
-  // ── NMLS soft-lock (Phase 134) ─────────────────────────────────────────────
-  // Block LO→borrower outbound until the sender has an NMLS number or has attested
-  // an exemption. Cleared in seconds at /settings/profile.
-  const gate = evaluateCommsGate(profile);
-  if (!gate.allowed) {
-    return NextResponse.json(commsLockedResponse(gate), { status: 403 });
-  }
+  // NMLS gate is warning-only (Phase 138) — surfaced via the in-app nudge, never blocks a send.
 
   // ── TCPA consent check for SMS ─────────────────────────────────────────────
   if (channel === 'sms' && leadId) {
@@ -115,6 +109,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       leadId,
       subject: subject ?? `Message from ${profile.first_name} ${profile.last_name}`,
       html: `<div style="font-family:-apple-system,sans-serif;max-width:600px;margin:0 auto;padding:32px 20px;color:#1c1c1e;line-height:1.6;">${body.replace(/\n/g, '<br/>')}</div>`,
+      attachments: payload.attachment ? [{ filename: payload.attachment.name, content: payload.attachment.content }] : undefined,
     });
     externalMessageId = emailResult?.id;
   }
