@@ -102,10 +102,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (body.status === 'submitted') update.submitted_at = new Date().toISOString();
   }
 
-  // Mirror the loan amount onto the lead-facing loan_amount when provided.
-  const loanAmount = Number(body.sections?.loan_data?.loan_amount);
-  if (Number.isFinite(loanAmount) && loanAmount > 0) update.loan_amount = loanAmount;
-
   const sb = createAdminClient();
   const { data, error } = await sb
     .from('loan_applications')
@@ -116,5 +112,22 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Propagate the canonical loan fields onto the leads row so the pipeline, PPE,
+  // LTV and commission (which all read leads.*) reflect 1003 edits everywhere.
+  // (appraised_value in the 1003 maps to the leads.estimated_value value column.)
+  const ld = body.sections?.loan_data ?? {};
+  const num = (v: unknown) => (v === '' || v == null ? undefined : Number(v));
+  const str = (v: unknown) => (v === '' || v == null ? undefined : String(v));
+  const leadSync: Record<string, unknown> = {};
+  const la = num(ld.loan_amount); if (la !== undefined && Number.isFinite(la)) leadSync.loan_amount = la;
+  const av = num(ld.appraised_value); if (av !== undefined && Number.isFinite(av)) leadSync.estimated_value = av;
+  for (const [src, dst] of [['loan_type', 'loan_type'], ['loan_purpose', 'loan_purpose'], ['property_type', 'property_type'], ['occupancy_type', 'occupancy_type']] as const) {
+    const v = str(ld[src]); if (v !== undefined) leadSync[dst] = v;
+  }
+  if (Object.keys(leadSync).length) {
+    await sb.from('leads').update(leadSync).eq('id', params.id).eq('org_id', orgId);
+  }
+
   return NextResponse.json({ application: data });
 }

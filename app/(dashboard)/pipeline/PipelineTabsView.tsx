@@ -31,7 +31,8 @@ const ACTIVE_STAGES = [
 ];
 
 function Row({ lead, compRate, closed, showLo }: { lead: PipelineLead; compRate: number; closed?: boolean; showLo?: boolean }) {
-  const commission = (lead.loan_amount ?? 0) * (compRate / 100);
+  const effectiveRate = lead.commission_rate ?? compRate;
+  const commission = (lead.loan_amount ?? 0) * (effectiveRate / 100);
   return (
     <Link href={`/leads/${lead.id}`} className="grid grid-cols-[2.2fr_1fr_1.2fr_1fr] gap-2 px-4 py-3 border-b border-[var(--color-border-tertiary)] items-center hover:bg-[#fdfbf7] transition-colors text-sm last:border-b-0">
       <div className="flex items-center gap-2.5 min-w-0">
@@ -63,7 +64,7 @@ function Row({ lead, compRate, closed, showLo }: { lead: PipelineLead; compRate:
         )}
       </div>
       <div className="text-right">
-        {lead.loan_amount ? (<><p className="font-medium text-[#8A6310]">{usd0(commission)}</p><p className="text-[11px] text-[var(--color-text-secondary)]">{compRate}% {closed ? 'earned' : 'comp'}</p></>) : <p className="text-[11px] text-[var(--color-text-secondary)]">—</p>}
+        {lead.loan_amount ? (<><p className="font-medium text-[#8A6310]">{usd0(commission)}</p><p className="text-[11px] text-[var(--color-text-secondary)]">{effectiveRate}%{lead.commission_rate != null ? '★' : ''} {closed ? 'earned' : 'comp'}</p></>) : <p className="text-[11px] text-[var(--color-text-secondary)]">—</p>}
       </div>
     </Link>
   );

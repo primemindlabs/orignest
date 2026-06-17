@@ -17,6 +17,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Badge } from '@/components/ui/Badge';
 import { EnrollCreditRepairButton } from './EnrollCreditRepairButton';
+import { EditableLoanDetails } from './EditableLoanDetails';
 import { AIDraftsPanel } from '@/components/loanFile/AIDraftsPanel';
 import { ScenarioAIPanel } from '@/components/scenarioAI/ScenarioAIPanel';
 import { AssignTaskButton } from '@/components/loanFile/AssignTaskButton';
@@ -435,25 +436,22 @@ export default async function LeadDetailPage({
             </div>
           </div>
 
-          {/* Loan details */}
-          <div className="bg-surface rounded-card shadow-card border border-border p-5">
-            <h3 className="text-sm font-semibold text-label-2 uppercase tracking-wide mb-4">Loan Details</h3>
-            <div className="space-y-3">
-              <InfoRow label="Loan Purpose" value={formatMortgageEnum(lead.loan_purpose, LOAN_PURPOSE_LABELS)} />
-              <InfoRow label="Loan Type" value={formatMortgageEnum(lead.loan_type, LOAN_TYPE_LABELS)} />
-              <InfoRow label="Loan Amount" value={lead.loan_amount ? `$${lead.loan_amount.toLocaleString()}` : null} />
-              <InfoRow label="LTV" value={displayLtv} />
-              <InfoRow label="Property Type" value={formatMortgageEnum(lead.property_type, PROPERTY_TYPE_LABELS)} />
-              <InfoRow label="Occupancy" value={formatMortgageEnum(lead.occupancy_type, OCCUPANCY_LABELS)} />
-              <InfoRow
-                label="Down Payment"
-                value={lead.down_payment ? `$${lead.down_payment.toLocaleString()}` : null}
-              />
-              {lead.closing_date && (
-                <InfoRow label="Closing Date" value={format(new Date(lead.closing_date), 'MMM d, yyyy')} />
-              )}
-            </div>
-          </div>
+          {/* Loan details — editable; saves to canonical leads columns (propagates). */}
+          <EditableLoanDetails
+            canEdit={['admin', 'branch_manager', 'loan_officer'].includes(role)}
+            lead={{
+              id: lead.id,
+              loan_purpose: lead.loan_purpose ?? null,
+              loan_type: lead.loan_type ?? null,
+              loan_amount: lead.loan_amount ?? null,
+              estimated_value: lead.estimated_value ?? null,
+              down_payment: lead.down_payment ?? null,
+              property_type: lead.property_type ?? null,
+              occupancy_type: lead.occupancy_type ?? null,
+              closing_date: lead.closing_date ?? null,
+              commission_rate: lead.commission_rate ?? null,
+            }}
+          />
 
           {/* Credit snapshot — moved off the header into the command center */}
           <div className="bg-surface rounded-card shadow-card border border-border p-5">

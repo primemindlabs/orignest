@@ -19,6 +19,8 @@ export interface PipelineLead {
   referral_source_detail?: string | null;
   // Assigned loan officer (shown in admin/branch-manager pipeline view).
   loName?: string | null;
+  // Per-file commission rate override (falls back to the LO's default rate).
+  commission_rate?: number | null;
 }
 
 export function LeadAlertTag({ lead }: { lead: PipelineLead }) {
