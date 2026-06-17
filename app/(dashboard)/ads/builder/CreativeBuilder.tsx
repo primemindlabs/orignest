@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Sparkles, ShieldCheck, ShieldAlert, Copy, Check, AlertTriangle, Save } from 'lucide-react';
+import { Sparkles, ShieldCheck, ShieldAlert, Copy, Check, AlertTriangle, Save, Image as ImageIcon } from 'lucide-react';
 import { AdPreview } from '@/components/ads/AdPreview';
 import type { AdTemplate } from '@/lib/ads/templates';
 
@@ -48,6 +48,7 @@ export function CreativeBuilder({
       : EMPTY,
   );
   const [creativeId, setCreativeId] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [review, setReview] = useState<Review | null>(null);
   const [exportText, setExportText] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -76,11 +77,21 @@ export function CreativeBuilder({
     patchDraft({ headline: v.headline, primary_text: v.primary_text, cta: v.cta });
   }
 
+  async function generateImage() {
+    setBusy('image'); setErr(null);
+    try {
+      const res = await fetch('/api/ad-center/generate-image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ad_type: adType, headline: draft.headline, key_message: keyMessage }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Image generation failed');
+      setImageUrl(data.url as string);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Image generation failed'); } finally { setBusy(null); }
+  }
+
   async function save() {
     if (!hasDraft) return;
     setBusy('save'); setErr(null); setReview(null); setExportText(null);
     try {
-      const res = await fetch('/api/ad-center', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ad_type: adType, platform, headline: draft.headline, primary_text: draft.primary_text, description: draft.description, cta_type: draft.cta, nmls_number: nmls }) });
+      const res = await fetch('/api/ad-center', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ad_type: adType, platform, headline: draft.headline, primary_text: draft.primary_text, description: draft.description, cta_type: draft.cta, nmls_number: nmls, image_url: imageUrl }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Save failed');
       setCreativeId(data.creative.id);
@@ -188,9 +199,14 @@ export function CreativeBuilder({
               ))}
             </div>
           </div>
-          <Button onClick={save} disabled={!hasDraft || busy === 'save'}>
-            <Save size={14} /> {busy === 'save' ? 'Saving…' : creativeId ? 'Saved to library' : 'Save to library'}
-          </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button onClick={save} disabled={!hasDraft || busy === 'save'}>
+              <Save size={14} /> {busy === 'save' ? 'Saving…' : creativeId ? 'Saved to library' : 'Save to library'}
+            </Button>
+            <Button variant="secondary" onClick={generateImage} disabled={!hasDraft || busy === 'image'}>
+              <ImageIcon size={14} /> {busy === 'image' ? 'Generating…' : imageUrl ? 'Regenerate image' : 'Generate AI image'}
+            </Button>
+          </div>
         </div>
 
         {/* Step 4 — compliance gate */}
@@ -242,7 +258,7 @@ export function CreativeBuilder({
         <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--c-label2)] mb-3">Live preview</p>
         {hasDraft ? (
           <AdPreview
-            creative={{ ad_type: adType, platform, headline: draft.headline, primary_text: draft.primary_text, description: draft.description, cta_type: draft.cta, nmls_number: nmls }}
+            creative={{ ad_type: adType, platform, headline: draft.headline, primary_text: draft.primary_text, description: draft.description, cta_type: draft.cta, nmls_number: nmls, image_url: imageUrl }}
             companyName={companyName}
           />
         ) : (

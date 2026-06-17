@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
   const body = (await req.json().catch(() => ({}))) as {
     ad_type?: AdType; platform?: AdPlatform; headline?: string; primary_text?: string; description?: string;
-    cta_type?: string; nmls_number?: string; apr_disclosure?: string; coop_realtor_id?: string;
+    cta_type?: string; nmls_number?: string; apr_disclosure?: string; coop_realtor_id?: string; image_url?: string;
   };
   if (!body.ad_type || !body.platform || !body.headline) {
     return NextResponse.json({ error: 'ad_type, platform, and headline are required' }, { status: 400 });
@@ -48,6 +48,7 @@ export async function POST(req: Request) {
       nmls_number: body.nmls_number ?? profile?.nmls_id ?? null,
       apr_disclosure: body.apr_disclosure ?? null,
       coop_realtor_id: body.coop_realtor_id ?? null,
+      image_url: body.image_url ?? null,
     })
     .select('*')
     .single();

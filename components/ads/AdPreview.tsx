@@ -20,6 +20,7 @@ export interface AdPreviewCreative {
   description?: string | null;
   cta_type?: string | null;
   nmls_number?: string | null;
+  image_url?: string | null;
   accent?: string;
 }
 
@@ -50,7 +51,7 @@ function domainOf(company: string): string {
   return `${slug}.com`;
 }
 
-/** Branded gradient "creative image" with the headline overlaid. */
+/** Creative image: a real AI image (when set) or a branded gradient, headline overlaid. */
 export function AdCreativeImage({
   creative,
   height = 240,
@@ -59,14 +60,22 @@ export function AdCreativeImage({
   height?: number;
 }) {
   const accent = accentOf(creative);
+  const hasImage = !!creative.image_url;
   return (
     <div
       className="relative w-full overflow-hidden flex items-end"
       style={{
         height,
-        background: `linear-gradient(135deg, ${accent} 0%, ${accent}cc 55%, rgba(0,0,0,0.55) 100%)`,
+        background: hasImage ? '#1a1a1a' : `linear-gradient(135deg, ${accent} 0%, ${accent}cc 55%, rgba(0,0,0,0.55) 100%)`,
       }}
     >
+      {hasImage && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={creative.image_url!} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.65) 100%)' }} />
+        </>
+      )}
       <span className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider text-white/90 bg-black/25 backdrop-blur-sm px-2 py-0.5 rounded-full">
         {TYPE_LABEL[creative.ad_type] ?? creative.ad_type}
       </span>

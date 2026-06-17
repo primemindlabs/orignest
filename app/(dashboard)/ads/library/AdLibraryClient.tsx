@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Search, Copy, Check, Files, Archive, Sparkles, Plus, Megaphone, Wand2, LayoutTemplate } from 'lucide-react';
+import { Search, Copy, Check, Files, Archive, Sparkles, Plus, Megaphone, Wand2, LayoutTemplate, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdPreview, AdCreativeImage } from '@/components/ads/AdPreview';
 import { AD_TEMPLATES, type AdTemplate } from '@/lib/ads/templates';
@@ -17,6 +17,7 @@ export interface Creative {
   cta_type: string | null;
   nmls_number: string | null;
   apr_disclosure: string | null;
+  image_url: string | null;
   created_at: string;
 }
 
@@ -105,6 +106,25 @@ export function AdLibraryClient({ initial, companyName, nmls }: { initial: Creat
         { ad_type: c.ad_type, platform: c.platform, headline: `${c.headline} (copy)`, primary_text: c.primary_text, description: c.description, cta_type: c.cta_type, nmls_number: c.nmls_number, apr_disclosure: c.apr_disclosure },
         'Duplicated',
       );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function generateImage(c: Creative) {
+    setBusyId(c.id);
+    try {
+      const res = await fetch('/api/ad-center/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ad_type: c.ad_type, headline: c.headline, creative_id: c.id }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error ?? 'Image generation failed');
+      setCreatives((prev) => prev.map((x) => (x.id === c.id ? { ...x, image_url: (j.creative?.image_url ?? j.url) as string } : x)));
+      toast.success(c.image_url ? 'New image generated' : 'Image generated');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed');
     } finally {
@@ -219,7 +239,7 @@ export function AdLibraryClient({ initial, companyName, nmls }: { initial: Creat
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {filtered.map((c) => (
               <div key={c.id} className="bg-white border border-black/[0.06] shadow-sm rounded-2xl overflow-hidden flex flex-col">
-                <AdCreativeImage creative={{ ad_type: c.ad_type, platform: c.platform, headline: c.headline }} height={120} />
+                <AdCreativeImage creative={{ ad_type: c.ad_type, platform: c.platform, headline: c.headline, image_url: c.image_url }} height={120} />
                 <div className="p-4 flex flex-col flex-1">
                   <div className="flex items-center gap-1.5 mb-2 flex-wrap">
                     <span className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full ${TYPE_COLOR[c.ad_type] ?? 'bg-fill text-label-2'}`}>{TYPE_LABEL[c.ad_type] ?? c.ad_type}</span>
@@ -239,6 +259,9 @@ export function AdLibraryClient({ initial, companyName, nmls }: { initial: Creat
                     </button>
                     <button onClick={() => duplicate(c)} disabled={busyId === c.id} className="inline-flex items-center gap-1 text-[12px] font-medium text-label-2 hover:text-black transition-colors disabled:opacity-40">
                       <Files size={13} /> Duplicate
+                    </button>
+                    <button onClick={() => generateImage(c)} disabled={busyId === c.id} className="inline-flex items-center gap-1 text-[12px] font-medium text-label-2 hover:text-black transition-colors disabled:opacity-40">
+                      <ImageIcon size={13} /> {c.image_url ? 'Regenerate' : 'AI image'}
                     </button>
                     <button onClick={() => archive(c)} disabled={busyId === c.id} className="ml-auto inline-flex items-center gap-1 text-[12px] font-medium text-label-3 hover:text-red transition-colors disabled:opacity-40">
                       <Archive size={13} /> Archive

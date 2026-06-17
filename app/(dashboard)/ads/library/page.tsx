@@ -17,7 +17,7 @@ export default async function AdLibraryPage() {
   const [{ data }, { data: org }, { data: profile }] = await Promise.all([
     sb
       .from('ad_creatives')
-      .select('id, ad_type, platform, headline, primary_text, description, cta_type, nmls_number, apr_disclosure, created_at')
+      .select('id, ad_type, platform, headline, primary_text, description, cta_type, nmls_number, apr_disclosure, image_url, created_at')
       .eq('org_id', orgId)
       .eq('is_archived', false)
       .order('created_at', { ascending: false })
