@@ -1,13 +1,12 @@
-import { auth } from '@clerk/nextjs/server';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
-import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { Badge } from '@/components/ui/Badge';
 import { UserPlus } from 'lucide-react';
 import { format } from 'date-fns';
 import { TeamProcessorsTab } from '@/components/team/TeamProcessorsTab';
+import { TeamChatClient } from '../team-chat/TeamChatClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,12 +31,11 @@ export default async function TeamPage({
 }: {
   searchParams: { tab?: string };
 }) {
-  const { userId, orgId } = await getOrgContext();
+  const { userId, orgId, role } = await getOrgContext();
   if (!userId) redirect('/sign-in');
   if (!orgId) redirect('/onboarding');
 
   const sb = createAdminClient();
-  const sbAdmin = createAdminClient();
 
   // getOrgContext().orgId is already organizations.id (the uuid every org_id column
   // uses) — look it up by primary key, not clerk_org_id (which left the roster empty).
@@ -47,64 +45,81 @@ export default async function TeamPage({
     .eq('id', orgId)
     .maybeSingle();
 
-  const [{ data: currentProfile }, { data: members }] = await Promise.all([
-    sb.from('profiles').select('role, id').eq('clerk_user_id', userId).maybeSingle(),
-    sb
-      .from('profiles')
-      .select('id, clerk_user_id, first_name, last_name, email, role, nmls_id, active, created_at')
-      .eq('org_id', org?.id ?? '')
-      .order('created_at', { ascending: true }),
-  ]);
+  const { data: currentProfile } = await sb
+    .from('profiles')
+    .select('role, id')
+    .eq('clerk_user_id', userId)
+    .maybeSingle();
 
   const canManage =
-    currentProfile?.role === 'admin' || currentProfile?.role === 'branch_manager';
+    currentProfile?.role === 'admin' ||
+    currentProfile?.role === 'branch_manager' ||
+    role === 'admin' ||
+    role === 'branch_manager';
 
-  if (!canManage) redirect('/dashboard');
+  // Chat is the default first tab and is open to every member. The Members /
+  // Processors management tabs are admin/branch-manager only.
+  let activeTab = searchParams.tab ?? 'chat';
+  if (!canManage && (activeTab === 'members' || activeTab === 'processors')) activeTab = 'chat';
 
-  // ── Processor assignments for this org ─────────────────────────────────────
-  const { data: processorAssignments } = await sbAdmin
-    .from('processor_assignments')
-    .select('id, processor_clerk_id, status, permissions, created_at, accepted_at')
-    .eq('org_id', org?.id ?? '')
-    .in('status', ['active', 'pending'])
-    .order('created_at', { ascending: false });
+  // Management data is only needed (and only loaded) for managers.
+  let members: Array<{ id: string; clerk_user_id: string; first_name: string | null; last_name: string | null; email: string | null; role: string; nmls_id: string | null; active: boolean; created_at: string }> = [];
+  let processorAssignments: Array<{ id: string; processor_clerk_id: string; status: string; permissions: unknown; created_at: string; accepted_at: string | null }> = [];
+  const filesByProcessor: Record<string, number> = {};
 
-  // Count files per processor
-  const processorIds = (processorAssignments ?? []).map((a) => a.processor_clerk_id);
-  let filesByProcessor: Record<string, number> = {};
-  if (processorIds.length > 0) {
-    const { data: pfas } = await sbAdmin
-      .from('processor_file_assignments')
-      .select('processor_clerk_id, lead_id')
-      .eq('org_id', org?.id ?? '')
-      .in('processor_clerk_id', processorIds)
-      .eq('active', true);
-    for (const pfa of pfas ?? []) {
-      filesByProcessor[pfa.processor_clerk_id] = (filesByProcessor[pfa.processor_clerk_id] ?? 0) + 1;
+  if (canManage) {
+    const [{ data: memberRows }, { data: assignmentRows }] = await Promise.all([
+      sb
+        .from('profiles')
+        .select('id, clerk_user_id, first_name, last_name, email, role, nmls_id, active, created_at')
+        .eq('org_id', org?.id ?? '')
+        .order('created_at', { ascending: true }),
+      sb
+        .from('processor_assignments')
+        .select('id, processor_clerk_id, status, permissions, created_at, accepted_at')
+        .eq('org_id', org?.id ?? '')
+        .in('status', ['active', 'pending'])
+        .order('created_at', { ascending: false }),
+    ]);
+    members = (memberRows ?? []) as typeof members;
+    processorAssignments = (assignmentRows ?? []) as typeof processorAssignments;
+
+    const processorIds = processorAssignments.map((a) => a.processor_clerk_id);
+    if (processorIds.length > 0) {
+      const { data: pfas } = await sb
+        .from('processor_file_assignments')
+        .select('processor_clerk_id, lead_id')
+        .eq('org_id', org?.id ?? '')
+        .in('processor_clerk_id', processorIds)
+        .eq('active', true);
+      for (const pfa of pfas ?? []) {
+        filesByProcessor[pfa.processor_clerk_id] = (filesByProcessor[pfa.processor_clerk_id] ?? 0) + 1;
+      }
     }
   }
 
-  const activeTab = searchParams.tab ?? 'members';
-
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className={`${activeTab === 'chat' ? 'max-w-6xl' : 'max-w-3xl'} space-y-6`}>
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-[22px] font-bold text-black tracking-tight">Team</h1>
           <p className="text-label-2 text-sm mt-0.5">
-            {members?.length ?? 0} members ·{' '}
-            {(processorAssignments ?? []).filter((a) => a.status === 'active').length} processors
+            {canManage
+              ? `${members.length} members · ${processorAssignments.filter((a) => a.status === 'active').length} processors`
+              : 'Chat with your team — compliance-archived.'}
           </p>
         </div>
-        <button className="inline-flex items-center gap-1.5 h-9 px-4 rounded-btn text-sm font-medium bg-blue text-white hover:bg-blue/90 transition-colors shadow-sm">
-          <UserPlus size={14} />
-          Invite Member
-        </button>
+        {canManage && (
+          <button className="inline-flex items-center gap-1.5 h-9 px-4 rounded-btn text-sm font-medium bg-blue text-white hover:bg-blue/90 transition-colors shadow-sm">
+            <UserPlus size={14} />
+            Invite Member
+          </button>
+        )}
       </div>
 
       {/* ── Tabs ────────────────────────────────────────────────────── */}
       <div className="border-b border-border flex gap-0">
-        {(['members', 'processors'] as const).map((tab) => (
+        {(canManage ? ['chat', 'members', 'processors'] : ['chat']).map((tab) => (
           <a
             key={tab}
             href={`/team?tab=${tab}`}
@@ -114,17 +129,19 @@ export default async function TeamPage({
                 : 'border-transparent text-label-2 hover:text-black'
             }`}
           >
-            {tab === 'members' ? 'Members' : 'Processors'}
-            {tab === 'processors' && (processorAssignments ?? []).length > 0 && (
+            {tab === 'chat' ? 'Chat' : tab === 'members' ? 'Members' : 'Processors'}
+            {tab === 'processors' && processorAssignments.length > 0 && (
               <span className="ml-1.5 bg-blue/10 text-blue text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                {(processorAssignments ?? []).length}
+                {processorAssignments.length}
               </span>
             )}
           </a>
         ))}
       </div>
 
-      {activeTab === 'members' ? (
+      {activeTab === 'chat' ? (
+        <TeamChatClient role={role} />
+      ) : activeTab === 'members' ? (
         <div className="bg-surface rounded-card shadow-card border border-border overflow-hidden">
           <div className="divide-y divide-border">
             {(members ?? []).map((member) => (
