@@ -52,6 +52,7 @@ const FIELDS: FieldDef[] = [
     ],
   },
   { key: 'loan_amount', label: 'Loan amount', section: 'loan_data', kind: 'number', prefix: '$' },
+  { key: 'appraised_value', label: 'Appraised value', section: 'loan_data', kind: 'number', prefix: '$' },
   {
     key: 'property_type', label: 'Property type', section: 'loan_data', kind: 'select',
     options: [
@@ -303,8 +304,8 @@ export function Smart1003Form({ leadId, initialValues, initialStatus, saveUrl, p
           </span>
         )}
         {!publicMode && (
-          <Button variant="outline" onClick={() => save('draft')} loading={saving}>
-            Save draft
+          <Button variant="outline" onClick={() => save()} loading={saving}>
+            Save changes
           </Button>
         )}
         {publicMode && (

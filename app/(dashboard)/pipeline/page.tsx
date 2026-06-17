@@ -62,16 +62,21 @@ const STAGE_COLORS: Record<string, string> = {
 };
 
 export default async function PipelinePage() {
-  const { userId, orgId } = await getOrgContext();
+  const { userId, orgId, role } = await getOrgContext();
   if (!userId) redirect('/sign-in');
   if (!orgId) redirect('/onboarding');
+  const isAdminView = role === 'admin' || role === 'branch_manager';
 
   const sb = createAdminClient();
+  // LO names for the admin/branch-manager pipeline view (who's working which loan).
+  const { data: orgProfiles } = await sb.from('profiles').select('id, first_name, last_name').eq('org_id', orgId);
+  const loNameById: Record<string, string> = {};
+  for (const p of orgProfiles ?? []) loNameById[p.id as string] = `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim() || 'Unassigned';
   const [{ data: leads }, { data: slaRows }, { data: scoreRows }, { data: velocityRows }] = await Promise.all([
     sb
       .from('leads')
       .select(
-        'id, first_name, last_name, stage, loan_type, loan_amount, loan_purpose, lead_source, referral_source, referral_source_detail, ai_score, created_at, stage_changed_at, last_contacted_at, application_submitted_at, loan_estimate_sent_at, closing_disclosure_sent_at, closing_date, le_deadline, cd_deadline, data_ownership, is_demo'
+        'id, first_name, last_name, stage, loan_type, loan_amount, loan_purpose, lead_source, referral_source, referral_source_detail, ai_score, assigned_to, created_at, stage_changed_at, last_contacted_at, application_submitted_at, loan_estimate_sent_at, closing_disclosure_sent_at, closing_date, le_deadline, cd_deadline, data_ownership, is_demo'
       )
       .eq('org_id', orgId)
       .in('stage', [...STAGES])
@@ -155,7 +160,7 @@ export default async function PipelinePage() {
 
   // Phase 74 tabs — closed leads + outstanding-condition counts.
   const [{ data: closedRows }, { data: condRows }] = await Promise.all([
-    sb.from('leads').select('id, first_name, last_name, stage, loan_type, loan_amount, loan_purpose, lead_source, referral_source, referral_source_detail, created_at, stage_changed_at, last_contacted_at, closing_date')
+    sb.from('leads').select('id, first_name, last_name, stage, loan_type, loan_amount, loan_purpose, lead_source, referral_source, referral_source_detail, assigned_to, created_at, stage_changed_at, last_contacted_at, closing_date')
       .eq('org_id', orgId).in('stage', ['closed', 'funded']).order('closing_date', { ascending: false }).limit(120),
     sb.from('loan_conditions').select('lead_id, status').eq('org_id', orgId).neq('status', 'cleared'),
   ]);
@@ -236,6 +241,7 @@ export default async function PipelinePage() {
     intel: intelById[l.id as string] ?? null,
     referral_source: (l.referral_source as string) ?? null,
     referral_source_detail: (l.referral_source_detail as string) ?? null,
+    loName: l.assigned_to ? (loNameById[l.assigned_to as string] ?? null) : null,
   });
   const activePipelineLeads = allLeads.map(toPipelineLead);
   const closedPipelineLeads = (closedRows ?? []).map(toPipelineLead);
@@ -351,7 +357,7 @@ export default async function PipelinePage() {
       <MobilePipelineView leads={allLeads as never} className="md:hidden" />
 
       {/* ── Pipeline tabs (Phase 74) — primary desktop view ──────────── */}
-      <PipelineTabsView active={activePipelineLeads} closed={closedPipelineLeads} compRate={compRate} />
+      <PipelineTabsView active={activePipelineLeads} closed={closedPipelineLeads} compRate={compRate} showLo={isAdminView} />
 
       {/* ── Kanban board (retained, hidden — superseded by tabs view) ── */}
       <div className="hidden gap-4 overflow-x-auto pb-4">

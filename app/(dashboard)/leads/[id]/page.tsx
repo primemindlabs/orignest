@@ -374,12 +374,21 @@ export default async function LeadDetailPage({
       {/* ════════════════════ OVERVIEW ════════════════════ */}
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {/* Phase 129 — File Intelligence Suite */}
-          {intelScores && (
-            <div className="lg:col-span-2">
+          {/* Phase 129 — File Intelligence Suite (always present; falls back to a
+              refreshable notice if the score row hasn't seeded yet). */}
+          <div className="lg:col-span-2">
+            {intelScores ? (
               <FileIntelligencePanel loanId={lead.id} scores={intelScores as unknown as LoanIntelligenceScores} />
-            </div>
-          )}
+            ) : (
+              <div className="bg-white rounded-2xl border border-[#E8E4DE] p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-black">Loan Intelligence</p>
+                  <p className="text-xs text-label-2 mt-0.5">AI score is calculating for this file.</p>
+                </div>
+                <Link href={`/leads/${lead.id}?tab=overview`} className="text-xs font-medium text-[#8A6310] hover:underline">Refresh</Link>
+              </div>
+            )}
+          </div>
 
           {isInvestorLoan && (
             <div className="lg:col-span-2">

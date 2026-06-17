@@ -82,7 +82,7 @@ export function parseLoanPassResponse(raw: unknown): LoanPassQuote {
         out.push({
           productName: name,
           rate,
-          price: num(s.price ?? s.adjustedPrice ?? s.priceAdjustedPoints),
+          price: num(s.price ?? s.adjustedPrice ?? s.priceAdjustedPoints) ?? undefined,
           term: num(s.termMonths ?? row.termMonths) ?? undefined,
           lockDays: num(s.lockPeriod ?? s.lockDays) ?? undefined,
           amortizationType: (s.amortizationType ?? row.amortizationType) as string | undefined,
@@ -91,7 +91,7 @@ export function parseLoanPassResponse(raw: unknown): LoanPassQuote {
     } else {
       const rate = num(row.rate ?? row.noteRate);
       if (rate == null) continue;
-      out.push({ productName: name, rate, price: num(row.price), term: num(row.termMonths) ?? undefined, lockDays: num(row.lockDays) ?? undefined });
+      out.push({ productName: name, rate, price: num(row.price) ?? undefined, term: num(row.termMonths) ?? undefined, lockDays: num(row.lockDays) ?? undefined });
     }
   }
   return { products: out, product_count: out.length };

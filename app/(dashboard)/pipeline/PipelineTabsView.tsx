@@ -30,7 +30,7 @@ const ACTIVE_STAGES = [
   { key: 'conditional_approval', label: 'Cond.' }, { key: 'clear_to_close', label: 'CTC' },
 ];
 
-function Row({ lead, compRate, closed }: { lead: PipelineLead; compRate: number; closed?: boolean }) {
+function Row({ lead, compRate, closed, showLo }: { lead: PipelineLead; compRate: number; closed?: boolean; showLo?: boolean }) {
   const commission = (lead.loan_amount ?? 0) * (compRate / 100);
   return (
     <Link href={`/leads/${lead.id}`} className="grid grid-cols-[2.2fr_1fr_1.2fr_1fr] gap-2 px-4 py-3 border-b border-[var(--color-border-tertiary)] items-center hover:bg-[#fdfbf7] transition-colors text-sm last:border-b-0">
@@ -39,6 +39,9 @@ function Row({ lead, compRate, closed }: { lead: PipelineLead; compRate: number;
         <div className="min-w-0">
           <p className="font-medium text-black truncate">{lead.first_name} {lead.last_name}</p>
           <p className="text-[11px] text-[var(--color-text-secondary)] truncate">{formatMortgageEnum(lead.loan_purpose, LOAN_PURPOSE_LABELS) ?? '—'} · {formatMortgageEnum(lead.lead_source, LEAD_SOURCE_LABELS) ?? 'Direct'}</p>
+          {showLo && (
+            <p className="text-[11px] text-[#8A6310] truncate mt-0.5">LO: {lead.loName ?? 'Unassigned'}</p>
+          )}
           {lead.referral_source && <div className="mt-1"><SourceBadge source={lead.referral_source} detail={lead.referral_source_detail} size="sm" /></div>}
           {lead.intel && <IntelligenceRow scores={lead.intel} />}
         </div>
@@ -80,7 +83,7 @@ const Empty = ({ icon: Icon, title, sub }: { icon: typeof IconBuildingBank; titl
   </div>
 );
 
-export function PipelineTabsView({ active, closed, compRate }: { active: PipelineLead[]; closed: PipelineLead[]; compRate: number }) {
+export function PipelineTabsView({ active, closed, compRate, showLo }: { active: PipelineLead[]; closed: PipelineLead[]; compRate: number; showLo?: boolean }) {
   const attention = active.filter(hasAlert);
   const preApprovals = active.filter((l) => l.stage === 'pre_qual');
   const applications = active.filter((l) => ['application', 'processing'].includes(l.stage));
@@ -147,7 +150,7 @@ export function PipelineTabsView({ active, closed, compRate }: { active: Pipelin
             </select>
           </div>
           <HeaderRow />
-          {activeFiltered.map((l) => <Row key={l.id} lead={l} compRate={compRate} />)}
+          {activeFiltered.map((l) => <Row key={l.id} lead={l} compRate={compRate} showLo={showLo} />)}
           <div className="grid grid-cols-[2.2fr_1fr_1.2fr_1fr] gap-2 px-4 py-2.5 bg-[var(--color-background-secondary)] border-t border-[var(--color-border-tertiary)] text-xs text-[var(--color-text-secondary)]">
             <div>{activeFiltered.length} of {active.length} loans</div>
             <div className="font-medium text-black">{fmtVol(activeFiltered.reduce((s, l) => s + (l.loan_amount ?? 0), 0))}</div>
@@ -168,17 +171,17 @@ export function PipelineTabsView({ active, closed, compRate }: { active: Pipelin
                 <g.icon size={15} className="text-[#C4724A]" /><span className="text-sm font-medium text-black">{g.label}</span>
                 <span className="text-xs text-[#C4724A] bg-[#C4724A15] px-1.5 py-0.5 rounded-full">{g.leads.length}</span>
               </div>
-              {g.leads.map((l) => <Row key={l.id} lead={l} compRate={compRate} />)}
+              {g.leads.map((l) => <Row key={l.id} lead={l} compRate={compRate} showLo={showLo} />)}
             </div>
           ))}
         </>
       ))}
 
       {/* PRE-APPROVALS */}
-      {tab === 'preapproval' && (preApprovals.length === 0 ? <Empty icon={IconBuildingBank} title="No pre-approvals" sub="Pre-qual leads appear here." /> : <><HeaderRow />{preApprovals.map((l) => <Row key={l.id} lead={l} compRate={compRate} />)}</>)}
+      {tab === 'preapproval' && (preApprovals.length === 0 ? <Empty icon={IconBuildingBank} title="No pre-approvals" sub="Pre-qual leads appear here." /> : <><HeaderRow />{preApprovals.map((l) => <Row key={l.id} lead={l} compRate={compRate} showLo={showLo} />)}</>)}
 
       {/* APPLICATIONS */}
-      {tab === 'application' && (applications.length === 0 ? <Empty icon={IconBuildingBank} title="No applications in process" sub="Submitted 1003s appear here." /> : <><HeaderRow />{applications.map((l) => <Row key={l.id} lead={l} compRate={compRate} />)}</>)}
+      {tab === 'application' && (applications.length === 0 ? <Empty icon={IconBuildingBank} title="No applications in process" sub="Submitted 1003s appear here." /> : <><HeaderRow />{applications.map((l) => <Row key={l.id} lead={l} compRate={compRate} showLo={showLo} />)}</>)}
 
       {/* CLOSED */}
       {tab === 'closed' && (closed.length === 0 ? <Empty icon={IconCalendarStats} title="No closed loans yet" sub="Funded loans appear here." /> : closedByMonth.map(([month, leads], idx) => (
@@ -188,7 +191,7 @@ export function PipelineTabsView({ active, closed, compRate }: { active: Pipelin
             <span className="text-xs font-normal text-[var(--color-text-secondary)]">{fmtVol(leads.reduce((s, l) => s + (l.loan_amount ?? 0), 0))} · {leads.length} loans · <span className="text-[#8A6310]">{usd0(leads.reduce((s, l) => s + (l.loan_amount ?? 0) * (compRate / 100), 0))} earned</span></span>
           </summary>
           <HeaderRow />
-          {leads.map((l) => <Row key={l.id} lead={l} compRate={compRate} closed />)}
+          {leads.map((l) => <Row key={l.id} lead={l} compRate={compRate} closed showLo={showLo} />)}
         </details>
       )))}
     </div>

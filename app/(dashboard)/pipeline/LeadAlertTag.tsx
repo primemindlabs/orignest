@@ -17,6 +17,8 @@ export interface PipelineLead {
   // Phase 98 — referral source attribution.
   referral_source?: string | null;
   referral_source_detail?: string | null;
+  // Assigned loan officer (shown in admin/branch-manager pipeline view).
+  loName?: string | null;
 }
 
 export function LeadAlertTag({ lead }: { lead: PipelineLead }) {
