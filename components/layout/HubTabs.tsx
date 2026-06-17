@@ -45,6 +45,7 @@ export const BORROWER_HUB_TABS: HubTab[] = [
 
 export const PRICING_TABS: HubTab[] = [
   { href: '/pricing', label: 'Pricing Engine' },
+  { href: '/pricing/best-execution', label: 'Best Execution' },
   { href: '/rate-sheets', label: 'Rate Sheets' },
 ];
 
