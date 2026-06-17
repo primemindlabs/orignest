@@ -6,6 +6,7 @@ import 'server-only';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { priceFromRateSheets } from './sources/rateSheetSource';
 import { priceFromLicensedPpe } from './sources/licensedPpeSource';
+import { priceFromLoanPass } from './sources/loanPassSource';
 import { rankBestExecution, selectAntiSteering } from './bestExecution';
 import type { BestExResult, PricingScenario } from './types';
 
@@ -16,7 +17,7 @@ export async function priceScenario(
   scenario: PricingScenario,
   opts: { leadId?: string | null } = {},
 ): Promise<BestExResult> {
-  const [rateSheet, licensed] = await Promise.all([
+  const [rateSheet, optimalBlue, loanPass] = await Promise.all([
     priceFromRateSheets(sb, orgId, loId, scenario).catch(
       (): Awaited<ReturnType<typeof priceFromRateSheets>> => ({
         status: { id: 'rate_sheet', label: 'Rate sheet', status: 'error', note: 'lookup failed', eligibleCount: 0 },
@@ -29,16 +30,23 @@ export async function priceScenario(
         eligible: [], ineligible: [],
       }),
     ),
+    priceFromLoanPass(orgId, opts.leadId ?? null, scenario).catch(
+      (): Awaited<ReturnType<typeof priceFromLoanPass>> => ({
+        status: { id: 'loanpass', label: 'LoanPASS', status: 'error', note: 'lookup failed', eligibleCount: 0 },
+        eligible: [], ineligible: [],
+      }),
+    ),
   ]);
 
-  const allEligible = [...rateSheet.eligible, ...licensed.eligible];
+  const sources = [rateSheet, optimalBlue, loanPass];
+  const allEligible = sources.flatMap((s) => s.eligible);
   const priced = rankBestExecution(allEligible);
 
   return {
     priced,
-    ineligible: [...rateSheet.ineligible, ...licensed.ineligible],
+    ineligible: sources.flatMap((s) => s.ineligible),
     antiSteering: selectAntiSteering(allEligible),
-    sources: [rateSheet.status, licensed.status],
+    sources: sources.map((s) => s.status),
     generatedAt: new Date().toISOString(),
     anyStale: priced.some((p) => p.stale),
   };
