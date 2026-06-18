@@ -29,6 +29,7 @@ const NAV: NavGroup[] = [
     key: 'pipeline', label: 'Pipeline', icon: GitBranch, items: [
       { href: '/pipeline', label: 'Loans' },
       { href: '/leads', label: 'Leads' },
+      { href: '/inbound', label: 'Inbound' },
       { href: '/my-tasks', label: 'To-Do' },
     ],
   },
