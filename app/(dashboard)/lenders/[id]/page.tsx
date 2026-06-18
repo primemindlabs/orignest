@@ -23,7 +23,7 @@ export default async function LenderDetailPage({
   const { data: org } = await supabase
     .from('organizations')
     .select('id')
-    .eq('clerk_org_id', orgId)
+    .eq('id', orgId)
     .maybeSingle();
 
   if (!org) redirect('/onboarding');

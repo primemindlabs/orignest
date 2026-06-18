@@ -20,7 +20,7 @@ export default async function AdCenterPage() {
   const sb = createAdminClient();
 
   const [{ data: org }, { data: landingPages }, { data: profiles }] = await Promise.all([
-    sb.from('organizations').select('id, name').eq('clerk_org_id', orgId).maybeSingle(),
+    sb.from('organizations').select('id, name').eq('id', orgId).maybeSingle(),
     sb.from('landing_pages').select('id, slug, headline, active, page_views, leads_captured, created_at').order('created_at', { ascending: false }),
     sb.from('profiles').select('id, first_name, last_name, nmls_id, email, phone').eq('active', true).order('first_name'),
   ]);

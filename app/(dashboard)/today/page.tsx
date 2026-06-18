@@ -65,7 +65,7 @@ export default async function TodayPage() {
 
   // Ghosted leads awaiting recovery (Sprint 2 — Ghost Recovery)
   let ghostedCount = 0;
-  const { data: orgRow } = await sb.from('organizations').select('id').eq('clerk_org_id', orgId).maybeSingle();
+  const { data: orgRow } = await sb.from('organizations').select('id').eq('id', orgId).maybeSingle();
   if (orgRow) {
     const { count } = await sb
       .from('ghost_recovery_queue')

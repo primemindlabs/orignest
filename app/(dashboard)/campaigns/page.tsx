@@ -23,7 +23,7 @@ export default async function CampaignsPage() {
     .from('campaigns')
     .select('*')
     .eq('org_id', (
-      await sb.from('organizations').select('id').eq('clerk_org_id', orgId).maybeSingle()
+      await sb.from('organizations').select('id').eq('id', orgId).maybeSingle()
         .then(({ data }) => data?.id ?? '')
     ))
     .order('created_at', { ascending: false });

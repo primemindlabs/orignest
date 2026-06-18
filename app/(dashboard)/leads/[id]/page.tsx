@@ -35,7 +35,7 @@ import { LeadToolsMenu } from './LeadToolsMenu';
 import { ConditionsManager, type Condition } from '@/components/loan/ConditionsManager';
 import { BrainPanel } from '@/components/brain/BrainPanel';
 import { FeatureGate } from '@/components/billing/FeatureGate';
-import { Smart1003Form } from './application/Smart1003Form';
+import { ApplyFlow } from '@/components/apply/ApplyFlow';
 import { IncomeHubClient } from '@/app/(dashboard)/loans/[loanId]/income/IncomeHubClient';
 import {
   formatMortgageEnum,
@@ -165,7 +165,7 @@ export default async function LeadDetailPage({
     sent_at: string | null;
     created_at: string;
   }[] = [];
-  let appSeed: { values: Record<string, unknown>; status: string } | null = null;
+  let applyToken: string | null = null;
 
   if (activeTab === 'conditions') {
     const { data } = await sb
@@ -187,46 +187,27 @@ export default async function LeadDetailPage({
   }
 
   if (activeTab === 'application') {
-    // Mirror the standalone /application route: load latest draft, create one if none.
+    // Unified 1003: the internal tab uses the SAME polished `applications` flow as
+    // the borrower link. Reuse the latest non-submitted application, else mint one.
     let { data: app } = await sb
-      .from('loan_applications')
-      .select('status, loan_data, property_data, borrower_data, employment_data, declarations_data')
+      .from('applications')
+      .select('token, status')
       .eq('lead_id', params.id)
       .eq('org_id', orgId)
+      .neq('status', 'submitted')
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
     if (!app) {
       const { data: created } = await sb
-        .from('loan_applications')
-        .insert({ org_id: orgId, lead_id: params.id, application_type: 'residential' })
-        .select('status, loan_data, property_data, borrower_data, employment_data, declarations_data')
+        .from('applications')
+        .insert({ org_id: orgId, lead_id: params.id, borrower_first_name: lead.first_name ?? null, borrower_last_name: lead.last_name ?? null })
+        .select('token, status')
         .single();
       app = created;
     }
-
-    const sectionData = app
-      ? {
-          ...(app.loan_data as Record<string, unknown>),
-          ...(app.property_data as Record<string, unknown>),
-          ...(app.borrower_data as Record<string, unknown>),
-          ...(app.employment_data as Record<string, unknown>),
-          ...(app.declarations_data as Record<string, unknown>),
-        }
-      : {};
-
-    appSeed = {
-      values: {
-        loan_type: lead.loan_type ?? '',
-        loan_purpose: lead.loan_purpose ?? '',
-        loan_amount: lead.loan_amount ?? '',
-        property_address: lead.property_address ?? '',
-        credit_score: lead.credit_score ?? '',
-        ...sectionData,
-      },
-      status: app?.status ?? 'draft',
-    };
+    applyToken = (app?.token as string | null) ?? null;
   }
 
   const TABS = [
@@ -625,11 +606,11 @@ export default async function LeadDetailPage({
       {activeTab === 'application' && (
         <div>
           <p className="text-sm text-label-2 mb-4">
-            Smart 1003 — fields appear only as they become relevant. SSN/DOB are collected separately and never
-            stored in plain text.
+            Digital 1003 — the same guided application your borrower fills out. Edits autosave; SSN/DOB are
+            collected separately and never stored in plain text.
           </p>
-          {appSeed ? (
-            <Smart1003Form leadId={lead.id} initialValues={appSeed.values} initialStatus={appSeed.status} />
+          {applyToken ? (
+            <ApplyFlow token={applyToken} embedded />
           ) : (
             <div className="bg-surface rounded-card border border-border p-8 text-center">
               <p className="text-sm text-label-2">Application form unavailable.</p>

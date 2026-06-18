@@ -43,7 +43,7 @@ export default async function BillingPage({
       .select(
         'id, name, subscription_plan, subscription_status, trial_ends_at, stripe_customer_id, billing_email'
       )
-      .eq('clerk_org_id', orgId)
+      .eq('id', orgId)
       .maybeSingle(),
   ]);
 

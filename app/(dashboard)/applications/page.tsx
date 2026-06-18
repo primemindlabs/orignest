@@ -25,7 +25,7 @@ export default async function ApplicationsPage() {
   const { data: org } = await sb
     .from('organizations')
     .select('id')
-    .eq('clerk_org_id', orgId)
+    .eq('id', orgId)
     .maybeSingle();
 
   const { data: leads } = await sb

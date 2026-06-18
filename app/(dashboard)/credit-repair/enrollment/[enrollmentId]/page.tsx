@@ -14,7 +14,7 @@ export default async function EnrollmentDetailPage({ params }: { params: { enrol
   if (!orgId) redirect('/onboarding');
 
   const sb = createAdminClient();
-  const { data: org } = await sb.from('organizations').select('id').eq('clerk_org_id', orgId).maybeSingle();
+  const { data: org } = await sb.from('organizations').select('id').eq('id', orgId).maybeSingle();
   if (!org) redirect('/dashboard');
 
   const { data: enrollment } = await sb

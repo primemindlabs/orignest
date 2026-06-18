@@ -21,7 +21,7 @@ export default async function CreditRepairPage() {
   const { data: org } = await sb
     .from('organizations')
     .select('id, name')
-    .eq('clerk_org_id', orgId)
+    .eq('id', orgId)
     .maybeSingle();
 
   if (!org) redirect('/dashboard');

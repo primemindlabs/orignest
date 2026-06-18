@@ -28,7 +28,7 @@ export default async function LeaderboardPage() {
   const { data: org } = await sb
     .from('organizations')
     .select('id')
-    .eq('clerk_org_id', orgId)
+    .eq('id', orgId)
     .single();
 
   if (!org) redirect('/dashboard');

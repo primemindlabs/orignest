@@ -20,7 +20,7 @@ export default async function VideoMessagesPage() {
   const { data: org } = await sb
     .from('organizations')
     .select('id')
-    .eq('clerk_org_id', orgId)
+    .eq('id', orgId)
     .maybeSingle();
 
   const { data: profile } = await sb
