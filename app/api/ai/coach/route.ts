@@ -5,7 +5,7 @@ import { getOrgContext } from '@/lib/auth/orgContext';
 
 export const runtime = 'nodejs';
 
-const RATE_LIMIT_PER_HOUR = 20;
+const RATE_LIMIT_PER_HOUR = 120; // interactive roleplay sends one request per turn
 
 interface CoachRequest {
   prompt: string;
@@ -33,8 +33,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
     }
 
-    if (prompt.length > 2000) {
-      return NextResponse.json({ error: 'Prompt too long (max 2000 characters)' }, { status: 400 });
+    // The roleplay tab sends the full scenario + running transcript as the prompt,
+    // which grows each turn — so the cap must be generous (Haiku handles far more).
+    if (prompt.length > 24000) {
+      return NextResponse.json({ error: 'Conversation too long — start a new roleplay to continue.' }, { status: 400 });
     }
 
     // ── Rate limiting ──────────────────────────────────────────────────────
