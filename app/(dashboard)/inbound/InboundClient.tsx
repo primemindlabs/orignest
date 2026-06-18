@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { IconInbox, IconUpload, IconCheck, IconX, IconLoader2 } from '@tabler/icons-react';
+import { IconInbox, IconUpload, IconCheck, IconX, IconLoader2, IconRefresh } from '@tabler/icons-react';
 
 export interface StagedRow {
   id: string;
@@ -52,6 +52,19 @@ export function InboundClient({ initial }: { initial: StagedRow[] }) {
   const [rows, setRows] = useState(initial);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  async function syncArive() {
+    setSyncing(true);
+    try {
+      const res = await fetch('/api/import/arive', { method: 'POST' });
+      const d = await res.json();
+      if (!res.ok) { toast.error(d.error ?? 'Arive sync failed'); return; }
+      toast.success(d.staged > 0 ? `${d.staged} new loan${d.staged === 1 ? '' : 's'} from Arive added to review` : 'Arive synced — no new loans');
+      router.refresh();
+    } catch { toast.error('Arive sync failed'); }
+    finally { setSyncing(false); }
+  }
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -93,11 +106,17 @@ export function InboundClient({ initial }: { initial: StagedRow[] }) {
           </div>
           <p className="text-label-2 text-sm mt-0.5">Imported loans land here for review — promote the ones you want into your pipeline.</p>
         </div>
-        <label className="inline-flex items-center gap-1.5 h-9 px-4 rounded-btn text-sm font-medium bg-blue text-white hover:bg-blue/90 cursor-pointer shadow-sm">
-          {uploading ? <IconLoader2 size={14} className="animate-spin" /> : <IconUpload size={14} />}
-          {uploading ? 'Importing…' : 'Import CSV'}
-          <input type="file" accept=".csv,text/csv" onChange={onFile} className="hidden" disabled={uploading} />
-        </label>
+        <div className="flex items-center gap-2">
+          <button onClick={syncArive} disabled={syncing} className="inline-flex items-center gap-1.5 h-9 px-4 rounded-btn text-sm font-medium border border-border text-label hover:bg-fill disabled:opacity-50">
+            {syncing ? <IconLoader2 size={14} className="animate-spin" /> : <IconRefresh size={14} />}
+            {syncing ? 'Syncing…' : 'Sync from Arive'}
+          </button>
+          <label className="inline-flex items-center gap-1.5 h-9 px-4 rounded-btn text-sm font-medium bg-blue text-white hover:bg-blue/90 cursor-pointer shadow-sm">
+            {uploading ? <IconLoader2 size={14} className="animate-spin" /> : <IconUpload size={14} />}
+            {uploading ? 'Importing…' : 'Import CSV'}
+            <input type="file" accept=".csv,text/csv" onChange={onFile} className="hidden" disabled={uploading} />
+          </label>
+        </div>
       </div>
 
       {rows.length === 0 ? (
