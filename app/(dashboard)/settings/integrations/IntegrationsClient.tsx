@@ -10,7 +10,7 @@ interface Conn { los_type: string; is_active: boolean; last_sync_at: string | nu
 
 const LOS = [
   { id: 'lendingpad', name: 'LendingPad', desc: 'Sync loan status, conditions, and contacts with your LendingPad account.', fields: [{ key: 'api_key', label: 'API Key' }, { key: 'api_secret', label: 'API Secret' }] },
-  { id: 'arive', name: 'Arive', desc: 'Sync loan pipeline and conditions with your Arive account.', fields: [{ key: 'api_key', label: 'API Key' }] },
+  { id: 'arive', name: 'Arive', desc: 'Sync loan pipeline and conditions with your Arive account. Generate these in Arive → Settings → Integrations.', fields: [{ key: 'api_key', label: 'API Key / Client ID' }, { key: 'api_secret', label: 'Secret Key' }, { key: 'base_url', label: 'API Gateway URL', type: 'text' }] },
   { id: 'byte', name: 'BytePro', desc: 'Receive loan status updates from BytePro via webhook (receive-only).', fields: [{ key: 'api_key', label: 'BytePro Account ID' }] },
 ];
 
@@ -78,9 +78,12 @@ export function IntegrationsClient({ canManage }: { canManage: boolean }) {
 
             {isOpen && !c && canManage && (
               <div className="mt-3 pt-3 border-t border-[var(--c-border)] space-y-3">
-                {los.fields.map((f) => (
-                  <Input key={f.key} label={f.label} type="password" value={form[f.key] ?? ''} onChange={(e) => setForm((s) => ({ ...s, [f.key]: e.target.value }))} placeholder="••••••••" />
-                ))}
+                {los.fields.map((f) => {
+                  const t = (f as { type?: string }).type ?? 'password';
+                  return (
+                    <Input key={f.key} label={f.label} type={t} value={form[f.key] ?? ''} onChange={(e) => setForm((s) => ({ ...s, [f.key]: e.target.value }))} placeholder={t === 'text' ? 'https://…' : '••••••••'} />
+                  );
+                })}
                 <Button onClick={() => connect(los.id)} disabled={busy || !form.api_key}>{busy ? 'Saving…' : 'Save & connect'}</Button>
                 <p className="text-[11px] text-[var(--c-label2)]">Keys are encrypted (AES-256-GCM) at rest. Live bi-directional sync activates once the LOS API is reachable.</p>
               </div>

@@ -37,8 +37,13 @@ function mapLoan(loan: Record<string, any>) {
 export async function pullAriveLoans(
   orgId: string,
 ): Promise<{ gated: true; reason: string } | { gated: false; staged: number; seen: number }> {
-  const creds = await getLosCredentials(orgId, 'arive');
-  if (!creds) return { gated: true, reason: 'No active Arive connection configured' };
+  let creds: { apiKey: string; apiSecret: string | null } | null;
+  try {
+    creds = await getLosCredentials(orgId, 'arive');
+  } catch (e) {
+    return { gated: true, reason: `Stored Arive credentials couldn't be read (re-enter them in Settings → Integrations). ${(e as Error).message}` };
+  }
+  if (!creds) return { gated: true, reason: 'No active Arive connection — add your Arive credentials in Settings → Integrations.' };
   const conn = await getLosConnection(orgId, 'arive');
   const base = conn?.base_url || 'https://api.arive.com/v1';
 
