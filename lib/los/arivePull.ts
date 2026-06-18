@@ -42,18 +42,22 @@ export async function pullAriveLoans(
   const conn = await getLosConnection(orgId, 'arive');
   const base = conn?.base_url || 'https://api.arive.com/v1';
 
+  const url = `${base}/loans?limit=200`;
   let loans: Record<string, any>[] = [];
   try {
-    const res = await fetch(`${base}/loans?limit=200`, { headers: { 'x-api-key': creds.apiKey, Accept: 'application/json' } });
+    const res = await fetch(url, { headers: { 'x-api-key': creds.apiKey, Accept: 'application/json' } });
     if (!res.ok) {
-      await logSyncEvent({ orgId, losType: 'arive', eventType: 'pull', direction: 'inbound', result: 'error', error: `Arive list API ${res.status}` });
-      return { gated: true, reason: `Arive returned ${res.status} — verify the API key/endpoint.` };
+      const bodySnippet = (await res.text().catch(() => '')).slice(0, 200);
+      const reason = `Arive API ${res.status} at ${url}. ${bodySnippet}`.trim();
+      await logSyncEvent({ orgId, losType: 'arive', eventType: 'pull', direction: 'inbound', result: 'error', error: reason });
+      return { gated: true, reason };
     }
     const j = await res.json();
     loans = Array.isArray(j) ? j : Array.isArray(j.data) ? j.data : Array.isArray(j.loans) ? j.loans : [];
   } catch (e) {
-    await logSyncEvent({ orgId, losType: 'arive', eventType: 'pull', direction: 'inbound', result: 'error', error: String(e) });
-    return { gated: true, reason: 'Could not reach Arive — check the connection.' };
+    const reason = `Could not reach Arive at ${url}: ${(e as Error).message}`;
+    await logSyncEvent({ orgId, losType: 'arive', eventType: 'pull', direction: 'inbound', result: 'error', error: reason });
+    return { gated: true, reason };
   }
 
   const mapped = loans.map(mapLoan).filter((m) => m.external_id);
