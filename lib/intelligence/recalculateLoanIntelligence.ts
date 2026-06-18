@@ -97,27 +97,26 @@ export async function recalculateLoanIntelligence(
 
   const predictedDate = result.predictedCloseDate?.toISOString().split('T')[0] ?? null;
 
-  // Upsert the current score (scores.lo_id is NOT NULL — only write when assigned).
-  if (loId) {
-    await sb.from('loan_intelligence_scores').upsert(
-      {
-        loan_id: loanId,
-        org_id: orgId,
-        lo_id: loId,
-        file_health_score: result.fileHealthScore,
-        close_probability: result.closeProbability,
-        uw_readiness_score: result.uwReadinessScore,
-        predicted_close_date: predictedDate,
-        predicted_close_confidence: result.predictedCloseConfidence,
-        fallout_flags: result.falloutFlags,
-        health_drivers: result.healthDrivers,
-        uw_drivers: result.uwDrivers,
-        computed_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'loan_id' },
-    );
-  }
+  // Upsert the current score. lo_id is now nullable, so unassigned files still
+  // get a score (the score shows in the loan file regardless of assignment).
+  await sb.from('loan_intelligence_scores').upsert(
+    {
+      loan_id: loanId,
+      org_id: orgId,
+      lo_id: loId,
+      file_health_score: result.fileHealthScore,
+      close_probability: result.closeProbability,
+      uw_readiness_score: result.uwReadinessScore,
+      predicted_close_date: predictedDate,
+      predicted_close_confidence: result.predictedCloseConfidence,
+      fallout_flags: result.falloutFlags,
+      health_drivers: result.healthDrivers,
+      uw_drivers: result.uwDrivers,
+      computed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'loan_id' },
+  );
 
   // Append to history (INSERT-only; lo_id nullable here).
   await sb.from('loan_intelligence_history').insert({

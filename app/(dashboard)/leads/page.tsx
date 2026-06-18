@@ -98,6 +98,10 @@ export default async function LeadsPage({
   }
   if (searchParams.stage) {
     query = query.eq('stage', searchParams.stage);
+  } else {
+    // A lead becomes a loan once it reaches application — those live in the
+    // pipeline, not the leads tab. Show only pre-application stages by default.
+    query = query.not('stage', 'in', '(application,processing,underwriting,conditional_approval,clear_to_close,closed,funded,withdrawn,declined)');
   }
   if (searchParams.source) {
     query = query.eq('lead_source', searchParams.source);

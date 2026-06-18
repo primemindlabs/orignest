@@ -7,6 +7,7 @@
  */
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { isBackwardTransition } from '@/lib/funnel/stages';
 
 export interface StageTransitionResult {
   transitioned: boolean;
@@ -47,6 +48,8 @@ export async function evaluateStageTransitions(params: {
     rules.find((r: { org_id: string | null }) => r.org_id === orgId) ?? rules[0];
   const to = rule.to_stage as string;
   if (to === lead.stage) return { transitioned: false };
+  // Loans only move forward — never regress a stage.
+  if (isBackwardTransition(lead.stage as string, to)) return { transitioned: false };
 
   await sb
     .from('leads')

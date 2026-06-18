@@ -39,3 +39,11 @@ export function nextStage(stage: FunnelStageName): FunnelStageName | null {
   const idx = FUNNEL_STAGES.indexOf(stage);
   return idx >= 0 && idx < FUNNEL_STAGES.length - 1 ? FUNNEL_STAGES[idx + 1] : null;
 }
+
+/** Loans only move forward. True when `to` is an earlier funnel stage than `from`
+ * (both must be funnel stages — terminal exits like withdrawn/declined aren't guarded). */
+export function isBackwardTransition(from: string, to: string): boolean {
+  const fi = stageIndex(from);
+  const ti = stageIndex(to);
+  return fi >= 0 && ti >= 0 && ti < fi;
+}

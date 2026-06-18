@@ -11,7 +11,6 @@ import { MobilePipelineView } from '@/components/pipeline/MobilePipelineView';
 import Link from 'next/link';
 import { getTRIDStatus } from '@/lib/compliance/trid';
 import { formatDistanceToNow, isThisMonth } from 'date-fns';
-import { PipelineCommissionMetric } from './PipelineCommissionMetric';
 import { PipelineTabsView } from './PipelineTabsView';
 import { calculateCloseProbability, businessDaysUntil } from '@/lib/pipeline-probability/score';
 import { buildFourWeekForecast } from '@/lib/pipeline-probability/forecast';
@@ -273,7 +272,7 @@ export default async function PipelinePage() {
       </div>
 
       {/* ── Money bar (Phase 74) — money + urgency always visible ─────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 bg-white border border-[var(--color-border-tertiary)] rounded-[12px] overflow-hidden">
+      <div className="grid grid-cols-2 md:grid-cols-3 bg-white border border-[var(--color-border-tertiary)] rounded-[12px] overflow-hidden">
         <div className="px-5 py-4 border-r border-[var(--color-border-tertiary)]">
           <p className="text-xs text-[var(--color-text-secondary)] mb-1">Total pipeline</p>
           <p className="text-[19px] font-medium text-black">{fullCurrency(totalValue)}</p>
@@ -284,7 +283,6 @@ export default async function PipelinePage() {
           <p className="text-[19px] font-medium text-[#8A6310]">{fullCurrency(closingThisMonthVolume)}</p>
           <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{closingThisMonth.length} loans</p>
         </div>
-        <PipelineCommissionMetric closingVolume={closingThisMonthVolume} initialRate={compRate} />
         <div className="px-5 py-4">
           <p className="text-xs text-[var(--color-text-secondary)] mb-1">Needs attention</p>
           <p className="text-[19px] font-medium text-[#C4724A]">{needsAttentionCount}</p>
