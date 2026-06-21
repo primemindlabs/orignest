@@ -6,9 +6,10 @@
  * (the /inbound review queue) for the LO to promote. Inert (returns {gated}) when
  * no active Arive connection. Mirrors the auth/base/shape used in lib/los/syncLoan.
  *
- * ⚠️ Endpoint/auth/response shape follow the existing assumptions (GET /v1/loans,
- * x-api-key, borrower{firstName,…}). Confirm against Arive's partner API for the
- * org's account before relying on it — everything is isolated to this file.
+ * ⚠️ Endpoint/response shape follow assumptions (GET /loans paginated by
+ * limit/offset, OAuth2 bearer via lib/los/ariveAuth, borrower{firstName,…}).
+ * Confirm against Arive's partner API for the org's account before relying on it
+ * — everything is isolated to this file.
  */
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -55,25 +56,39 @@ export async function pullAriveLoans(
     return { gated: true, reason: auth.error };
   }
 
-  const url = `${base}/loans?limit=200`;
-  let loans: Record<string, any>[] = [];
-  try {
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${auth.token}`, Accept: 'application/json' } });
-    if (!res.ok) {
-      const bodySnippet = (await res.text().catch(() => '')).slice(0, 200);
-      const reason = `Arive API ${res.status} at ${url}. ${bodySnippet}`.trim();
+  // Page through the loan list (offset-based). Previously a single 200-loan call
+  // silently truncated larger pipelines; MAX_PAGES caps total work to stay within
+  // this route's 60s budget. Stop on a short/empty page (the last one).
+  const LIMIT = 200;
+  const MAX_PAGES = 10;
+  const loans: Record<string, any>[] = [];
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const url = `${base}/loans?limit=${LIMIT}&offset=${page * LIMIT}`;
+    let batch: Record<string, any>[];
+    try {
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${auth.token}`, Accept: 'application/json' } });
+      if (!res.ok) {
+        const bodySnippet = (await res.text().catch(() => '')).slice(0, 200);
+        const reason = `Arive API ${res.status} at ${url}. ${bodySnippet}`.trim();
+        await logSyncEvent({ orgId, losType: 'arive', eventType: 'pull', direction: 'inbound', result: 'error', error: reason });
+        return { gated: true, reason };
+      }
+      const j = await res.json();
+      batch = Array.isArray(j) ? j : Array.isArray(j.data) ? j.data : Array.isArray(j.loans) ? j.loans : [];
+    } catch (e) {
+      const reason = `Could not reach Arive at ${url}: ${(e as Error).message}`;
       await logSyncEvent({ orgId, losType: 'arive', eventType: 'pull', direction: 'inbound', result: 'error', error: reason });
       return { gated: true, reason };
     }
-    const j = await res.json();
-    loans = Array.isArray(j) ? j : Array.isArray(j.data) ? j.data : Array.isArray(j.loans) ? j.loans : [];
-  } catch (e) {
-    const reason = `Could not reach Arive at ${url}: ${(e as Error).message}`;
-    await logSyncEvent({ orgId, losType: 'arive', eventType: 'pull', direction: 'inbound', result: 'error', error: reason });
-    return { gated: true, reason };
+    loans.push(...batch);
+    if (batch.length < LIMIT) break;
   }
 
-  const mapped = loans.map(mapLoan).filter((m) => m.external_id);
+  // De-dupe by external_id within the pull itself (last value wins) so an API that
+  // ignores `offset` and re-returns the same page can't stage duplicate rows.
+  const byId = new Map<string, ReturnType<typeof mapLoan>>();
+  for (const l of loans) { const m = mapLoan(l); if (m.external_id) byId.set(m.external_id, m); }
+  const mapped = [...byId.values()];
   const sb = createAdminClient();
 
   // Skip loans already staged (any status) or already imported as a lead.

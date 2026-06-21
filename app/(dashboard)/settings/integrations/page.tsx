@@ -23,7 +23,7 @@ export default async function IntegrationsPage() {
           Connect your LOS so loan status, conditions, and contacts stay in sync. Your LOS is the system of record for loan status — Ashley IQ reflects it and never overrides it.
         </p>
       </div>
-      <IntegrationsClient canManage={role === 'admin' || role === 'branch_manager'} />
+      <IntegrationsClient canManage={role === 'admin' || role === 'branch_manager'} orgId={orgId} />
 
       <div className="pt-2">
         <h2 className="text-[16px] font-bold text-[var(--c-text)] tracking-tight">Referral Sources</h2>
