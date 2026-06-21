@@ -13,6 +13,7 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getLosConnection, getLosCredentials, logSyncEvent } from '@/lib/los/connection';
+import { ariveBase, getAriveToken } from '@/lib/los/ariveAuth';
 
 const num = (v: unknown) => { const x = Number(String(v ?? '').replace(/[^0-9.]/g, '')); return Number.isFinite(x) && x > 0 ? x : null; };
 
@@ -45,12 +46,19 @@ export async function pullAriveLoans(
   }
   if (!creds) return { gated: true, reason: 'No active Arive connection — add your Arive credentials in Settings → Integrations.' };
   const conn = await getLosConnection(orgId, 'arive');
-  const base = conn?.base_url || 'https://api.arive.com/v1';
+  const base = ariveBase(conn?.base_url);
+
+  // Arive authenticates via OAuth2 client-credentials: Client ID + Secret → bearer token.
+  const auth = await getAriveToken(base, creds.apiKey, creds.apiSecret);
+  if ('error' in auth) {
+    await logSyncEvent({ orgId, losType: 'arive', eventType: 'pull', direction: 'inbound', result: 'error', error: auth.error });
+    return { gated: true, reason: auth.error };
+  }
 
   const url = `${base}/loans?limit=200`;
   let loans: Record<string, any>[] = [];
   try {
-    const res = await fetch(url, { headers: { 'x-api-key': creds.apiKey, Accept: 'application/json' } });
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${auth.token}`, Accept: 'application/json' } });
     if (!res.ok) {
       const bodySnippet = (await res.text().catch(() => '')).slice(0, 200);
       const reason = `Arive API ${res.status} at ${url}. ${bodySnippet}`.trim();

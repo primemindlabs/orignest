@@ -8,10 +8,11 @@
  */
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getLosCredentials, logSyncEvent, type LosType } from '@/lib/los/connection';
+import { getLosConnection, getLosCredentials, logSyncEvent, type LosType } from '@/lib/los/connection';
 import { mapLosStatus } from '@/lib/los/statusMap';
+import { ariveBase, getAriveToken } from '@/lib/los/ariveAuth';
 
-async function fetchLoan(losType: LosType, creds: { apiKey: string; apiSecret: string | null }, loanId: string): Promise<Record<string, unknown> | null> {
+async function fetchLoan(losType: LosType, creds: { apiKey: string; apiSecret: string | null }, loanId: string, baseUrl?: string | null): Promise<Record<string, unknown> | null> {
   try {
     if (losType === 'lendingpad') {
       const tok = await fetch('https://api.lendingpad.com/oauth/token', {
@@ -24,7 +25,11 @@ async function fetchLoan(losType: LosType, creds: { apiKey: string; apiSecret: s
       return r.ok ? r.json() : null;
     }
     if (losType === 'arive') {
-      const r = await fetch(`https://api.arive.com/v1/loans/${loanId}`, { headers: { 'x-api-key': creds.apiKey, Accept: 'application/json' } });
+      // OAuth2 client-credentials, same as the /inbound pull (lib/los/ariveAuth).
+      const base = ariveBase(baseUrl);
+      const auth = await getAriveToken(base, creds.apiKey, creds.apiSecret);
+      if ('error' in auth) return null;
+      const r = await fetch(`${base}/loans/${loanId}`, { headers: { Authorization: `Bearer ${auth.token}`, Accept: 'application/json' } });
       return r.ok ? r.json() : null;
     }
   } catch {
@@ -70,7 +75,8 @@ export async function syncLoanFromLos(orgId: string, losType: LosType, losLoanId
     return { ok: false, gated: true };
   }
 
-  const loan = await fetchLoan(losType, creds, losLoanId);
+  const conn = losType === 'arive' ? await getLosConnection(orgId, losType) : null;
+  const loan = await fetchLoan(losType, creds, losLoanId, conn?.base_url);
   if (!loan) {
     await logSyncEvent({ orgId, losType, losLoanId, eventType: 'sync_error', direction: 'inbound', result: 'error', error: 'los_fetch_failed' });
     return { ok: false };
