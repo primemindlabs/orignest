@@ -39,26 +39,31 @@ export async function POST(req: Request) {
 
   const b = (await req.json().catch(() => ({}))) as { los_type?: string; api_key?: string; api_secret?: string; base_url?: string };
   if (!LOS_TYPES.includes(b.los_type ?? '')) return NextResponse.json({ error: 'Invalid los_type' }, { status: 400 });
-  if (!b.api_key) return NextResponse.json({ error: 'API key is required' }, { status: 400 });
+
+  // Arive has no public API — it pushes to us via Zapier — so connecting it just
+  // provisions the inbound webhook + secret; no credentials are collected here.
+  const webhookOnly = b.los_type === 'arive';
+  if (!webhookOnly && !b.api_key) return NextResponse.json({ error: 'API key is required' }, { status: 400 });
 
   const sb = createAdminClient();
   const { error } = await sb.from('los_connections').upsert({
     org_id: orgId,
     los_type: b.los_type,
-    api_key_enc: encrypt(b.api_key),
+    api_key_enc: b.api_key ? encrypt(b.api_key) : null,
     api_secret_enc: b.api_secret ? encrypt(b.api_secret) : null,
     webhook_secret: randomBytes(24).toString('hex'),
     base_url: b.base_url ?? null,
     is_active: true,
-    sync_error: 'Credentials saved. Live sync activates once the LOS API is reachable.',
+    sync_error: webhookOnly
+      ? 'Connected. Point your Arive→Zapier webhook at the URL below to start syncing.'
+      : 'Credentials saved. Live sync activates once the LOS API is reachable.',
     updated_at: new Date().toISOString(),
   }, { onConflict: 'org_id,los_type' });
   if (error) {
     console.error('[los] connect failed', error);
     return NextResponse.json({ error: 'save_failed' }, { status: 500 });
   }
-  // GATED: register webhook + run initial sync here once the LOS API is reachable.
-  return NextResponse.json({ connected: true, los_type: b.los_type, note: 'Credentials encrypted and stored. Live bi-directional sync activates when the LOS API is connected.' });
+  return NextResponse.json({ connected: true, los_type: b.los_type, note: webhookOnly ? 'Webhook provisioned. Configure your Zap to POST to the URL shown.' : 'Credentials encrypted and stored. Live bi-directional sync activates when the LOS API is connected.' });
 }
 
 export async function DELETE(req: Request) {

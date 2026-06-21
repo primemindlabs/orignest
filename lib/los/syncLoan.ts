@@ -1,18 +1,23 @@
 /**
- * Phase 41.3/41.4/41.6 — inbound loan sync from an LOS (LendingPad/Arive).
+ * Phase 41.3/41.6 — inbound loan sync from a REST LOS (LendingPad).
  * GATED: returns early (logging 'skipped') when no live credentials are stored,
  * so it's inert until the LOS API is connected. No fake loan data is written.
  *
  * Adapted to the real schema: loans are `leads` (no loan_files), so status maps
  * onto leads.stage and matching/creation happens on the leads table.
+ *
+ * matchOrCreateLead is also reused by the Arive webhook (Zapier push), so its
+ * field extraction tolerates both nested and flat payload shapes.
  */
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getLosConnection, getLosCredentials, logSyncEvent, type LosType } from '@/lib/los/connection';
+import { getLosCredentials, logSyncEvent, type LosType } from '@/lib/los/connection';
 import { mapLosStatus } from '@/lib/los/statusMap';
-import { ariveBase, getAriveToken } from '@/lib/los/ariveAuth';
 
-async function fetchLoan(losType: LosType, creds: { apiKey: string; apiSecret: string | null }, loanId: string, baseUrl?: string | null): Promise<Record<string, unknown> | null> {
+// REST pull-back fetch. Only LendingPad exposes a public loan API; Arive is
+// inbound-only via Zapier (/api/webhooks/arive processes the posted body
+// directly) and BytePro is webhook-only — neither is fetched here.
+async function fetchLoan(losType: LosType, creds: { apiKey: string; apiSecret: string | null }, loanId: string): Promise<Record<string, unknown> | null> {
   try {
     if (losType === 'lendingpad') {
       const tok = await fetch('https://api.lendingpad.com/oauth/token', {
@@ -24,14 +29,6 @@ async function fetchLoan(losType: LosType, creds: { apiKey: string; apiSecret: s
       const r = await fetch(`https://api.lendingpad.com/v1/loans/${loanId}`, { headers: { Authorization: `Bearer ${access_token}` } });
       return r.ok ? r.json() : null;
     }
-    if (losType === 'arive') {
-      // OAuth2 client-credentials, same as the /inbound pull (lib/los/ariveAuth).
-      const base = ariveBase(baseUrl);
-      const auth = await getAriveToken(base, creds.apiKey, creds.apiSecret);
-      if ('error' in auth) return null;
-      const r = await fetch(`${base}/loans/${loanId}`, { headers: { Authorization: `Bearer ${auth.token}`, Accept: 'application/json' } });
-      return r.ok ? r.json() : null;
-    }
   } catch {
     return null;
   }
@@ -40,8 +37,12 @@ async function fetchLoan(losType: LosType, creds: { apiKey: string; apiSecret: s
 
 export async function matchOrCreateLead(orgId: string, loan: Record<string, any>, losType: LosType, losLoanId: string): Promise<string | null> {
   const sb = createAdminClient();
-  const email = (loan.borrower?.email ?? loan.primaryBorrower?.email ?? '').toLowerCase() || null;
-  const phone = loan.borrower?.phone ?? loan.primaryBorrower?.phone ?? null;
+  // Accept either nested (borrower.email) or flat (Zapier-mapped) field shapes.
+  const b = loan.borrower ?? loan.primaryBorrower ?? {};
+  const email = (b.email ?? loan.email ?? loan.borrowerEmail ?? '').toLowerCase() || null;
+  const phone = b.phone ?? b.mobilePhone ?? loan.phone ?? loan.borrowerPhone ?? null;
+  const firstName = b.firstName ?? b.first_name ?? loan.firstName ?? loan.borrowerFirstName ?? '';
+  const lastName = b.lastName ?? b.last_name ?? loan.lastName ?? loan.borrowerLastName ?? '';
 
   let leadId: string | null = null;
   if (email) {
@@ -55,8 +56,8 @@ export async function matchOrCreateLead(orgId: string, loan: Record<string, any>
   if (!leadId) {
     const { data } = await sb.from('leads').insert({
       org_id: orgId,
-      first_name: loan.borrower?.firstName ?? loan.primaryBorrower?.firstName ?? '',
-      last_name: loan.borrower?.lastName ?? loan.primaryBorrower?.lastName ?? '',
+      first_name: firstName,
+      last_name: lastName,
       email, phone, data_ownership: 'company_generated', lead_source: `los_sync_${losType}`,
       stage: 'application', los_loan_id: losLoanId, los_type: losType,
     }).select('id').single();
@@ -75,8 +76,7 @@ export async function syncLoanFromLos(orgId: string, losType: LosType, losLoanId
     return { ok: false, gated: true };
   }
 
-  const conn = losType === 'arive' ? await getLosConnection(orgId, losType) : null;
-  const loan = await fetchLoan(losType, creds, losLoanId, conn?.base_url);
+  const loan = await fetchLoan(losType, creds, losLoanId);
   if (!loan) {
     await logSyncEvent({ orgId, losType, losLoanId, eventType: 'sync_error', direction: 'inbound', result: 'error', error: 'los_fetch_failed' });
     return { ok: false };

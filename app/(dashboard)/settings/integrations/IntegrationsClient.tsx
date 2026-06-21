@@ -1,6 +1,6 @@
 'use client';
 
-/** Phase 41.7 — LOS connect/disconnect cards (LendingPad + Arive + BytePro). */
+/** Phase 41.7 — LOS connect/disconnect cards (LendingPad REST · Arive via Zapier · BytePro webhook). */
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -8,13 +8,13 @@ import { Plug, Check, X, ChevronRight } from 'lucide-react';
 
 interface Conn { los_type: string; is_active: boolean; last_sync_at: string | null; sync_error: string | null; webhook_secret?: string | null }
 
-interface Webhook { path: string; header: string; tenant: boolean }
+interface Webhook { path: string; tenant: boolean; auth: 'hmac' | 'shared'; header?: string }
 interface Los { id: string; name: string; desc: string; fields: { key: string; label: string; type?: string }[]; webhook?: Webhook; testable?: boolean }
 
 const LOS: Los[] = [
-  { id: 'lendingpad', name: 'LendingPad', desc: 'Sync loan status, conditions, and contacts with your LendingPad account.', fields: [{ key: 'api_key', label: 'API Key' }, { key: 'api_secret', label: 'API Secret' }], webhook: { path: '/api/webhooks/lendingpad', header: 'x-lendingpad-signature', tenant: true }, testable: true },
-  { id: 'arive', name: 'Arive', desc: 'Sync loan pipeline and conditions with your Arive account. Generate these in Arive → Settings → Integrations.', fields: [{ key: 'api_key', label: 'API Key / Client ID' }, { key: 'api_secret', label: 'Secret Key' }, { key: 'base_url', label: 'API Gateway URL', type: 'text' }], webhook: { path: '/api/webhooks/arive', header: 'x-arive-signature', tenant: true }, testable: true },
-  { id: 'byte', name: 'BytePro', desc: 'Receive loan status updates from BytePro via webhook (receive-only).', fields: [{ key: 'api_key', label: 'BytePro Account ID' }], webhook: { path: '/api/webhooks/byte', header: 'x-webhook-signature', tenant: false } },
+  { id: 'lendingpad', name: 'LendingPad', desc: 'Sync loan status, conditions, and contacts with your LendingPad account.', fields: [{ key: 'api_key', label: 'API Key' }, { key: 'api_secret', label: 'API Secret' }], webhook: { path: '/api/webhooks/lendingpad', tenant: true, auth: 'hmac', header: 'x-lendingpad-signature' }, testable: true },
+  { id: 'arive', name: 'Arive', desc: 'Arive has no public API — it syncs by pushing loan updates to AshleyIQ through Zapier. Requires the Broker Pro or Non-Del plan in Arive.', fields: [], webhook: { path: '/api/webhooks/arive', tenant: true, auth: 'shared' } },
+  { id: 'byte', name: 'BytePro', desc: 'Receive loan status updates from BytePro via webhook (receive-only).', fields: [{ key: 'api_key', label: 'BytePro Account ID' }], webhook: { path: '/api/webhooks/byte', tenant: false, auth: 'hmac', header: 'x-webhook-signature' } },
 ];
 
 export function IntegrationsClient({ canManage, orgId }: { canManage: boolean; orgId: string }) {
@@ -63,6 +63,8 @@ export function IntegrationsClient({ canManage, orgId }: { canManage: boolean; o
         const c = connOf(los.id);
         const isOpen = open === los.id;
         const tm = testMsg[los.id];
+        const w = los.webhook;
+        const ariveUrl = w && w.auth === 'shared' ? `${origin}${w.path}?tenant_id=${orgId}${c?.webhook_secret ? `&secret=${c.webhook_secret}` : ''}` : '';
         return (
           <div key={los.id} className="bg-[var(--c-surface)] border border-[var(--c-border)] rounded-[14px] p-4">
             <div className="flex items-start gap-3">
@@ -74,10 +76,12 @@ export function IntegrationsClient({ canManage, orgId }: { canManage: boolean; o
                 </div>
                 <p className="text-[12px] text-[var(--c-label2)] mt-0.5">{los.desc}</p>
                 {c?.sync_error && <p className="text-[11px] text-[var(--c-label3)] mt-1">{c.sync_error}</p>}
-                {c && los.webhook && (
+
+                {/* HMAC push LOS (LendingPad / BytePro): show the receiving URL + signing secret. */}
+                {c && w && w.auth === 'hmac' && (
                   <div className="mt-2 space-y-1.5 text-[11px]">
-                    <p className="text-[var(--c-label2)]">Point {los.name}&apos;s webhook here (HMAC-SHA256, header <code>{los.webhook.header}</code>):</p>
-                    <code className="block bg-[var(--c-fill)] rounded px-2 py-1 break-all text-[var(--c-text)]">{origin}{los.webhook.path}{los.webhook.tenant ? `?tenant_id=${orgId}` : ''}</code>
+                    <p className="text-[var(--c-label2)]">Point {los.name}&apos;s webhook here (HMAC-SHA256, header <code>{w.header}</code>):</p>
+                    <code className="block bg-[var(--c-fill)] rounded px-2 py-1 break-all text-[var(--c-text)]">{origin}{w.path}{w.tenant ? `?tenant_id=${orgId}` : ''}</code>
                     {c.webhook_secret && (
                       <>
                         <p className="text-[var(--c-label2)]">Signing secret:</p>
@@ -86,6 +90,21 @@ export function IntegrationsClient({ canManage, orgId }: { canManage: boolean; o
                     )}
                   </div>
                 )}
+
+                {/* Arive (Zapier): one-time setup instructions + the secret POST URL. */}
+                {c && w && w.auth === 'shared' && (
+                  <div className="mt-2 space-y-1.5 text-[11px]">
+                    <p className="text-[var(--c-label2)]">Set up the sync once in Zapier:</p>
+                    <ol className="list-decimal ml-4 space-y-0.5 text-[var(--c-label2)]">
+                      <li>In Arive (Broker Pro / Non-Del): <span className="text-[var(--c-text)]">Settings → API Integrations</span> → generate an API Key, then connect Arive in Zapier with it.</li>
+                      <li>Build a Zap: trigger on your Arive loan event → action <span className="text-[var(--c-text)]">&quot;Webhooks by Zapier&quot; (POST)</span>.</li>
+                      <li>POST the loan as JSON to this URL:</li>
+                    </ol>
+                    <code className="block bg-[var(--c-fill)] rounded px-2 py-1 break-all text-[var(--c-text)]">{ariveUrl}</code>
+                    <p className="text-[var(--c-label3)]">Keep this URL private — it carries your signing token. You can instead send the token as an <code>X-Webhook-Secret</code> header.</p>
+                  </div>
+                )}
+
                 {c && los.testable && canManage && (
                   <div className="mt-2 flex items-center gap-2 flex-wrap">
                     <Button variant="secondary" onClick={() => test(los.id)} disabled={testing === los.id}>{testing === los.id ? 'Testing…' : 'Test connection'}</Button>
@@ -99,12 +118,14 @@ export function IntegrationsClient({ canManage, orgId }: { canManage: boolean; o
               </div>
               {canManage && (c ? (
                 <Button variant="secondary" onClick={() => disconnect(los.id)} disabled={busy}><X size={13} /> Disconnect</Button>
+              ) : los.fields.length === 0 ? (
+                <Button variant="secondary" onClick={() => connect(los.id)} disabled={busy}>{busy ? 'Connecting…' : 'Connect'} <ChevronRight size={13} /></Button>
               ) : (
                 <Button variant="secondary" onClick={() => { setOpen(isOpen ? null : los.id); setForm({}); }}>{isOpen ? 'Cancel' : 'Connect'} <ChevronRight size={13} /></Button>
               ))}
             </div>
 
-            {isOpen && !c && canManage && (
+            {isOpen && !c && canManage && los.fields.length > 0 && (
               <div className="mt-3 pt-3 border-t border-[var(--c-border)] space-y-3">
                 {los.fields.map((f) => {
                   const t = f.type ?? 'password';
