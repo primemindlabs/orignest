@@ -30,28 +30,43 @@ export async function pullAriveToInbound(
 
   const maxPages = opts.maxPages ?? 3;
   const rows: Record<string, any>[] = [];
+  // Diagnostics so a zero-result pull is explainable (auth vs shape vs empty).
+  const diag: Record<string, any> = {};
 
-  // Loans — response is { count, rows }.
+  // Rows can come back bare, or wrapped under various keys — be liberal.
+  const extractRows = (data: any): any[] => {
+    if (Array.isArray(data)) return data;
+    for (const k of ['rows', 'data', 'result', 'results', 'loans', 'leads', 'items']) {
+      if (Array.isArray(data?.[k])) return data[k];
+      if (Array.isArray(data?.data?.[k])) return data.data[k];
+    }
+    return [];
+  };
+  const extractCount = (data: any): number => Number(data?.count ?? data?.total ?? data?.data?.count ?? 0);
+
+  // Loans.
   for (let p = 0; p < maxPages; p++) {
     const r = await searchAriveLoans(base, creds.apiKey, { limit: LIMIT, offset: p * LIMIT });
     if (!r.ok) {
       if (p === 0) {
-        await logSyncEvent({ orgId, losType: 'arive', eventType: 'pull', direction: 'inbound', result: 'error', error: r.error });
-        return { gated: true, reason: r.error };
+        await logSyncEvent({ orgId, losType: 'arive', eventType: 'pull', direction: 'inbound', result: 'error', error: `loans: ${r.error}` });
+        return { gated: true, reason: `Arive loan search failed — ${r.error}` };
       }
       break;
     }
-    const batch: any[] = Array.isArray(r.data?.rows) ? r.data.rows : Array.isArray(r.data) ? r.data : [];
+    const batch = extractRows(r.data);
+    if (p === 0) { diag.loansCount = extractCount(r.data); diag.loansFirstPage = batch.length; diag.loansKeys = batch.length === 0 && r.data && !Array.isArray(r.data) ? Object.keys(r.data).slice(0, 12) : undefined; }
     rows.push(...batch);
-    const count = Number(r.data?.count ?? 0);
+    const count = extractCount(r.data);
     if (batch.length < LIMIT || (count && (p + 1) * LIMIT >= count)) break;
   }
 
-  // Leads — response is a bare array. Don't fail the whole pull if leads error.
+  // Leads — don't fail the whole pull if leads error.
   for (let p = 0; p < maxPages; p++) {
     const r = await searchAriveLeads(base, creds.apiKey, { limit: LIMIT, offset: p * LIMIT });
-    if (!r.ok) break;
-    const batch: any[] = Array.isArray(r.data) ? r.data : Array.isArray(r.data?.rows) ? r.data.rows : [];
+    if (!r.ok) { if (p === 0) diag.leadsError = r.error; break; }
+    const batch = extractRows(r.data);
+    if (p === 0) { diag.leadsFirstPage = batch.length; diag.leadsKeys = batch.length === 0 && r.data && !Array.isArray(r.data) ? Object.keys(r.data).slice(0, 12) : undefined; }
     rows.push(...batch);
     if (batch.length < LIMIT) break;
   }
@@ -70,7 +85,12 @@ export async function pullAriveToInbound(
   const fresh = mapped.filter((m) => !seen.has(m.external_id));
   if (fresh.length) await sb.from('imported_loans').insert(fresh);
 
-  await sb.from('los_connections').update({ last_sync_at: new Date().toISOString(), sync_error: null }).eq('org_id', orgId).eq('los_type', 'arive');
-  await logSyncEvent({ orgId, losType: 'arive', eventType: 'pull', direction: 'inbound', result: 'success', payload: { seen: mapped.length, staged: fresh.length } });
+  // If Arive returned literally nothing, leave a legible reason on the card instead
+  // of a silent "0 imported".
+  const emptyNote = rows.length === 0
+    ? `Arive returned 0 records (loans page=${diag.loansFirstPage ?? 0}, count=${diag.loansCount ?? 0}; leads page=${diag.leadsFirstPage ?? 0}${diag.leadsError ? `, leads err: ${diag.leadsError}` : ''}). If you have loans in Arive, the API key may lack list access.`.slice(0, 480)
+    : null;
+  await sb.from('los_connections').update({ last_sync_at: new Date().toISOString(), sync_error: emptyNote }).eq('org_id', orgId).eq('los_type', 'arive');
+  await logSyncEvent({ orgId, losType: 'arive', eventType: 'pull', direction: 'inbound', result: 'success', payload: { seen: mapped.length, staged: fresh.length, ...diag } });
   return { gated: false, staged: fresh.length, seen: mapped.length };
 }

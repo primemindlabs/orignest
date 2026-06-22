@@ -83,9 +83,12 @@ export async function POST(req: Request) {
 
     const { subscribed, failures } = await subscribeAriveHooks(base, b.api_key, webhookUrl);
     const live = failures.length === 0 ? `Live updates on (${subscribed} events).` : 'Live webhooks unavailable (subscribe blocked) — syncing on a schedule.';
-    const note = `Connected — imported ${pull.staged} record${pull.staged === 1 ? '' : 's'} to Inbound. ${live}`.slice(0, 480);
+    const imported = pull.seen === 0
+      ? 'Connected, but Arive returned 0 records — the API key may not have loan/lead list access.'
+      : `Connected — imported ${pull.staged} of ${pull.seen} record${pull.seen === 1 ? '' : 's'} to Inbound.`;
+    const note = `${imported} ${live}`.slice(0, 480);
     await sb.from('los_connections').update({ sync_error: note }).eq('org_id', orgId).eq('los_type', 'arive');
-    return NextResponse.json({ connected: true, los_type: 'arive', staged: pull.staged, subscribed, failures, note });
+    return NextResponse.json({ connected: true, los_type: 'arive', staged: pull.staged, seen: pull.seen, subscribed, failures, note });
   }
 
   return NextResponse.json({ connected: true, los_type: b.los_type, note: 'Credentials encrypted and stored. Live bi-directional sync activates when the LOS API is connected.' });
