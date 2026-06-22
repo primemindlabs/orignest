@@ -11,7 +11,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { getLosConnection, getLosCredentials, logSyncEvent } from '@/lib/los/connection';
 import { mapLosStatus } from '@/lib/los/statusMap';
 import { matchOrCreateLead } from '@/lib/los/syncLoan';
-import { ariveBase, getAriveRecord, normalizeAriveLoan, normalizeAriveLead } from '@/lib/los/arive';
+import { ariveBase, ariveToken, getAriveRecord, normalizeAriveLoan, normalizeAriveLead } from '@/lib/los/arive';
 
 export async function syncAriveEntity(orgId: string, kind: 'loan' | 'lead', ariveId: string): Promise<{ ok: boolean; reason?: string }> {
   const creds = await getLosCredentials(orgId, 'arive');
@@ -22,7 +22,13 @@ export async function syncAriveEntity(orgId: string, kind: 'loan' | 'lead', ariv
     return { ok: false, reason: 'not_connected' };
   }
 
-  const rec = await getAriveRecord(base, creds.apiKey, kind, ariveId);
+  const auth = await ariveToken(base, creds.apiKey, creds.apiSecret);
+  if ('error' in auth) {
+    await logSyncEvent({ orgId, losType: 'arive', losLoanId: ariveId, eventType: 'sync_error', direction: 'inbound', result: 'error', error: auth.error });
+    return { ok: false, reason: auth.error };
+  }
+
+  const rec = await getAriveRecord(base, creds.apiKey, kind, ariveId, auth.token);
   if (!rec.ok) {
     await logSyncEvent({ orgId, losType: 'arive', losLoanId: ariveId, eventType: 'sync_error', direction: 'inbound', result: 'error', error: rec.error });
     return { ok: false, reason: rec.error };

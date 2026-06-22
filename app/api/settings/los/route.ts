@@ -13,7 +13,7 @@ import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { encrypt } from '@/lib/crypto/encrypt';
 import { randomBytes } from 'crypto';
-import { ariveBase, subscribeAriveHooks } from '@/lib/los/arive';
+import { ariveBase, ariveToken, subscribeAriveHooks } from '@/lib/los/arive';
 import { pullAriveToInbound } from '@/lib/los/arivePull';
 
 export const runtime = 'nodejs';
@@ -40,13 +40,18 @@ export async function POST(req: Request) {
   if (!orgId) return NextResponse.json({ error: 'No org' }, { status: 403 });
   if (!ADMIN.includes(role)) return NextResponse.json({ error: 'Only admins can connect an LOS.' }, { status: 403 });
 
-  const b = (await req.json().catch(() => ({}))) as { los_type?: string; api_key?: string; api_secret?: string; base_url?: string };
+  const b = (await req.json().catch(() => ({}))) as { los_type?: string; api_key?: string; api_secret?: string; base_url?: string; client_id?: string; client_secret?: string };
   if (!LOS_TYPES.includes(b.los_type ?? '')) return NextResponse.json({ error: 'Invalid los_type' }, { status: 400 });
   if (!b.api_key) return NextResponse.json({ error: 'API key is required' }, { status: 400 });
 
   const isArive = b.los_type === 'arive';
-  // Arive's API lives on the broker's own *.myarive.com subdomain.
+  // Arive's API lives on the broker's own *.myarive.com subdomain and is OAuth-gated.
   if (isArive && !ariveBase(b.base_url)) return NextResponse.json({ error: 'Your Arive Base URL (e.g. https://yourname.myarive.com) is required.' }, { status: 400 });
+  if (isArive && (!b.client_id || !b.client_secret)) return NextResponse.json({ error: 'Arive needs the Client ID and Secret Key (from Arive → Settings → API Integrations) for OAuth.' }, { status: 400 });
+
+  // Arive packs Client ID + Secret Key into api_secret_enc (OAuth creds) — no schema
+  // change. Other LOS use api_secret_enc for their single API secret.
+  const secretToStore = isArive ? JSON.stringify({ clientId: b.client_id, secret: b.client_secret }) : b.api_secret;
 
   const webhookSecret = randomBytes(24).toString('hex');
   const sb = createAdminClient();
@@ -54,7 +59,7 @@ export async function POST(req: Request) {
     org_id: orgId,
     los_type: b.los_type,
     api_key_enc: encrypt(b.api_key),
-    api_secret_enc: b.api_secret ? encrypt(b.api_secret) : null,
+    api_secret_enc: secretToStore ? encrypt(secretToStore) : null,
     webhook_secret: webhookSecret,
     base_url: b.base_url ?? null,
     is_active: true,
@@ -66,9 +71,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'save_failed' }, { status: 500 });
   }
 
-  // Arive: pull is the reliable path (GET search works; the hook-subscribe POST is
-  // blocked at Arive's edge). Backfill into /inbound now so the pipeline shows up
-  // immediately, and try the live subscribe best-effort (non-fatal).
+  // Arive: OAuth-gated REST API. Backfill into /inbound now (the pull does its own
+  // login) so the pipeline shows up immediately, and try the live subscribe
+  // best-effort (non-fatal).
   if (isArive) {
     const base = ariveBase(b.base_url)!;
     const origin = (process.env.NEXT_PUBLIC_APP_URL || new URL(req.url).origin).replace(/\/+$/, '');
@@ -76,12 +81,14 @@ export async function POST(req: Request) {
 
     const pull = await pullAriveToInbound(orgId, { maxPages: 3 });
     if (pull.gated) {
-      // The key/base URL didn't even read — surface it as a hard connect error.
+      // OAuth login / key / base URL didn't work — surface it as a hard connect error.
       await sb.from('los_connections').update({ sync_error: pull.reason }).eq('org_id', orgId).eq('los_type', 'arive');
       return NextResponse.json({ connected: true, los_type: 'arive', warning: pull.reason });
     }
 
-    const { subscribed, failures } = await subscribeAriveHooks(base, b.api_key, webhookUrl);
+    const auth = await ariveToken(base, b.api_key, JSON.stringify({ clientId: b.client_id, secret: b.client_secret }));
+    const token = 'token' in auth ? auth.token : undefined;
+    const { subscribed, failures } = await subscribeAriveHooks(base, b.api_key, webhookUrl, token);
     const live = failures.length === 0 ? `Live updates on (${subscribed} events).` : 'Live webhooks unavailable (subscribe blocked) — syncing on a schedule.';
     const imported = pull.seen === 0
       ? 'Connected, but Arive returned 0 records — the API key may not have loan/lead list access.'

@@ -9,7 +9,7 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getLosConnection, getLosCredentials, logSyncEvent } from '@/lib/los/connection';
-import { ariveBase, searchAriveLoans, searchAriveLeads, mapAriveToStaged } from '@/lib/los/arive';
+import { ariveBase, ariveToken, searchAriveLoans, searchAriveLeads, mapAriveToStaged } from '@/lib/los/arive';
 
 const LIMIT = 100;
 
@@ -27,6 +27,14 @@ export async function pullAriveToInbound(
   const conn = await getLosConnection(orgId, 'arive');
   const base = ariveBase(conn?.base_url);
   if (!base) return { gated: true, reason: 'No Arive Base URL stored — reconnect with your *.myarive.com URL.' };
+
+  // Arive's data API is OAuth-gated: exchange Client ID + Secret Key for a token.
+  const auth = await ariveToken(base, creds.apiKey, creds.apiSecret);
+  if ('error' in auth) {
+    await logSyncEvent({ orgId, losType: 'arive', eventType: 'pull', direction: 'inbound', result: 'error', error: auth.error });
+    return { gated: true, reason: auth.error };
+  }
+  const token = auth.token;
 
   const maxPages = opts.maxPages ?? 3;
   const rows: Record<string, any>[] = [];
@@ -46,7 +54,7 @@ export async function pullAriveToInbound(
 
   // Loans.
   for (let p = 0; p < maxPages; p++) {
-    const r = await searchAriveLoans(base, creds.apiKey, { limit: LIMIT, offset: p * LIMIT });
+    const r = await searchAriveLoans(base, creds.apiKey, { limit: LIMIT, offset: p * LIMIT }, token);
     if (!r.ok) {
       if (p === 0) {
         await logSyncEvent({ orgId, losType: 'arive', eventType: 'pull', direction: 'inbound', result: 'error', error: `loans: ${r.error}` });
@@ -63,7 +71,7 @@ export async function pullAriveToInbound(
 
   // Leads — don't fail the whole pull if leads error.
   for (let p = 0; p < maxPages; p++) {
-    const r = await searchAriveLeads(base, creds.apiKey, { limit: LIMIT, offset: p * LIMIT });
+    const r = await searchAriveLeads(base, creds.apiKey, { limit: LIMIT, offset: p * LIMIT }, token);
     if (!r.ok) { if (p === 0) diag.leadsError = r.error; break; }
     const batch = extractRows(r.data);
     if (p === 0) { diag.leadsFirstPage = batch.length; diag.leadsKeys = batch.length === 0 && r.data && !Array.isArray(r.data) ? Object.keys(r.data).slice(0, 12) : undefined; }

@@ -7,7 +7,7 @@
 import { NextResponse } from 'next/server';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { getLosConnection, getLosCredentials, type LosType } from '@/lib/los/connection';
-import { ariveBase, listAriveHooks } from '@/lib/los/arive';
+import { ariveBase, ariveToken } from '@/lib/los/arive';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -43,9 +43,9 @@ export async function POST(req: Request) {
       const conn = await getLosConnection(orgId, 'arive');
       const base = ariveBase(conn?.base_url);
       if (!base) return NextResponse.json({ ok: false, error: 'No Arive Base URL stored — reconnect with your *.myarive.com URL.' });
-      const res = await listAriveHooks(base, creds.apiKey);
-      if (!res.ok) return NextResponse.json({ ok: false, error: res.error });
-      return NextResponse.json({ ok: true, message: 'Arive authenticated — API Key and Base URL are valid.' });
+      const auth = await ariveToken(base, creds.apiKey, creds.apiSecret);
+      if ('error' in auth) return NextResponse.json({ ok: false, error: auth.error });
+      return NextResponse.json({ ok: true, message: 'Arive OAuth succeeded — Client ID, Secret Key, API Key and Base URL are valid.' });
     }
     // lendingpad: same client-credentials exchange used in lib/los/syncLoan.
     const tok = await fetch('https://api.lendingpad.com/oauth/token', {

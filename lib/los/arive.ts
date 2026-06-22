@@ -38,11 +38,13 @@ export function ariveBase(baseUrl?: string | null): string | null {
 
 type AriveResult = { ok: true; data: Record<string, any> } | { ok: false; status?: number; error: string };
 
-async function ariveGet(base: string, apiKey: string, path: string): Promise<AriveResult> {
+async function ariveGet(base: string, apiKey: string, path: string, token?: string): Promise<AriveResult> {
   const url = `${base}${path}`;
+  const headers: Record<string, string> = { 'X-API-KEY': apiKey, Accept: 'application/json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
   let res: Response;
   try {
-    res = await fetch(url, { headers: { 'X-API-KEY': apiKey, Accept: 'application/json' } });
+    res = await fetch(url, { headers });
   } catch (e) {
     return { ok: false, error: `Could not reach Arive at ${url}: ${(e as Error).message}` };
   }
@@ -62,8 +64,47 @@ async function ariveGet(base: string, apiKey: string, path: string): Promise<Ari
   }
 }
 
-export const getAriveRecord = (base: string, apiKey: string, kind: 'loan' | 'lead', id: string) =>
-  ariveGet(base, apiKey, kind === 'lead' ? `/api/leads/${id}` : `/api/loans/${id}`);
+export const getAriveRecord = (base: string, apiKey: string, kind: 'loan' | 'lead', id: string, token?: string) =>
+  ariveGet(base, apiKey, kind === 'lead' ? `/api/leads/${id}` : `/api/loans/${id}`, token);
+
+/** OAuth: exchange Client ID + Secret Key (+ API Key) for an access token via /api/auth/login. */
+export async function getAriveAccessToken(base: string, clientId: string, secret: string, apiKey: string): Promise<{ token: string } | { error: string }> {
+  const url = `${base}/api/auth/login`;
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ clientId, secret, apiKey }),
+    });
+  } catch (e) {
+    return { error: `Could not reach Arive login at ${url}: ${(e as Error).message}` };
+  }
+  const text = await res.text().catch(() => '');
+  if (!res.ok) return { error: `Arive login failed (${res.status}) at ${url}. ${text.slice(0, 200)}`.trim() };
+  const ct = res.headers.get('content-type') ?? '';
+  if (!ct.includes('json') && !text.trim().startsWith('{')) return { error: `Arive login returned ${ct || 'non-JSON'} — check the Base URL is https://<name>.myarive.com.` };
+  let j: any; try { j = JSON.parse(text); } catch { return { error: 'Arive login returned unparseable JSON.' }; }
+  const token = j.AccessToken ?? j.accessToken ?? j.access_token;
+  if (!token) return { error: 'Arive login succeeded but returned no AccessToken.' };
+  return { token: String(token) };
+}
+
+/**
+ * Arive stores Client ID + Secret Key packed as JSON in api_secret_enc (so no
+ * schema change). Returns {} for legacy single-value secrets.
+ */
+export function parseAriveSecret(apiSecret: string | null | undefined): { clientId?: string; secret?: string } {
+  if (!apiSecret) return {};
+  try { const o = JSON.parse(apiSecret); return { clientId: o.clientId, secret: o.secret }; } catch { return {}; }
+}
+
+/** Resolve an access token for an Arive connection, or an error explaining what's missing. */
+export async function ariveToken(base: string, apiKey: string, apiSecret: string | null | undefined): Promise<{ token: string } | { error: string }> {
+  const { clientId, secret } = parseAriveSecret(apiSecret);
+  if (!clientId || !secret) return { error: 'Arive needs a Client ID and Secret Key (OAuth) — add them in Settings → Integrations.' };
+  return getAriveAccessToken(base, clientId, secret, apiKey);
+}
 
 interface SearchOpts { limit?: number; offset?: number; orderBy?: string; sort?: string }
 function searchQuery(o: SearchOpts): string {
@@ -73,9 +114,9 @@ function searchQuery(o: SearchOpts): string {
   }).toString();
 }
 /** Paginated loan search → { count, rows }. */
-export const searchAriveLoans = (base: string, apiKey: string, o: SearchOpts = {}) => ariveGet(base, apiKey, `/api/loans?${searchQuery(o)}`);
+export const searchAriveLoans = (base: string, apiKey: string, o: SearchOpts = {}, token?: string) => ariveGet(base, apiKey, `/api/loans?${searchQuery(o)}`, token);
 /** Paginated lead search → bare array. */
-export const searchAriveLeads = (base: string, apiKey: string, o: SearchOpts = {}) => ariveGet(base, apiKey, `/api/leads?${searchQuery(o)}`);
+export const searchAriveLeads = (base: string, apiKey: string, o: SearchOpts = {}, token?: string) => ariveGet(base, apiKey, `/api/leads?${searchQuery(o)}`, token);
 
 /** Map a loan- or lead-list row to an imported_loans (Inbound queue) staged row. */
 export function mapAriveToStaged(orgId: string, raw: Record<string, any>): Record<string, any> {
@@ -99,17 +140,15 @@ export function mapAriveToStaged(orgId: string, raw: Record<string, any>): Recor
 }
 
 /** List our hook subscriptions — also the cheapest way to validate key + base_url. */
-export const listAriveHooks = (base: string, apiKey: string) => ariveGet(base, apiKey, '/api/hooks');
+export const listAriveHooks = (base: string, apiKey: string, token?: string) => ariveGet(base, apiKey, '/api/hooks', token);
 
 /** Subscribe one event to a callback URL. */
-export async function subscribeAriveHook(base: string, apiKey: string, webhookUrl: string, event: AriveEvent): Promise<{ ok: boolean; error?: string }> {
+export async function subscribeAriveHook(base: string, apiKey: string, webhookUrl: string, event: AriveEvent, token?: string): Promise<{ ok: boolean; error?: string }> {
   const url = `${base}/api/hooks/subscribe`;
   try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ WebhookUrl: webhookUrl, Event: event }),
-    });
+    const headers: Record<string, string> = { 'X-API-KEY': apiKey, 'Content-Type': 'application/json', Accept: 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const res = await fetch(url, { method: 'POST', headers, body: JSON.stringify({ WebhookUrl: webhookUrl, Event: event }) });
     if (!res.ok) {
       const snippet = (await res.text().catch(() => '')).slice(0, 150);
       return { ok: false, error: `${event} → ${res.status}. ${snippet}`.trim() };
@@ -121,8 +160,8 @@ export async function subscribeAriveHook(base: string, apiKey: string, webhookUr
 }
 
 /** Register all SUBSCRIBE_EVENTS for a callback URL. Best-effort; returns a summary. */
-export async function subscribeAriveHooks(base: string, apiKey: string, webhookUrl: string): Promise<{ subscribed: number; failures: string[] }> {
-  const results = await Promise.all(SUBSCRIBE_EVENTS.map((e) => subscribeAriveHook(base, apiKey, webhookUrl, e)));
+export async function subscribeAriveHooks(base: string, apiKey: string, webhookUrl: string, token?: string): Promise<{ subscribed: number; failures: string[] }> {
+  const results = await Promise.all(SUBSCRIBE_EVENTS.map((e) => subscribeAriveHook(base, apiKey, webhookUrl, e, token)));
   const failures = results.map((r, i) => (r.ok ? null : `${SUBSCRIBE_EVENTS[i]}: ${r.error}`)).filter(Boolean) as string[];
   return { subscribed: results.filter((r) => r.ok).length, failures };
 }
