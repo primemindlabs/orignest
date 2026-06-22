@@ -57,11 +57,37 @@ export async function GET(req: Request) {
 
   const probes = await Promise.all([
     probe(base, creds.apiKey, '/api/hooks'),
-    probe(base, creds.apiKey, '/api/loans'),
     probe(base, creds.apiKey, '/api/loans?limit=2&offset=0&orderBy=updatedAt&sort=DESC'),
-    probe(base, creds.apiKey, '/api/leads'),
-    probe(base, creds.apiKey, '/api/leads?limit=2'),
   ]);
 
-  return NextResponse.json({ base, storedKeyLength: creds.apiKey.length, probes }, { status: 200 });
+  // OAuth test: if clientId + clientSecret are supplied, try /api/auth/login and,
+  // if it returns a token, a Bearer'd /api/loans call. Decides X-API-KEY vs OAuth.
+  let oauth: any;
+  const clientId = url.searchParams.get('clientId');
+  const clientSecret = url.searchParams.get('clientSecret');
+  if (clientId && clientSecret) {
+    const loginUrl = `${base}/api/auth/login`;
+    try {
+      const res = await fetch(loginUrl, {
+        method: 'POST',
+        headers: { 'X-API-KEY': creds.apiKey, 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ clientId, secret: clientSecret, apiKey: creds.apiKey }),
+      });
+      const text = await res.text().catch(() => '');
+      let json: any; try { json = JSON.parse(text); } catch { /* */ }
+      const token = json?.AccessToken ?? json?.accessToken ?? json?.access_token;
+      oauth = { loginStatus: res.status, loginContentType: res.headers.get('content-type'), loginBody: text.slice(0, 800), gotToken: !!token };
+      if (token) {
+        const lr = await fetch(`${base}/api/loans?limit=2&orderBy=updatedAt&sort=DESC`, { headers: { Authorization: `Bearer ${token}`, 'X-API-KEY': creds.apiKey, Accept: 'application/json' } });
+        const lt = await lr.text().catch(() => '');
+        oauth.bearerLoans = { status: lr.status, contentType: lr.headers.get('content-type'), bodySnippet: lt.slice(0, 800) };
+      }
+    } catch (e) {
+      oauth = { error: (e as Error).message };
+    }
+  } else {
+    oauth = 'Pass &clientId=...&clientSecret=... to test the OAuth login flow.';
+  }
+
+  return NextResponse.json({ base, storedKeyLength: creds.apiKey.length, probes, oauth }, { status: 200 });
 }
