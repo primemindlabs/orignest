@@ -13,7 +13,7 @@ interface Los { id: string; name: string; desc: string; fields: { key: string; l
 
 const LOS: Los[] = [
   { id: 'lendingpad', name: 'LendingPad', desc: 'Sync loan status, conditions, and contacts with your LendingPad account.', fields: [{ key: 'api_key', label: 'API Key' }, { key: 'api_secret', label: 'API Secret' }], webhook: { path: '/api/webhooks/lendingpad', tenant: true, auth: 'hmac', header: 'x-lendingpad-signature' }, testable: true },
-  { id: 'arive', name: 'Arive', desc: 'Arive has no public API — it syncs by pushing loan updates to AshleyIQ through Zapier. Requires the Broker Pro or Non-Del plan in Arive.', fields: [], webhook: { path: '/api/webhooks/arive', tenant: true, auth: 'shared' } },
+  { id: 'arive', name: 'Arive', desc: 'Sync loans & leads with Arive. We auto-subscribe to Arive events on connect; status changes flow into your pipeline. Generate an API Key in Arive → Settings → API Integrations (Broker Pro / Non-Del plan).', fields: [{ key: 'api_key', label: 'ARIVE API Key' }, { key: 'base_url', label: 'ARIVE Base URL', type: 'text' }], webhook: { path: '/api/webhooks/arive', tenant: true, auth: 'shared' }, testable: true },
   { id: 'byte', name: 'BytePro', desc: 'Receive loan status updates from BytePro via webhook (receive-only).', fields: [{ key: 'api_key', label: 'BytePro Account ID' }], webhook: { path: '/api/webhooks/byte', tenant: false, auth: 'hmac', header: 'x-webhook-signature' } },
 ];
 
@@ -91,17 +91,12 @@ export function IntegrationsClient({ canManage, orgId }: { canManage: boolean; o
                   </div>
                 )}
 
-                {/* Arive (Zapier): one-time setup instructions + the secret POST URL. */}
+                {/* Arive: hooks are auto-subscribed on connect; URL shown for diagnostics. */}
                 {c && w && w.auth === 'shared' && (
                   <div className="mt-2 space-y-1.5 text-[11px]">
-                    <p className="text-[var(--c-label2)]">Set up the sync once in Zapier:</p>
-                    <ol className="list-decimal ml-4 space-y-0.5 text-[var(--c-label2)]">
-                      <li>In Arive (Broker Pro / Non-Del): <span className="text-[var(--c-text)]">Settings → API Integrations</span> → generate an API Key, then connect Arive in Zapier with it.</li>
-                      <li>Build a Zap: trigger on your Arive loan event → action <span className="text-[var(--c-text)]">&quot;Webhooks by Zapier&quot; (POST)</span>.</li>
-                      <li>POST the loan as JSON to this URL:</li>
-                    </ol>
+                    <p className="text-[var(--c-label2)]">Arive events are subscribed automatically and post here:</p>
                     <code className="block bg-[var(--c-fill)] rounded px-2 py-1 break-all text-[var(--c-text)]">{ariveUrl}</code>
-                    <p className="text-[var(--c-label3)]">Keep this URL private — it carries your signing token. You can instead send the token as an <code>X-Webhook-Secret</code> header.</p>
+                    <p className="text-[var(--c-label3)]">Keep this URL private — it carries your signing token.</p>
                   </div>
                 )}
 
@@ -133,7 +128,7 @@ export function IntegrationsClient({ canManage, orgId }: { canManage: boolean; o
                     <Input key={f.key} label={f.label} type={t} value={form[f.key] ?? ''} onChange={(e) => setForm((s) => ({ ...s, [f.key]: e.target.value }))} placeholder={t === 'text' ? 'https://…' : '••••••••'} />
                   );
                 })}
-                <Button onClick={() => connect(los.id)} disabled={busy || !form.api_key}>{busy ? 'Saving…' : 'Save & connect'}</Button>
+                <Button onClick={() => connect(los.id)} disabled={busy || !form.api_key || (los.id === 'arive' && !form.base_url)}>{busy ? 'Saving…' : 'Save & connect'}</Button>
                 <p className="text-[11px] text-[var(--c-label2)]">Keys are encrypted (AES-256-GCM) at rest. Live bi-directional sync activates once the LOS API is reachable.</p>
               </div>
             )}

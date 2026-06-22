@@ -17,18 +17,17 @@ export const LENDINGPAD_STATUS_MAP: Record<string, string> = {
   'Denied': 'declined',
 };
 
+// Arive statuses → leads.stage. Lead statuses (GET /api/leads → leadStatus) are a
+// verified enum (NEW/CONTACTED/QUALIFIED/LOST). Loan statuses
+// (GET /api/loans → currentLoanStatus.status) are NOT yet confirmed — unknown
+// values fall through to null in mapLosStatus, so the stage is left unchanged
+// (non-destructive). TODO: add the real loan-status strings once confirmed.
 export const ARIVE_STATUS_MAP: Record<string, string> = {
-  PRE_APP: 'pre_qual',
-  APP: 'application',
-  PROCESSING: 'processing',
-  SUBMITTED: 'underwriting',
-  APPROVED: 'conditional_approval',
-  APPROVED_CTC: 'clear_to_close',
-  DOCS_OUT: 'clear_to_close',
-  FUNDED: 'closed',
-  WITHDRAWN: 'withdrawn',
-  DENIED: 'declined',
-  INCOMPLETE: 'new_inquiry',
+  // Lead statuses (verified):
+  NEW: 'new_inquiry',
+  CONTACTED: 'new_inquiry',
+  QUALIFIED: 'pre_qual',
+  LOST: 'lost',
 };
 
 // Phase 117 — BytePro uses numeric status codes. Mapped onto the REAL leads.stage

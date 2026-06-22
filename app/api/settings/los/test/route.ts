@@ -6,16 +6,17 @@
 // (BytePro) have no outbound credentials to test.
 import { NextResponse } from 'next/server';
 import { getOrgContext } from '@/lib/auth/orgContext';
-import { getLosCredentials, type LosType } from '@/lib/los/connection';
+import { getLosConnection, getLosCredentials, type LosType } from '@/lib/los/connection';
+import { ariveBase, listAriveHooks } from '@/lib/los/arive';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
 const ADMIN = ['admin', 'branch_manager'];
-// Only LendingPad has an outbound REST/OAuth surface to validate. Arive (Zapier,
-// inbound-only) and BytePro (webhook) have no credentials we authenticate with.
-const TESTABLE: LosType[] = ['lendingpad'];
+// LendingPad (OAuth) and Arive (X-API-KEY) have outbound APIs we can validate.
+// BytePro is receive-only (webhook), nothing to test.
+const TESTABLE: LosType[] = ['lendingpad', 'arive'];
 
 export async function POST(req: Request) {
   const { userId, orgId, role } = await getOrgContext();
@@ -38,6 +39,14 @@ export async function POST(req: Request) {
   if (!creds) return NextResponse.json({ ok: false, error: 'No active connection — save credentials first.' });
 
   try {
+    if (losType === 'arive') {
+      const conn = await getLosConnection(orgId, 'arive');
+      const base = ariveBase(conn?.base_url);
+      if (!base) return NextResponse.json({ ok: false, error: 'No Arive Base URL stored — reconnect with your *.myarive.com URL.' });
+      const res = await listAriveHooks(base, creds.apiKey);
+      if (!res.ok) return NextResponse.json({ ok: false, error: res.error });
+      return NextResponse.json({ ok: true, message: 'Arive authenticated — API Key and Base URL are valid.' });
+    }
     // lendingpad: same client-credentials exchange used in lib/los/syncLoan.
     const tok = await fetch('https://api.lendingpad.com/oauth/token', {
       method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
