@@ -7,9 +7,9 @@
  */
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Wrench, ChevronDown, FileText, PenLine, FileCheck, ShieldCheck, Building2, ScrollText, Calculator, HardHat, PartyPopper, ClipboardList, MessagesSquare, GitCompare, UserCheck, Landmark, FileBadge } from 'lucide-react';
+import { Wrench, ChevronDown, FileText, PenLine, FileCheck, ShieldCheck, Building2, ScrollText, Calculator, HardHat, PartyPopper, ClipboardList, MessagesSquare, GitCompare, UserCheck, Landmark, FileBadge, FileCode2 } from 'lucide-react';
 
-interface Tool { href: string; label: string; icon: React.ReactNode }
+interface Tool { href: string; label: string; icon: React.ReactNode; download?: boolean }
 
 export function LeadToolsMenu({ loanId, isConstruction, isClosed }: { loanId: string; isConstruction?: boolean; isClosed?: boolean }) {
   const [open, setOpen] = useState(false);
@@ -36,6 +36,7 @@ export function LeadToolsMenu({ loanId, isConstruction, isClosed }: { loanId: st
     { href: `/loans/${loanId}/title`, label: 'Title & Closing', icon: <ShieldCheck size={15} /> },
     { href: `/loans/${loanId}/identity`, label: 'Identity Verification', icon: <UserCheck size={15} /> },
     { href: `/loans/${loanId}/signatures`, label: 'Signatures', icon: <PenLine size={15} /> },
+    { href: `/api/loans/${loanId}/mismo`, label: 'Export MISMO 3.4 (URLA)', icon: <FileCode2 size={15} />, download: true },
     ...(isConstruction ? [{ href: `/loans/${loanId}/construction`, label: 'Construction', icon: <HardHat size={15} /> }] : []),
     ...(isClosed ? [{ href: `/loans/${loanId}/closing-post`, label: 'Closing Celebration', icon: <PartyPopper size={15} /> }] : []),
   ];
@@ -48,9 +49,15 @@ export function LeadToolsMenu({ loanId, isConstruction, isClosed }: { loanId: st
       {open && (
         <div className="absolute right-0 mt-1 w-56 z-40 bg-[var(--c-surface)] border border-[var(--c-border)] rounded-[12px] shadow-lg py-1">
           {tools.map((t) => (
-            <Link key={t.href} href={t.href} onClick={() => setOpen(false)} className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
-              <span className="text-[var(--c-gold-deep)]">{t.icon}</span> {t.label}
-            </Link>
+            t.download ? (
+              <a key={t.href} href={t.href} onClick={() => setOpen(false)} className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
+                <span className="text-[var(--c-gold-deep)]">{t.icon}</span> {t.label}
+              </a>
+            ) : (
+              <Link key={t.href} href={t.href} onClick={() => setOpen(false)} className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-[var(--c-text)] hover:bg-[var(--c-fill)] transition-colors">
+                <span className="text-[var(--c-gold-deep)]">{t.icon}</span> {t.label}
+              </Link>
+            )
           ))}
         </div>
       )}
