@@ -17,6 +17,7 @@
     { "path": "/api/cron/goldmine-scan", "schedule": "0 9 * * 0" },
     { "path": "/api/cron/recalculate-roi", "schedule": "0 6 * * *" },
     { "path": "/api/cron/calculate-funnel", "schedule": "10 6 * * *" },
-    { "path": "/api/cron/partner-summaries", "schedule": "0 14 1 * *" }
+    { "path": "/api/cron/partner-summaries", "schedule": "0 14 1 * *" },
+    { "path": "/api/cron/arive-sync", "schedule": "*/30 * * * *" }
   ]
 }

@@ -50,6 +50,39 @@ async function ariveGet(base: string, apiKey: string, path: string): Promise<Ari
 export const getAriveRecord = (base: string, apiKey: string, kind: 'loan' | 'lead', id: string) =>
   ariveGet(base, apiKey, kind === 'lead' ? `/api/leads/${id}` : `/api/loans/${id}`);
 
+interface SearchOpts { limit?: number; offset?: number; orderBy?: string; sort?: string }
+function searchQuery(o: SearchOpts): string {
+  return new URLSearchParams({
+    limit: String(o.limit ?? 100), offset: String(o.offset ?? 0),
+    orderBy: o.orderBy ?? 'updatedAt', sort: o.sort ?? 'DESC',
+  }).toString();
+}
+/** Paginated loan search → { count, rows }. */
+export const searchAriveLoans = (base: string, apiKey: string, o: SearchOpts = {}) => ariveGet(base, apiKey, `/api/loans?${searchQuery(o)}`);
+/** Paginated lead search → bare array. */
+export const searchAriveLeads = (base: string, apiKey: string, o: SearchOpts = {}) => ariveGet(base, apiKey, `/api/leads?${searchQuery(o)}`);
+
+/** Map a loan- or lead-list row to an imported_loans (Inbound queue) staged row. */
+export function mapAriveToStaged(orgId: string, raw: Record<string, any>): Record<string, any> {
+  const arr: any[] = Array.isArray(raw.loanBorrowers) ? raw.loanBorrowers : [];
+  const b = raw.borrower ?? arr.find((x) => x?.applicantType === 'Borrower') ?? arr[0] ?? {};
+  const prop = raw.subjectProperty ?? {};
+  return {
+    org_id: orgId, source: 'arive', status: 'pending',
+    external_id: String(raw.sysGUID ?? raw.ariveLoanId ?? raw.ariveLeadId ?? ''),
+    borrower_first_name: b.firstName ?? null,
+    borrower_last_name: b.lastName ?? null,
+    borrower_email: (b.emailAddressText ?? '').toLowerCase() || null,
+    borrower_phone: b.mobilePhone10digit ?? null,
+    loan_amount: raw.baseLoanAmount ?? raw.totalLoanAmount ?? null,
+    loan_type: raw.mortgageType ?? null,
+    loan_purpose: raw.loanPurpose ?? null,
+    property_address: prop.addressLineText ?? prop.lineText ?? null,
+    stage: raw?.currentLoanStatus?.status ?? raw.leadStatus ?? null,
+    raw,
+  };
+}
+
 /** List our hook subscriptions — also the cheapest way to validate key + base_url. */
 export const listAriveHooks = (base: string, apiKey: string) => ariveGet(base, apiKey, '/api/hooks');
 

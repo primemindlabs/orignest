@@ -14,6 +14,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { encrypt } from '@/lib/crypto/encrypt';
 import { randomBytes } from 'crypto';
 import { ariveBase, subscribeAriveHooks } from '@/lib/los/arive';
+import { pullAriveToInbound } from '@/lib/los/arivePull';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -65,18 +66,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'save_failed' }, { status: 500 });
   }
 
-  // Arive: register our hook subscriptions now (this also validates the key + base
-  // URL — a wrong one surfaces as subscription failures on the card).
+  // Arive: pull is the reliable path (GET search works; the hook-subscribe POST is
+  // blocked at Arive's edge). Backfill into /inbound now so the pipeline shows up
+  // immediately, and try the live subscribe best-effort (non-fatal).
   if (isArive) {
     const base = ariveBase(b.base_url)!;
     const origin = (process.env.NEXT_PUBLIC_APP_URL || new URL(req.url).origin).replace(/\/+$/, '');
     const webhookUrl = `${origin}/api/webhooks/arive?tenant_id=${orgId}&secret=${webhookSecret}`;
+
+    const pull = await pullAriveToInbound(orgId, { maxPages: 3 });
+    if (pull.gated) {
+      // The key/base URL didn't even read — surface it as a hard connect error.
+      await sb.from('los_connections').update({ sync_error: pull.reason }).eq('org_id', orgId).eq('los_type', 'arive');
+      return NextResponse.json({ connected: true, los_type: 'arive', warning: pull.reason });
+    }
+
     const { subscribed, failures } = await subscribeAriveHooks(base, b.api_key, webhookUrl);
-    const note = failures.length === 0
-      ? `Connected — subscribed to ${subscribed} Arive events.`
-      : `Subscribed to ${subscribed} events. ${failures.length} failed: ${failures.join('; ')}`.slice(0, 480);
+    const live = failures.length === 0 ? `Live updates on (${subscribed} events).` : 'Live webhooks unavailable (subscribe blocked) — syncing on a schedule.';
+    const note = `Connected — imported ${pull.staged} record${pull.staged === 1 ? '' : 's'} to Inbound. ${live}`.slice(0, 480);
     await sb.from('los_connections').update({ sync_error: note }).eq('org_id', orgId).eq('los_type', 'arive');
-    return NextResponse.json({ connected: true, los_type: 'arive', subscribed, failures, note });
+    return NextResponse.json({ connected: true, los_type: 'arive', staged: pull.staged, subscribed, failures, note });
   }
 
   return NextResponse.json({ connected: true, los_type: b.los_type, note: 'Credentials encrypted and stored. Live bi-directional sync activates when the LOS API is connected.' });
