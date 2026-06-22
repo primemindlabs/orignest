@@ -23,11 +23,17 @@ export type AriveEvent = (typeof ARIVE_EVENTS)[number];
 // noisy and don't move a pipeline stage, so we don't subscribe to them.
 export const SUBSCRIBE_EVENTS: AriveEvent[] = ['LOAN_CREATED', 'LOAN_STAGE_CHANGED', 'LOAN_APP_SUBMITTED', 'LEAD_CREATED', 'LEAD_UPDATED'];
 
-/** Normalize the broker's base URL (their *.myarive.com), or null if unset. */
+/**
+ * Normalize the broker's base URL to its ORIGIN (scheme + host), or null if unset.
+ * Tolerates someone pasting a full page URL like
+ * "https://2393595.myarive.com/app/loans?ref=343" → "https://2393595.myarive.com",
+ * which would otherwise make every API call hit the SPA and return HTML.
+ */
 export function ariveBase(baseUrl?: string | null): string | null {
-  const b = (baseUrl || '').trim().replace(/\/+$/, '');
-  if (!b) return null;
-  return b.startsWith('http') ? b : `https://${b}`;
+  let raw = (baseUrl || '').trim();
+  if (!raw) return null;
+  if (!/^https?:\/\//i.test(raw)) raw = `https://${raw}`;
+  try { return new URL(raw).origin; } catch { return null; }
 }
 
 type AriveResult = { ok: true; data: Record<string, any> } | { ok: false; status?: number; error: string };
@@ -40,11 +46,20 @@ async function ariveGet(base: string, apiKey: string, path: string): Promise<Ari
   } catch (e) {
     return { ok: false, error: `Could not reach Arive at ${url}: ${(e as Error).message}` };
   }
+  const text = await res.text().catch(() => '');
   if (!res.ok) {
-    const snippet = (await res.text().catch(() => '')).slice(0, 200);
-    return { ok: false, status: res.status, error: `Arive ${res.status} at ${url}. ${snippet}`.trim() };
+    return { ok: false, status: res.status, error: `Arive ${res.status} at ${url}. ${text.slice(0, 200)}`.trim() };
   }
-  return { ok: true, data: (await res.json().catch(() => ({}))) as Record<string, any> };
+  // A 200 that isn't JSON is the SPA/web-app shell — almost always a wrong Base URL.
+  const ct = res.headers.get('content-type') ?? '';
+  if (!ct.includes('json') && !text.trim().startsWith('{') && !text.trim().startsWith('[')) {
+    return { ok: false, status: res.status, error: `Arive returned ${ct || 'non-JSON'} (the web app, not the API) at ${url}. Check the Base URL is just https://<name>.myarive.com with no /app/... path.` };
+  }
+  try {
+    return { ok: true, data: JSON.parse(text) as Record<string, any> };
+  } catch {
+    return { ok: false, status: res.status, error: `Arive returned unparseable JSON at ${url}.` };
+  }
 }
 
 export const getAriveRecord = (base: string, apiKey: string, kind: 'loan' | 'lead', id: string) =>
