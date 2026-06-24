@@ -19,7 +19,7 @@ export function WidgetChat({ widgetKey }: { widgetKey: string }) {
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch(`/api/widget/${widgetKey}/start`, { method: 'POST' })
+    fetch(`/api/chat/${widgetKey}/start`, { method: 'POST' })
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((j) => { setToken(j.session_token); setHeadline(j.headline || 'Chat with us'); setTurns([{ role: 'assistant', body: j.greeting }]); })
       .catch(() => setUnavailable(true));
@@ -34,7 +34,7 @@ export function WidgetChat({ widgetKey }: { widgetKey: string }) {
     setTurns((t) => [...t, { role: 'visitor', body: msg }]);
     setBusy(true);
     try {
-      const j = await fetch(`/api/widget/${widgetKey}/message`, {
+      const j = await fetch(`/api/chat/${widgetKey}/message`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ session_token: token, message: msg }),
       }).then((r) => r.json());

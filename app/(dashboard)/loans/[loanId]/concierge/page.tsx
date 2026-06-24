@@ -18,7 +18,7 @@ export default async function LeadConciergePage({ params }: { params: Promise<{ 
       <div className="mb-5">
         <h1 className="text-xl font-semibold text-[var(--c-text)]">Ashley Concierge</h1>
         <p className="text-sm text-[var(--c-label2)] mt-0.5">
-          The AI text conversation with this borrower. Choose how hands-off Ashley is, approve drafted replies, and test how she'd respond. Configure your persona in <Link href="/settings/concierge" className="underline">Settings → Ashley Concierge</Link>.
+          The AI text conversation with this borrower. Choose how hands-off Ashley is, approve drafted replies, and test how she’d respond. Configure your persona in <Link href="/settings/concierge" className="underline">Settings → Ashley Concierge</Link>.
         </p>
       </div>
       <ConciergePanel leadId={loanId} />

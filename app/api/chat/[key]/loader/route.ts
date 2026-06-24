@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(_req: Request, { params }: { params: { key: string } }) {
   const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://app.ashleyiq.com').replace(/\/$/, '');
   const key = params.key.replace(/[^a-zA-Z0-9_-]/g, '');
-  const src = `${appUrl}/widget/${key}`;
+  const src = `${appUrl}/chat/${key}`;
 
   const js = `(function(){
   if (window.__ashleyWidgetLoaded) return; window.__ashleyWidgetLoaded = true;

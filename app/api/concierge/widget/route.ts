@@ -20,7 +20,7 @@ async function profileId(sb: ReturnType<typeof createAdminClient>, userId: strin
 
 function embedFor(key: string): string {
   const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://app.ashleyiq.com').replace(/\/$/, '');
-  return `<script src="${appUrl}/api/widget/${key}/loader" async></script>`;
+  return `<script src="${appUrl}/api/chat/${key}/loader" async></script>`;
 }
 
 export async function GET() {

@@ -71,7 +71,7 @@ export function LenderConnectionsCard({ canManage }: { canManage: boolean }) {
       <div className="flex items-center justify-between mb-3">
         <div>
           <h2 className="text-[16px] font-bold text-[var(--c-text)] tracking-tight flex items-center gap-2"><Landmark size={16} className="text-[var(--c-gold-deep)]" /> Wholesale Lenders</h2>
-          <p className="text-[13px] text-[var(--c-label2)] mt-0.5">Submit a loan's MISMO 3.4 file and request rate locks directly. Any lender that accepts a MISMO 3.4 upload works via "Generic MISMO 3.4".</p>
+          <p className="text-[13px] text-[var(--c-label2)] mt-0.5">Submit a loan’s MISMO 3.4 file and request rate locks directly. Any lender that accepts a MISMO 3.4 upload works via “Generic MISMO 3.4”.</p>
         </div>
         {canManage && !showForm && (
           <button onClick={() => { setForm({ ...blank }); setShowForm(true); }} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn text-[13px] font-medium bg-[var(--c-text)] text-[var(--c-surface)] hover:opacity-90 shrink-0"><Plus size={14} /> Add lender</button>

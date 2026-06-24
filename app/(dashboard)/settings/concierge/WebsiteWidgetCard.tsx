@@ -59,7 +59,7 @@ export function WebsiteWidgetCard() {
       <div className="flex items-center gap-3 pt-1">
         <button onClick={save} disabled={saving} className="inline-flex items-center gap-1.5 h-9 px-4 rounded-btn text-[13px] font-medium bg-[var(--c-text)] text-[var(--c-surface)] hover:opacity-90 disabled:opacity-50">{saving && <Loader2 size={14} className="animate-spin" />} Save widget</button>
         {saved && <span className="text-[13px] text-emerald-600">Saved.</span>}
-        <a href={`/widget/${w.public_key}`} target="_blank" rel="noreferrer" className="text-[12px] text-[var(--c-label2)] underline">Preview</a>
+        <a href={`/chat/${w.public_key}`} target="_blank" rel="noreferrer" className="text-[12px] text-[var(--c-label2)] underline">Preview</a>
       </div>
     </div>
   );
