@@ -7,7 +7,7 @@
  */
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Wrench, ChevronDown, FileText, PenLine, FileCheck, ShieldCheck, Building2, ScrollText, Calculator, HardHat, PartyPopper, ClipboardList, MessagesSquare, GitCompare, UserCheck, Landmark, FileBadge, FileCode2, Send, Bot, CreditCard } from 'lucide-react';
+import { Wrench, ChevronDown, FileText, PenLine, FileCheck, ShieldCheck, Building2, ScrollText, Calculator, HardHat, PartyPopper, ClipboardList, MessagesSquare, GitCompare, UserCheck, Landmark, FileBadge, FileCode2, Send, Bot, CreditCard, BriefcaseBusiness } from 'lucide-react';
 
 interface Tool { href: string; label: string; icon: React.ReactNode; download?: boolean }
 
@@ -29,6 +29,7 @@ export function LeadToolsMenu({ loanId, isConstruction, isClosed }: { loanId: st
     { href: `/loans/${loanId}/apply-1003`, label: 'Digital 1003', icon: <ClipboardList size={15} /> },
     { href: `/loans/${loanId}/scenarios`, label: 'Scenario Builder', icon: <GitCompare size={15} /> },
     { href: `/loans/${loanId}/credit`, label: 'Credit Pull', icon: <CreditCard size={15} /> },
+    { href: `/loans/${loanId}/voie`, label: 'Income & Employment', icon: <BriefcaseBusiness size={15} /> },
     { href: `/loans/${loanId}/proposal`, label: 'Loan Proposal', icon: <FileBadge size={15} /> },
     { href: `/deal-desk?lead=${loanId}`, label: 'AE Deal Desk', icon: <Landmark size={15} /> },
     { href: `/loans/${loanId}/income`, label: 'Income', icon: <Calculator size={15} /> },

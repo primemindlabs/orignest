@@ -7,6 +7,7 @@ import { IntegrationsClient } from './IntegrationsClient';
 import { ArriveCard } from './ArriveCard';
 import { LenderConnectionsCard } from './LenderConnectionsCard';
 import { CreditVendorsCard } from './CreditVendorsCard';
+import { VoieVendorsCard } from './VoieVendorsCard';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Integrations' };
@@ -41,6 +42,10 @@ export default async function IntegrationsPage() {
 
       <div className="pt-2">
         <CreditVendorsCard canManage={role === 'admin' || role === 'branch_manager'} />
+      </div>
+
+      <div className="pt-2">
+        <VoieVendorsCard canManage={role === 'admin' || role === 'branch_manager'} />
       </div>
     </div>
   );
