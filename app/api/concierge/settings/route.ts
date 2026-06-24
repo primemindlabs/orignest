@@ -11,7 +11,7 @@ import { DEFAULT_SETTINGS } from '@/lib/concierge/types';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const COLS = 'enabled, autonomy_default, allow_autonomous, persona_tone, persona_specialties, products, business_goal, booking_url, application_url, max_ai_replies, custom_instructions';
+const COLS = 'enabled, autonomy_default, allow_autonomous, speed_to_lead, persona_tone, persona_specialties, products, business_goal, booking_url, application_url, max_ai_replies, custom_instructions';
 
 async function profileId(sb: ReturnType<typeof createAdminClient>, userId: string): Promise<string | null> {
   const { data } = await sb.from('profiles').select('id').eq('clerk_user_id', userId).maybeSingle();
@@ -44,6 +44,7 @@ export async function POST(req: Request) {
     enabled: b.enabled === true,
     autonomy_default: modes.includes(b.autonomy_default) ? b.autonomy_default : 'suggest',
     allow_autonomous: b.allow_autonomous === true,
+    speed_to_lead: b.speed_to_lead === true,
     persona_tone: str(b.persona_tone) ?? DEFAULT_SETTINGS.persona_tone,
     persona_specialties: str(b.persona_specialties),
     products: str(b.products),

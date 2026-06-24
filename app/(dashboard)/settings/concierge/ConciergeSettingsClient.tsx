@@ -4,12 +4,13 @@
  * Phase 144 — Ashley Concierge persona + autonomy configuration (per LO).
  */
 import { useEffect, useState } from 'react';
-import { Loader2, Bot, ShieldCheck } from 'lucide-react';
+import { Loader2, Bot, ShieldCheck, Zap } from 'lucide-react';
 
 interface Settings {
   enabled: boolean;
   autonomy_default: 'off' | 'suggest' | 'autonomous';
   allow_autonomous: boolean;
+  speed_to_lead: boolean;
   persona_tone: string;
   persona_specialties: string | null;
   products: string | null;
@@ -50,6 +51,7 @@ export function ConciergeSettingsClient() {
           </select>
         </Field>
         <Toggle label="Allow autonomous sending" desc="Master switch. Off = Ashley only ever drafts, even on autonomous leads. Every auto-send still passes the TCPA gate and the compliance guard." checked={s.allow_autonomous} onChange={(v) => set({ allow_autonomous: v })} icon={<ShieldCheck size={15} />} />
+        <Toggle label="Speed-to-lead first touch" desc="When a new lead comes in with SMS consent, Ashley sends the very first text within ~a minute and opens the conversation in your default mode." checked={s.speed_to_lead} onChange={(v) => set({ speed_to_lead: v })} icon={<Zap size={15} />} />
       </Card>
 
       <Card title="Persona">

@@ -9,6 +9,7 @@ export interface ConciergeSettings {
   enabled: boolean;
   autonomy_default: AutonomyMode;
   allow_autonomous: boolean;
+  speed_to_lead: boolean;
   persona_tone: string;
   persona_specialties: string | null;
   products: string | null;
@@ -23,6 +24,7 @@ export const DEFAULT_SETTINGS: ConciergeSettings = {
   enabled: false,
   autonomy_default: 'suggest',
   allow_autonomous: false,
+  speed_to_lead: false,
   persona_tone: 'warm, concise, and professional',
   persona_specialties: null,
   products: null,
