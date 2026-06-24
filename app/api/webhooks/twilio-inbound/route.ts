@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import twilio from 'twilio';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { runConcierge } from '@/lib/concierge/engine';
 
 // Twilio sends POST with application/x-www-form-urlencoded body.
 // No Clerk auth — validated by Twilio signature.
@@ -144,8 +145,22 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     });
   }
 
-  // ── Create task for LO ─────────────────────────────────────────────────────
+  // ── Ashley Concierge (Phase 144) ────────────────────────────────────────────
+  // Opt-in per LO + per lead. When it handles the message (auto-replies, drafts a
+  // suggestion, or escalates) it creates its own LO task, so we skip the generic
+  // "Reply to SMS" task below. Disabled by default → behavior unchanged.
+  let conciergeHandled = false;
   if (leadId && orgId) {
+    try {
+      const r = await runConcierge({ orgId, leadId, loId, inboundText: body, channel: 'sms' });
+      conciergeHandled = r.handled;
+    } catch (err) {
+      console.error('[twilio-inbound] concierge error:', (err as Error).message);
+    }
+  }
+
+  // ── Create task for LO (only if Concierge didn't handle it) ──────────────────
+  if (leadId && orgId && !conciergeHandled) {
     const contactName = matchedLead
       ? `${matchedLead.first_name} ${matchedLead.last_name}`
       : from;
