@@ -7,7 +7,7 @@
  */
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Wrench, ChevronDown, FileText, PenLine, FileCheck, ShieldCheck, Building2, ScrollText, Calculator, HardHat, PartyPopper, ClipboardList, MessagesSquare, GitCompare, UserCheck, Landmark, FileBadge, FileCode2, Send, Bot } from 'lucide-react';
+import { Wrench, ChevronDown, FileText, PenLine, FileCheck, ShieldCheck, Building2, ScrollText, Calculator, HardHat, PartyPopper, ClipboardList, MessagesSquare, GitCompare, UserCheck, Landmark, FileBadge, FileCode2, Send, Bot, CreditCard } from 'lucide-react';
 
 interface Tool { href: string; label: string; icon: React.ReactNode; download?: boolean }
 
@@ -28,11 +28,13 @@ export function LeadToolsMenu({ loanId, isConstruction, isClosed }: { loanId: st
     { href: `/loans/${loanId}/internal-chat`, label: 'Team Chat', icon: <MessagesSquare size={15} /> },
     { href: `/loans/${loanId}/apply-1003`, label: 'Digital 1003', icon: <ClipboardList size={15} /> },
     { href: `/loans/${loanId}/scenarios`, label: 'Scenario Builder', icon: <GitCompare size={15} /> },
+    { href: `/loans/${loanId}/credit`, label: 'Credit Pull', icon: <CreditCard size={15} /> },
     { href: `/loans/${loanId}/proposal`, label: 'Loan Proposal', icon: <FileBadge size={15} /> },
     { href: `/deal-desk?lead=${loanId}`, label: 'AE Deal Desk', icon: <Landmark size={15} /> },
     { href: `/loans/${loanId}/income`, label: 'Income', icon: <Calculator size={15} /> },
     { href: `/loans/${loanId}/loe`, label: 'Letter of Explanation', icon: <ScrollText size={15} /> },
     { href: `/loans/${loanId}/waiver-check`, label: 'Appraisal Waiver', icon: <FileCheck size={15} /> },
+    { href: `/loans/${loanId}/disclosures/generate`, label: 'Generate Loan Estimate', icon: <FileText size={15} /> },
     { href: `/loans/${loanId}/hoa`, label: 'HOA Warrantability', icon: <Building2 size={15} /> },
     { href: `/loans/${loanId}/title`, label: 'Title & Closing', icon: <ShieldCheck size={15} /> },
     { href: `/loans/${loanId}/identity`, label: 'Identity Verification', icon: <UserCheck size={15} /> },

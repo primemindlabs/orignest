@@ -40,6 +40,8 @@ const isPublicRoute = createRouteMatcher([
   '/portal/title/(.*)',     // Title agent portal — token-authenticated, closing-only
   '/chat/(.*)',             // Phase 146 public AI chat widget — public_key + session token gated
   '/api/chat(.*)',          // Phase 146 chat widget APIs — public_key/session-token verified in handler
+  '/disclosure/(.*)',       // Phase 148 borrower Loan Estimate view — delivery_token gated
+  '/api/disclosures(.*)',   // Phase 148 disclosure view/ack API — token verified in handler
 ]);
 
 // Phase 137 — branded application portals on brokerage subdomains.
@@ -57,7 +59,7 @@ function subdomainRewrite(request: NextRequest): URL | null {
   if (RESERVED.has(sub)) return null;
 
   const p = request.nextUrl.pathname;
-  if (p.startsWith('/api') || p.startsWith('/_next') || p.startsWith('/apply') || p.startsWith('/chat') || p.includes('.')) return null;
+  if (p.startsWith('/api') || p.startsWith('/_next') || p.startsWith('/apply') || p.startsWith('/chat') || p.startsWith('/disclosure') || p.includes('.')) return null;
 
   const url = request.nextUrl.clone();
   url.pathname = `/apply/o/${sub}${p === '/' ? '' : p}`;
