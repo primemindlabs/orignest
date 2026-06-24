@@ -12,6 +12,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { checkConciergeReply } from '@/lib/concierge/complianceGuard';
 import { captureLeadFromSession } from '@/lib/widget/capture';
+import { deriveSpecialties } from '@/lib/concierge/enrichPersona';
 
 type Admin = SupabaseClient<any, any, any>;
 const MODEL = 'claude-sonnet-4-6';
@@ -110,8 +111,11 @@ async function buildWebSystem(sb: Admin, widget: WebWidget): Promise<string> {
   const loName = `${loRow.first_name ?? ''} ${loRow.last_name ?? ''}`.trim() || 'our loan team';
   const company = ((org ?? {}) as { name?: string }).name || 'our team';
   const tone = s.persona_tone || 'warm, concise, and professional';
-  const specialties = s.persona_specialties ? ` They specialize in ${s.persona_specialties}.` : '';
-  const products = s.products ? ` Products you can mention generally (no pricing): ${s.products}.` : '';
+  // Auto-derive specialties from real loan-type history when the LO hasn't set them.
+  let specText = s.persona_specialties?.trim() || '';
+  if (!specText && widget.lo_id) specText = (await deriveSpecialties(sb, widget.org_id, widget.lo_id)) ?? '';
+  const specialties = specText ? ` They specialize in ${specText}.` : '';
+  const products = s.products?.trim() ? ` Products you can mention generally (no pricing): ${s.products}.` : '';
 
   return `You are the website chat assistant for ${loName} at ${company}.${specialties} A visitor on the website is chatting with you. Your tone is ${tone}.${products}
 

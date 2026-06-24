@@ -56,15 +56,15 @@ export function ConciergeSettingsClient() {
 
       <Card title="Persona">
         <Field label="Tone"><input value={s.persona_tone} onChange={(e) => set({ persona_tone: e.target.value })} className={input} /></Field>
-        <Field label="Specialties (optional)"><input value={s.persona_specialties ?? ''} onChange={(e) => set({ persona_specialties: e.target.value })} placeholder="FHA, VA, first-time buyers, self-employed" className={input} /></Field>
-        <Field label="Products / programs to mention (no pricing)"><textarea value={s.products ?? ''} onChange={(e) => set({ products: e.target.value })} rows={2} placeholder="Conventional, FHA, VA, DSCR, bank-statement" className={input} /></Field>
+        <Field label="Specialties (optional — auto-detected from your loans if blank)"><input value={s.persona_specialties ?? ''} onChange={(e) => set({ persona_specialties: e.target.value })} placeholder="Auto-detected from the loan types you work" className={input} /></Field>
+        <Field label="Products / programs to mention (optional — auto-detected if blank)"><textarea value={s.products ?? ''} onChange={(e) => set({ products: e.target.value })} rows={2} placeholder="Auto-detected from your pipeline + lender connections" className={input} /></Field>
         <Field label="Goal of the conversation"><input value={s.business_goal} onChange={(e) => set({ business_goal: e.target.value })} className={input} /></Field>
         <Field label="Extra instructions (optional)"><textarea value={s.custom_instructions ?? ''} onChange={(e) => set({ custom_instructions: e.target.value })} rows={2} className={input} /></Field>
       </Card>
 
       <Card title="Links Ashley can share">
         <Field label="Booking link (for book a call)"><input value={s.booking_url ?? ''} onChange={(e) => set({ booking_url: e.target.value })} placeholder="https://calendly.com/you" className={input} /></Field>
-        <Field label="Application link (to start a 1003)"><input value={s.application_url ?? ''} onChange={(e) => set({ application_url: e.target.value })} placeholder="https://yourbrokerage.ashleyiq.com/you" className={input} /></Field>
+        <Field label="Application link (optional — defaults to your branded apply link)"><input value={s.application_url ?? ''} onChange={(e) => set({ application_url: e.target.value })} placeholder="Auto: your branded Smart-1003 link" className={input} /></Field>
         <Field label="Max AI replies per conversation"><input type="number" min={1} max={20} value={s.max_ai_replies} onChange={(e) => set({ max_ai_replies: Number(e.target.value) })} className={`${input} w-24`} /></Field>
       </Card>
 

@@ -17,6 +17,7 @@ import { getEntityMemories } from '@/lib/brain/getEntityMemories';
 import { buildSystemPrompt } from '@/lib/concierge/persona';
 import { checkConciergeReply } from '@/lib/concierge/complianceGuard';
 import { sendConciergeSms } from '@/lib/concierge/send';
+import { enrichPersona } from '@/lib/concierge/enrichPersona';
 import { DEFAULT_SETTINGS, type ConciergeContext, type ConciergeSettings, type AutonomyMode } from '@/lib/concierge/types';
 
 type Admin = SupabaseClient<any, any, any>;
@@ -119,7 +120,8 @@ async function loadSettings(sb: Admin, orgId: string, loId: string | null): Prom
     const { data } = await sb.from('ai_concierge_settings').select(COLS).eq('org_id', orgId).is('lo_id', null).maybeSingle();
     row = data ?? null;
   }
-  return { ...DEFAULT_SETTINGS, ...(row ?? {}) } as ConciergeSettings;
+  const merged = { ...DEFAULT_SETTINGS, ...(row ?? {}) } as ConciergeSettings;
+  return enrichPersona(sb, orgId, loId, merged);
 }
 
 async function buildContext(sb: Admin, opts: { orgId: string; leadId: string; loId: string | null }, settings: ConciergeSettings): Promise<ConciergeContext> {

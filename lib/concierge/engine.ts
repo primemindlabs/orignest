@@ -23,6 +23,7 @@ import { buildSystemPrompt } from '@/lib/concierge/persona';
 import { CONCIERGE_TOOLS, executeConciergeTool } from '@/lib/concierge/tools';
 import { checkConciergeReply } from '@/lib/concierge/complianceGuard';
 import { sendConciergeSms } from '@/lib/concierge/send';
+import { enrichPersona } from '@/lib/concierge/enrichPersona';
 import { DEFAULT_SETTINGS, type ConciergeContext, type ConciergeResult, type ConciergeSettings, type AutonomyMode, type ToolTrace } from '@/lib/concierge/types';
 
 const MODEL = 'claude-sonnet-4-6';
@@ -208,7 +209,8 @@ async function loadSettings(sb: Admin, orgId: string, loId: string | null): Prom
     const { data } = await sb.from('ai_concierge_settings').select(cols).eq('org_id', orgId).is('lo_id', null).maybeSingle();
     row = data ?? null;
   }
-  return { ...DEFAULT_SETTINGS, ...(row ?? {}) } as ConciergeSettings;
+  const merged = { ...DEFAULT_SETTINGS, ...(row ?? {}) } as ConciergeSettings;
+  return enrichPersona(sb, orgId, loId, merged);
 }
 
 interface ConvRow { id: string; status: string; autonomy_mode: string; message_count: number; escalation_reason: string | null; escalated_at: string | null; }
