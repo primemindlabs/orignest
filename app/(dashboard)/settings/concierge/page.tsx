@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { ConciergeSettingsClient } from './ConciergeSettingsClient';
+import { WebsiteWidgetCard } from './WebsiteWidgetCard';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Ashley Concierge' };
@@ -21,6 +22,9 @@ export default async function ConciergeSettingsPage() {
         An AI assistant that texts your borrowers on your behalf — qualifies them, answers general questions, books calls, and starts applications. It never quotes rates or makes approval claims, and hands off to you for anything sensitive. Test how it replies on any lead's page.
       </p>
       <ConciergeSettingsClient />
+      <div className="mt-5 max-w-2xl">
+        <WebsiteWidgetCard />
+      </div>
     </div>
   );
 }

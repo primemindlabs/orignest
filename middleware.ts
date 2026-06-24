@@ -38,6 +38,8 @@ const isPublicRoute = createRouteMatcher([
   '/(partner)(.*)',         // Partner portal — token-authenticated
   '/portal/realtor/(.*)',   // Realtor portal — token-authenticated, permission-walled
   '/portal/title/(.*)',     // Title agent portal — token-authenticated, closing-only
+  '/widget/(.*)',           // Phase 146 public website chat widget — public_key + session token gated
+  '/api/widget(.*)',        // Phase 146 widget APIs — public_key/session-token verified in handler
 ]);
 
 // Phase 137 — branded application portals on brokerage subdomains.
@@ -55,7 +57,7 @@ function subdomainRewrite(request: NextRequest): URL | null {
   if (RESERVED.has(sub)) return null;
 
   const p = request.nextUrl.pathname;
-  if (p.startsWith('/api') || p.startsWith('/_next') || p.startsWith('/apply') || p.includes('.')) return null;
+  if (p.startsWith('/api') || p.startsWith('/_next') || p.startsWith('/apply') || p.startsWith('/widget') || p.includes('.')) return null;
 
   const url = request.nextUrl.clone();
   url.pathname = `/apply/o/${sub}${p === '/' ? '' : p}`;
