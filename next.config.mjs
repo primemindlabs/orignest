@@ -13,7 +13,11 @@ const nextConfig = {
     serverComponentsExternalPackages: ['@supabase/ssr'],
   },
   images: {
-    domains: ['img.clerk.com', 'images.clerk.dev', 'dhnxiijduycmzfjmohyp.supabase.co'],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'img.clerk.com' },
+      { protocol: 'https', hostname: 'images.clerk.dev' },
+      { protocol: 'https', hostname: 'dhnxiijduycmzfjmohyp.supabase.co' },
+    ],
     formats: ['image/avif', 'image/webp'],
   },
   // Phase 29.1 — permanent redirects for the loan-file routes that moved so any
