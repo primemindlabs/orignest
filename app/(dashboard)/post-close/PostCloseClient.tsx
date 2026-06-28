@@ -40,7 +40,7 @@ interface SequenceConfig {
 interface PostCloseClientProps {
   borrowers: ClosedBorrower[];
   sequences: NurtureSequence[];
-  currentMarketRate: number;
+  currentMarketRate: number | null;
 }
 
 // ── Static sequence config ─────────────────────────────────────────────────────
@@ -86,8 +86,8 @@ function estimatedEquity(loanAmount: number | null, daysSinceClose: number): { b
   return { balance, equity, estimatedValue };
 }
 
-function rateGap(originalRate: number | null, marketRate: number): number {
-  if (!originalRate) return 0;
+function rateGap(originalRate: number | null, marketRate: number | null): number {
+  if (!originalRate || marketRate == null) return 0;
   return originalRate - marketRate;
 }
 
@@ -101,7 +101,7 @@ function formatCurrency(n: number): string {
 
 type ListFilter = 'all' | 'refi_eligible' | 'anniversary' | 'birthday';
 
-function NurtureList({ borrowers, currentMarketRate }: { borrowers: ClosedBorrower[]; currentMarketRate: number }) {
+function NurtureList({ borrowers, currentMarketRate }: { borrowers: ClosedBorrower[]; currentMarketRate: number | null }) {
   const [filter, setFilter] = useState<ListFilter>('all');
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [sentIds, setSentIds] = useState<Set<string>>(new Set());
@@ -306,7 +306,7 @@ function SequencesConfig() {
 
 // ── Home Equity Tracker ────────────────────────────────────────────────────────
 
-function EquityTracker({ borrowers, currentMarketRate }: { borrowers: ClosedBorrower[]; currentMarketRate: number }) {
+function EquityTracker({ borrowers, currentMarketRate }: { borrowers: ClosedBorrower[]; currentMarketRate: number | null }) {
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [sentIds, setSentIds] = useState<Set<string>>(new Set());
 
@@ -439,7 +439,7 @@ export function PostCloseClient({ borrowers, sequences, currentMarketRate }: Pos
               {refiEligible} borrower{refiEligible > 1 ? 's' : ''} may be refi-eligible
             </p>
             <p className="text-[12px] text-[#FF3B30]/80">
-              Current market rate ({currentMarketRate.toFixed(3)}%) is 0.75%+ below their original rate
+              Current market rate ({(currentMarketRate ?? 0).toFixed(3)}%) is 0.75%+ below their original rate
             </p>
           </div>
         </div>

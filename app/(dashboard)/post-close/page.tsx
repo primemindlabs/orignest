@@ -10,9 +10,6 @@ export const dynamic = 'force-dynamic';
 
 export const metadata = { title: 'Post-Close Nurture — AshleyIQ' };
 
-// Indicative market rate — in production this comes from the Pricing Engine
-const CURRENT_MARKET_RATE = 6.875;
-
 export default async function PostClosePage() {
   const { userId, orgId } = await getOrgContext();
   if (!userId) redirect('/sign-in');
@@ -40,6 +37,17 @@ export default async function PostClosePage() {
     original_rate: null as number | null,
   }));
 
+  // Live indicative 30-yr market rate from the latest snapshot (Pricing Engine feeds
+  // this). No hardcoded fallback — show "—" when no snapshot exists yet.
+  const { data: mkt } = await sb
+    .from('market_rate_snapshots')
+    .select('rate')
+    .ilike('product', '%30%')
+    .order('snapshot_date', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const marketRate: number | null = typeof mkt?.rate === 'number' ? mkt.rate : null;
+
   const totalClosed = borrowers.length;
   const scheduled = (sequences ?? []).filter(s => s.status === 'scheduled').length;
   const sent = (sequences ?? []).filter(s => s.status === 'sent').length;
@@ -65,7 +73,7 @@ export default async function PostClosePage() {
           { label: 'Closed Borrowers', value: String(totalClosed), sub: 'In database' },
           { label: 'Scheduled Touches', value: String(scheduled), sub: 'Upcoming sequences' },
           { label: 'Touches Sent', value: String(sent), sub: 'Lifetime' },
-          { label: 'Market Rate', value: `${CURRENT_MARKET_RATE}%`, sub: 'Indicative 30-yr' },
+          { label: 'Market Rate', value: marketRate != null ? `${marketRate}%` : '—', sub: 'Indicative 30-yr' },
         ].map(stat => (
           <div key={stat.label} className="bg-white border border-black/[0.06] shadow-sm rounded-2xl px-4 py-3.5">
             <p className="text-[11px] font-semibold text-[#8A8A8E] uppercase tracking-wide mb-1">{stat.label}</p>
@@ -80,7 +88,7 @@ export default async function PostClosePage() {
         <PostCloseClient
           borrowers={borrowers}
           sequences={sequences ?? []}
-          currentMarketRate={CURRENT_MARKET_RATE}
+          currentMarketRate={marketRate}
         />
       </div>
 
