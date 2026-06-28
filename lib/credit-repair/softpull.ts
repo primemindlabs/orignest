@@ -61,7 +61,13 @@ function mockResponse(): SoftPullResponse {
 export async function callSoftPullSolutions(info: BorrowerPullInfo): Promise<SoftPullResponse> {
   const key = process.env.SOFT_PULL_API_KEY;
   const isMock = !key || key === 'mock' || key === 'placeholder';
-  if (isMock) return mockResponse();
+  if (isMock) {
+    // Mock credit data must never reach a production borrower decision.
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('[softpull] SOFT_PULL_API_KEY is not configured. Mock credit data is not permitted in production.');
+    }
+    return mockResponse();
+  }
 
   // Real Soft Pull Solutions call. Confirm exact endpoint/payload during onboarding.
   const response = await axios.post(

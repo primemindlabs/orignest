@@ -1,11 +1,26 @@
 import { SubscriptionPlan, SubscriptionPlanConfig } from '@/types';
 
+/**
+ * Resolve a Stripe price id from the environment. Lazy (called from a getter) so a
+ * missing var fails loud at checkout/webhook time rather than crashing `next build`,
+ * and never falls back to an invalid literal id in production. Dev gets a clearly
+ * non-functional placeholder so local flows don't explode.
+ */
+function priceId(envVar: string, label: string): string {
+  const id = process.env[envVar];
+  if (id) return id;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(`${envVar} is not set — required for the Stripe "${label}" plan.`);
+  }
+  return `price_dev_${label}`;
+}
+
 export const PLANS: Record<SubscriptionPlan, SubscriptionPlanConfig> = {
   starter: {
     id: 'starter',
     name: 'Starter',
     price: 99,
-    stripePriceId: process.env.STRIPE_PRICE_STARTER ?? 'price_starter_monthly',
+    get stripePriceId() { return priceId('STRIPE_PRICE_STARTER', 'starter'); },
     seats: 1,
     features: [
       '1 loan officer seat',
@@ -22,7 +37,7 @@ export const PLANS: Record<SubscriptionPlan, SubscriptionPlanConfig> = {
     id: 'growth',
     name: 'Growth',
     price: 199,
-    stripePriceId: process.env.STRIPE_PRICE_GROWTH ?? 'price_growth_monthly',
+    get stripePriceId() { return priceId('STRIPE_PRICE_GROWTH', 'growth'); },
     seats: 5,
     features: [
       'Up to 5 loan officer seats',
@@ -42,7 +57,7 @@ export const PLANS: Record<SubscriptionPlan, SubscriptionPlanConfig> = {
     id: 'team',
     name: 'Team',
     price: 399,
-    stripePriceId: process.env.STRIPE_PRICE_TEAM ?? 'price_team_monthly',
+    get stripePriceId() { return priceId('STRIPE_PRICE_TEAM', 'team'); },
     seats: 20,
     features: [
       'Up to 20 loan officer seats',

@@ -7,7 +7,16 @@ import 'server-only';
 import { createHmac, timingSafeEqual } from 'crypto';
 
 const TTL_MS = 72 * 60 * 60 * 1000;
-function secret(): string { return process.env.APPLY_TOKEN_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || 'ashley-iq-apply-fallback'; }
+function secret(): string {
+  const s = process.env.APPLY_TOKEN_SECRET;
+  if (s) return s;
+  // Fail loud in production — a forgeable apply-link token would let an attacker
+  // pre-populate a 1003 against any lead. Dev-only fallback below.
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('APPLY_TOKEN_SECRET is not set — required for signing apply-link tokens.');
+  }
+  return 'ashley-iq-apply-dev-only';
+}
 
 export interface ApplyPayload { lead_id: string; org_id: string; lo_id?: string; keyword?: string; property_address?: string | null; estimated_value?: number | null; credit_range?: string | null; iat: number; exp: number }
 

@@ -6,7 +6,14 @@ import 'server-only';
 import { createHmac, timingSafeEqual } from 'crypto';
 
 function secret(): string {
-  return process.env.UNSUBSCRIBE_TOKEN_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || 'ashley-iq-unsub-fallback';
+  const s = process.env.UNSUBSCRIBE_TOKEN_SECRET;
+  if (s) return s;
+  // Fail loud in production — a weak/shared signing key lets attackers forge
+  // one-click unsubscribe tokens (CAN-SPAM integrity). Dev-only fallback below.
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('UNSUBSCRIBE_TOKEN_SECRET is not set — required for CAN-SPAM unsubscribe token signing.');
+  }
+  return 'ashley-iq-unsub-dev-only';
 }
 function b64url(buf: Buffer | string): string {
   return Buffer.from(buf).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
