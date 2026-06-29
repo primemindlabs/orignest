@@ -1725,4 +1725,45 @@ CREATE POLICY "agent_run_log_org" ON agent_run_log FOR SELECT
     )
   );
 
+-- ============ Stage E — hoi_verifications (Homeowners Insurance) ============
+CREATE TABLE IF NOT EXISTS hoi_verifications (
+  id                        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  loan_id                   uuid NOT NULL,  -- leads.id (loan file)
+  org_id                    uuid REFERENCES organizations(id) ON DELETE CASCADE,
+  carrier_name              text,
+  policy_number             text,
+  agent_name                text,
+  agent_phone               text,
+  agent_email               text,
+  dwelling_coverage_amount  numeric(15,2),
+  liability_coverage_amount numeric(15,2),
+  deductible_amount         numeric(15,2),
+  effective_date            date,
+  expiration_date           date,
+  status                    text NOT NULL DEFAULT 'pending'
+    CONSTRAINT hoi_status_check CHECK (status IN ('pending','verified','expired','insufficient_coverage','waived')),
+  coverage_adequate         boolean,
+  notes                     text,
+  verified_by               text,
+  verified_at               timestamptz,
+  created_at                timestamptz NOT NULL DEFAULT now(),
+  updated_at                timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_hoi_loan ON hoi_verifications(loan_id, created_at DESC);
+ALTER TABLE hoi_verifications ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "hoi_verifications_org" ON hoi_verifications;
+CREATE POLICY "hoi_verifications_org" ON hoi_verifications FOR ALL
+  USING (
+    org_id IN (
+      SELECT id FROM organizations
+      WHERE clerk_org_id = (SELECT current_setting('request.jwt.claims', true)::json->>'org_id')
+    )
+  )
+  WITH CHECK (
+    org_id IN (
+      SELECT id FROM organizations
+      WHERE clerk_org_id = (SELECT current_setting('request.jwt.claims', true)::json->>'org_id')
+    )
+  );
+
 COMMIT;
