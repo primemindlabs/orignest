@@ -7,7 +7,8 @@
 import { NextResponse } from 'next/server';
 import { getOrgContext } from '@/lib/auth/orgContext';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { encrypt, maskTail } from '@/lib/crypto/encrypt';
+import { encrypt, decrypt, maskTail } from '@/lib/crypto/encrypt';
+import { subscribePageToLeadgen, unsubscribePage } from '@/lib/facebook/oauth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -35,6 +36,7 @@ export async function GET() {
     webhook_url: `${base}/api/webhooks/facebook`,
     verify_token_configured: !!process.env.FACEBOOK_VERIFY_TOKEN,
     app_secret_configured: !!process.env.FACEBOOK_APP_SECRET,
+    oauth_available: !!(process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET),
   });
 }
 
@@ -53,6 +55,7 @@ export async function POST(req: Request) {
 
   const tokenEnc = b.page_access_token ? encrypt(String(b.page_access_token)) : (existing?.page_access_token_enc ?? null);
   if (!tokenEnc) return NextResponse.json({ error: 'page_access_token is required' }, { status: 400 });
+  const isActive = b.is_active === false ? false : true;
 
   const { error } = await sb.from('facebook_lead_connections').upsert({
     org_id: orgId,
@@ -60,11 +63,24 @@ export async function POST(req: Request) {
     page_name: b.page_name ? String(b.page_name) : null,
     lo_id: b.lo_id ? String(b.lo_id) : null,
     page_access_token_enc: tokenEnc,
-    is_active: b.is_active === false ? false : true,
+    is_active: isActive,
     updated_at: new Date().toISOString(),
   }, { onConflict: 'org_id,page_id' });
 
   if (error) { console.error('[facebook] connection save failed', error); return NextResponse.json({ error: 'Could not save the connection.' }, { status: 500 }); }
+
+  // Enabling a Page subscribes it to the leadgen webhook; disabling unsubscribes it.
+  let plain: string | null = null;
+  try { plain = b.page_access_token ? String(b.page_access_token) : decrypt(tokenEnc); } catch { plain = null; }
+  if (plain) {
+    if (isActive) {
+      const sub = await subscribePageToLeadgen(page_id, plain);
+      await sb.from('facebook_lead_connections').update({ last_error: sub.ok ? null : (sub.error ?? 'subscribe failed'), updated_at: new Date().toISOString() }).eq('org_id', orgId).eq('page_id', page_id);
+      if (!sub.ok) return NextResponse.json({ ok: true, warning: `Saved, but the Page could not be subscribed: ${sub.error}` });
+    } else {
+      await unsubscribePage(page_id, plain);
+    }
+  }
   return NextResponse.json({ ok: true });
 }
 
@@ -76,6 +92,11 @@ export async function DELETE(req: Request) {
   const id = new URL(req.url).searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 });
   const sb = createAdminClient();
+  // Unsubscribe the Page from our leadgen webhook before removing the connection.
+  const { data: row } = await sb.from('facebook_lead_connections').select('page_id, page_access_token_enc').eq('id', id).eq('org_id', orgId).maybeSingle();
+  if (row?.page_access_token_enc) {
+    try { await unsubscribePage(row.page_id, decrypt(row.page_access_token_enc)); } catch { /* best-effort */ }
+  }
   await sb.from('facebook_lead_connections').delete().eq('id', id).eq('org_id', orgId);
   return NextResponse.json({ ok: true });
 }
