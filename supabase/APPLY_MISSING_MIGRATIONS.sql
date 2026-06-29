@@ -1794,4 +1794,28 @@ CREATE POLICY "adverse_action_notices_org" ON adverse_action_notices FOR ALL
     )
   );
 
+-- ============ Stage K — state_disclosures (platform-managed content) ============
+CREATE TABLE IF NOT EXISTS state_disclosures (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  state_code      char(2) NOT NULL,
+  disclosure_type text NOT NULL
+    CONSTRAINT state_disclosure_type_check CHECK (disclosure_type IN (
+      'right_to_choose_insurance','arm_disclosure','commitment_fee','prepayment_penalty',
+      'balloon_payment','anti_steering','deed_of_trust_trustee','homebuyer_counseling',
+      'fair_lending','state_specific_tila','other')),
+  title           text NOT NULL,
+  content         text NOT NULL,
+  effective_date  date,
+  citation        text,
+  is_active       boolean NOT NULL DEFAULT true,
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  updated_at      timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (state_code, disclosure_type)
+);
+CREATE INDEX IF NOT EXISTS idx_state_disclosures_state ON state_disclosures(state_code, is_active);
+ALTER TABLE state_disclosures ENABLE ROW LEVEL SECURITY;
+-- Platform-managed reference content: readable by any authenticated user.
+DROP POLICY IF EXISTS "state_disclosures_read" ON state_disclosures;
+CREATE POLICY "state_disclosures_read" ON state_disclosures FOR SELECT USING (true);
+
 COMMIT;
