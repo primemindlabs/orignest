@@ -9,6 +9,7 @@ import { LenderConnectionsCard } from './LenderConnectionsCard';
 import { CreditVendorsCard } from './CreditVendorsCard';
 import { VoieVendorsCard } from './VoieVendorsCard';
 import { AusVendorsCard } from './AusVendorsCard';
+import { FacebookLeadsCard } from './FacebookLeadsCard';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Integrations' };
@@ -35,6 +36,10 @@ export default async function IntegrationsPage() {
           Connect partner platforms that send you new borrowers. Each loan officer links their own account.
         </p>
         <ArriveCard />
+      </div>
+
+      <div className="pt-2">
+        <FacebookLeadsCard canManage={role === 'admin' || role === 'branch_manager'} />
       </div>
 
       <div className="pt-2">
