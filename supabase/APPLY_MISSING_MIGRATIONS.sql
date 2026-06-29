@@ -1701,4 +1701,28 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('bureau-responses', 'bureau-responses', false)
 ON CONFLICT (id) DO NOTHING;
 
+-- ============ Stage D — agent_run_log (AI Agents telemetry) ============
+-- One row per agent/cron run so the AI Agents dashboard shows real last-run /
+-- records-processed / status. org_id is NULL for platform-wide crons.
+CREATE TABLE IF NOT EXISTS agent_run_log (
+  id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id            uuid REFERENCES organizations(id) ON DELETE CASCADE,
+  agent_name        text NOT NULL,
+  status            text NOT NULL DEFAULT 'completed',  -- completed | failed | running
+  records_processed integer NOT NULL DEFAULT 0,
+  run_at            timestamptz NOT NULL DEFAULT now(),
+  error_message     text
+);
+CREATE INDEX IF NOT EXISTS idx_agent_run_log_name ON agent_run_log(agent_name, run_at DESC);
+CREATE INDEX IF NOT EXISTS idx_agent_run_log_org ON agent_run_log(org_id, run_at DESC);
+ALTER TABLE agent_run_log ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "agent_run_log_org" ON agent_run_log;
+CREATE POLICY "agent_run_log_org" ON agent_run_log FOR SELECT
+  USING (
+    org_id IS NULL OR org_id IN (
+      SELECT id FROM organizations
+      WHERE clerk_org_id = (SELECT current_setting('request.jwt.claims', true)::json->>'org_id')
+    )
+  );
+
 COMMIT;
