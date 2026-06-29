@@ -34,9 +34,12 @@ export async function scrubPhone(orgId: string, rawPhone: string): Promise<Scrub
 
   // 3. Registry API (GATED).
   const apiKey = process.env.DNC_API_KEY;
-  if (onRegistry === null && apiKey) {
+  // Only call the national registry when a real vendor base URL is configured —
+  // never a placeholder. With no DNC_API_BASE the registry check is skipped and
+  // registryGated stays true (internal suppression still governs).
+  if (onRegistry === null && apiKey && process.env.DNC_API_BASE) {
     try {
-      const res = await fetch(`${process.env.DNC_API_BASE ?? 'https://api.dnc.com'}/scrub`, { method: 'POST', headers: { 'x-api-key': apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ phones: [phone] }) });
+      const res = await fetch(`${process.env.DNC_API_BASE}/scrub`, { method: 'POST', headers: { 'x-api-key': apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ phones: [phone] }) });
       if (res.ok) {
         const r = await res.json();
         onRegistry = !!r.on_registry; isLitigant = !!r.is_litigant;

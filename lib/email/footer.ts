@@ -21,7 +21,7 @@ export function emailFooter(opts: { companyName: string; address?: string | null
 
 /** Company display name for CAN-SPAM sender identity. */
 export function companyName(): string {
-  return process.env.COMPANY_NAME || 'AshleyIQ';
+  return process.env.COMPANY_NAME || process.env.PLATFORM_NAME || 'our team';
 }
 
 /** Plain-text variant of the compliance footer (for text/* emails). Throws if no address. */

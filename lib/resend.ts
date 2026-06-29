@@ -14,8 +14,12 @@ export function getResend(): Resend {
   return resendClient;
 }
 
-export const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? 'noreply@ashleyiq.com';
-export const FROM_NAME = 'AshleyIQ';
+// No brand-leaking fallback: production must set RESEND_FROM_EMAIL (enforced at
+// send time in sendCompliantEmail, not at module load — a load-time throw would
+// break `next build` when the env isn't present). Dev gets a non-routable default.
+export const FROM_EMAIL =
+  process.env.RESEND_FROM_EMAIL ?? (process.env.NODE_ENV === 'production' ? '' : 'noreply@dev.local');
+export const FROM_NAME = process.env.RESEND_FROM_NAME ?? process.env.COMPANY_NAME ?? 'Notifications';
 export const FROM = `${FROM_NAME} <${FROM_EMAIL}>`;
 
 /**
@@ -40,6 +44,9 @@ export async function sendCompliantEmail(params: {
   const { complianceFooterHtml, complianceFooterText, requirePhysicalAddress } = await import('@/lib/email/footer');
   const recipient = params.recipientEmail ?? (Array.isArray(params.to) ? params.to[0] : params.to);
   const footerArgs = { orgId: params.orgId ?? null, email: recipient, leadId: params.leadId ?? null };
+
+  // A valid sender identity is required — never send from an empty/placeholder address.
+  if (!params.from && !FROM_EMAIL) throw new Error('RESEND_FROM_EMAIL is required to send email.');
 
   // Building the footer THROWS if the physical-address env is missing — a
   // non-compliant email is never assembled or sent.

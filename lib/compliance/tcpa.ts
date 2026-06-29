@@ -101,11 +101,18 @@ export function validateConsentRecord(params: {
  * Standard TCPA consent disclosure text shown to borrowers.
  * This exact text must be displayed and stored in sms_consent_text.
  */
-export const STANDARD_TCPA_CONSENT_TEXT =
-  'By checking this box, I consent to receive automated text messages from AshleyIQ ' +
-  'and the loan officer I am working with at the phone number provided. Message and data ' +
-  'rates may apply. Message frequency varies. Reply STOP to opt out at any time. ' +
-  'Reply HELP for help. See our Privacy Policy for details.';
+export function buildTcpaConsentText(orgName: string, orgPhone?: string): string {
+  return (
+    `By checking this box, I consent to receive automated text messages from ${orgName}` +
+    `${orgPhone ? ` at ${orgPhone}` : ''} ` +
+    'and the loan officer I am working with at the phone number provided. Message and data ' +
+    'rates may apply. Message frequency varies. Reply STOP to opt out at any time. ' +
+    'Reply HELP for help. See our Privacy Policy for details.'
+  );
+}
+
+// Backward-compat shim — de-branded default for callers without org context.
+export const STANDARD_TCPA_CONSENT_TEXT = buildTcpaConsentText('our team');
 
 /**
  * Quiet hours enforcement (TCPA best practice): no automated calls/SMS
