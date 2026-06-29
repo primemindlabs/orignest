@@ -51,7 +51,11 @@ export async function sendCertifiedLetter(params: {
   const mockId = `mock_ltr_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
 
   if (!key) {
-    // Not configured — return a mock so the flow completes in dev.
+    // Physical dispute letters must never silently no-op in production.
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('[lob] LOB_API_KEY is required in production. Physical dispute letters will not be sent without it.');
+    }
+    // Dev only — return a mock so the flow completes locally.
     return { lobId: mockId, status: 'mock_mailed', mocked: true };
   }
 

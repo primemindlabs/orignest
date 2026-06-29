@@ -67,7 +67,7 @@ export default async function ResumeApplicationPage({ params }: { params: { toke
               </div>
             </div>
             <a
-              href="/apply"
+              href={`/apply/smart/${params.token}`}
               className="inline-flex items-center justify-center w-full mt-6 py-3 rounded-xl bg-[#C9A95C] text-white font-semibold text-sm hover:bg-[#b8953f] transition-colors"
             >
               Continue my application

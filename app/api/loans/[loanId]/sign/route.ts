@@ -35,8 +35,12 @@ export async function POST(req: Request, { params }: { params: { loanId: string 
 
   const sb = createAdminClient();
   const { data: profile } = await sb.from('profiles').select('id').eq('clerk_user_id', userId).maybeSingle();
-  const result = await createEnvelope({ title: `${pkg} envelope`, orgId, loId: profile?.id, packageType: pkg });
-  if (result.gated) return NextResponse.json({ gated: true, reason: result.reason }, { status: 501 });
+  let result;
+  try {
+    result = await createEnvelope({ title: `${pkg} envelope`, orgId, loId: profile?.id, packageType: pkg });
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 503 });
+  }
 
   // Provisioned path: record envelope + start TRID clock for initial disclosures.
   await sb.from('sign_envelopes').insert({ org_id: orgId, loan_id: params.loanId, envelope_id: result.envelope_id, package_type: pkg, status: 'sent', sent_by: profile?.id ?? null, expires_at: result.expires_at });

@@ -31,13 +31,25 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
   const results: Array<{ disputeId: string; status: string; lobId?: string; error?: string }> = [];
 
   for (const dispute of disputes) {
-    const send = await sendCertifiedLetter({
-      description: `Credit Dispute — ${dispute.bureau} — ${(dispute.borrower_name as string) ?? 'Account'}`,
-      borrowerName: dispute.borrower_name as string,
-      borrowerAddress: dispute.borrower_address as string,
-      bureauAddress: dispute.bureau_address as string,
-      letterBody: dispute.letter_body as string,
-    });
+    let send;
+    try {
+      send = await sendCertifiedLetter({
+        description: `Credit Dispute — ${dispute.bureau} — ${(dispute.borrower_name as string) ?? 'Account'}`,
+        borrowerName: dispute.borrower_name as string,
+        borrowerAddress: dispute.borrower_address as string,
+        bureauAddress: dispute.bureau_address as string,
+        letterBody: dispute.letter_body as string,
+      });
+    } catch (e) {
+      results.push({ disputeId: dispute.id as string, status: 'failed', error: (e as Error).message });
+      continue;
+    }
+
+    // Never mark a dispute as sent when physical mail wasn't actually transmitted.
+    if (send.mocked) {
+      results.push({ disputeId: dispute.id as string, status: 'not_configured', error: 'Physical mail not configured — LOB_API_KEY is required.' });
+      continue;
+    }
 
     if (send.status === 'failed') {
       results.push({ disputeId: dispute.id as string, status: 'failed', error: send.error });

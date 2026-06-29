@@ -22,11 +22,18 @@ export async function getSignBrand(orgId: string, loId?: string): Promise<SignBr
   return { logoUrl: null, primaryColor: (org?.brand_color as string | null) || '#C9A95C', companyName: org?.name ?? '', fromName: fromName && org?.name ? `${fromName} | ${org.name}` : fromName };
 }
 
-export type EnvelopeResult = { gated: true; reason: string } | { gated: false; envelope_id: string; expires_at: string };
+export type EnvelopeResult = { envelope_id: string; expires_at: string };
 
-/** Create a signing envelope. Inert until the SDK + key are provisioned. */
+/**
+ * Create a signing envelope. THROWS LOUDLY when PrimeMind Sign is not provisioned —
+ * a silent "gated" return here meant a missing e-sign integration could be swallowed
+ * by callers and TRID disclosure sends would quietly no-op. Callers catch and return
+ * a 503 so the gap surfaces in logs and to the client.
+ */
 export async function createEnvelope(_args: { title: string; orgId: string; loId?: string; packageType: string; expiresDays?: number }): Promise<EnvelopeResult> {
-  if (!isSignConfigured()) return { gated: true, reason: 'PrimeMind Sign is not configured (set PRIMEMIND_SIGN_API_KEY / PRIMEMIND_SIGN_WEBHOOK_SECRET + install @primemind/sign-react).' };
-  // When provisioned: const env = await signClient.createEnvelope({ title, brand: await getSignBrand(orgId, loId), ... })
-  return { gated: true, reason: 'Sign SDK not installed in this deployment.' };
+  if (!isSignConfigured()) {
+    throw new Error('[sign] PrimeMind Sign is not provisioned. Set PRIMEMIND_SIGN_API_KEY + PRIMEMIND_SIGN_WEBHOOK_SECRET and install @primemind/sign-react.');
+  }
+  // When provisioned: const env = await signClient.createEnvelope({ title, brand: await getSignBrand(orgId, loId), ... }); return { envelope_id: env.id, expires_at: env.expiresAt };
+  throw new Error('[sign] @primemind/sign-react is not installed in this deployment.');
 }
