@@ -1766,4 +1766,32 @@ CREATE POLICY "hoi_verifications_org" ON hoi_verifications FOR ALL
     )
   );
 
+-- ============ Stage F — adverse_action_notices (ECOA / Reg B) ============
+CREATE TABLE IF NOT EXISTS adverse_action_notices (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  lead_id      uuid NOT NULL,
+  org_id       uuid REFERENCES organizations(id) ON DELETE CASCADE,
+  action_taken text NOT NULL,            -- denied | counteroffer | incomplete
+  reasons      text[] NOT NULL DEFAULT '{}',
+  generated_at timestamptz NOT NULL DEFAULT now(),
+  sent_at      timestamptz,
+  sent_via     text                       -- email | mail | in_person
+);
+CREATE INDEX IF NOT EXISTS idx_aan_lead ON adverse_action_notices(lead_id, generated_at DESC);
+ALTER TABLE adverse_action_notices ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "adverse_action_notices_org" ON adverse_action_notices;
+CREATE POLICY "adverse_action_notices_org" ON adverse_action_notices FOR ALL
+  USING (
+    org_id IN (
+      SELECT id FROM organizations
+      WHERE clerk_org_id = (SELECT current_setting('request.jwt.claims', true)::json->>'org_id')
+    )
+  )
+  WITH CHECK (
+    org_id IN (
+      SELECT id FROM organizations
+      WHERE clerk_org_id = (SELECT current_setting('request.jwt.claims', true)::json->>'org_id')
+    )
+  );
+
 COMMIT;

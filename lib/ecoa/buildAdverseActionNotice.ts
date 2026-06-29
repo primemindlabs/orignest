@@ -9,6 +9,8 @@
 import 'server-only';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
+export { ECOA_DENIAL_REASONS } from './reasons';
+
 export interface AdverseActionNoticeData {
   applicantName: string;
   applicantAddress: string;
@@ -25,37 +27,6 @@ export interface AdverseActionNoticeData {
   loanOfficerName: string;
   loanOfficerNmls: string;
 }
-
-/** ECOA Regulation B approved adverse-action reason codes. */
-export const ECOA_DENIAL_REASONS = [
-  'Credit application incomplete',
-  'Insufficient number of credit references provided',
-  'Unable to verify credit references',
-  'Temporary or irregular employment',
-  'Unable to verify employment',
-  'Length of employment',
-  'Insufficient income',
-  'Excessive obligations in relation to income',
-  'Unable to verify income',
-  'Length of residence',
-  'Temporary residence',
-  'Unable to verify residence',
-  'No credit file',
-  'Limited credit experience',
-  'Poor credit performance with us',
-  'Delinquent past or present credit obligations with others',
-  'Collection action or judgment',
-  'Garnishment or attachment',
-  'Foreclosure or repossession',
-  'Bankruptcy',
-  'Number of recent inquiries on credit bureau report',
-  'Value or type of collateral not sufficient',
-  'Unacceptable property',
-  'Unable to appraise property',
-  'Lack of cash reserves',
-  'Excessive number of accounts',
-  'Other — specify',
-] as const;
 
 const ACTION_TEXT: Record<AdverseActionNoticeData['actionTaken'], string> = {
   denied: 'Your application for credit has been DENIED.',
