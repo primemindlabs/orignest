@@ -2,22 +2,30 @@
  * Phase 34.3 — campaign step processor (cron-callable, Bearer CRON_SECRET).
  *
  * For each active enrollment whose next_send_at is due: check exit conditions,
- * personalize the step (Haiku), record an immutable campaign_step_sends row, and
- * advance. Actual email/SMS DELIVERY is guarded behind CAMPAIGNS_LIVE_SEND=true
- * (so it never blasts demo contacts); SMS additionally requires TCPA consent.
- * The personalization + audit trail run regardless.
+ * personalize the step (Haiku), DELIVER it (SMS via Twilio / email via Resend with
+ * the CAN-SPAM footer), and record an immutable campaign_step_sends row. Delivery is
+ * gated by consent — SMS requires sms_consent and no opt-out; email requires no
+ * opt-out/bounce — and by the LO being NMLS-ready. There is no global LIVE flag:
+ * consent + provider credentials are the gate. With no provider configured the step
+ * is still personalized and audited ('recorded'), just not transmitted.
  */
 import { NextResponse } from 'next/server';
+import twilio from 'twilio';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { personalizeMessage, interpolateTemplate } from '@/lib/campaigns/personalize';
 import { evaluateCommsGate } from '@/lib/communications/nmlsGate';
+import { sendCompliantEmail } from '@/lib/resend';
+import { buildSenderIdentity } from '@/lib/relay/sender';
+import { logAgentRun } from '@/lib/agents/logRun';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
-const LIVE = process.env.CAMPAIGNS_LIVE_SEND === 'true';
 const BATCH = 60;
+function twilioConfigured(): boolean {
+  return !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN);
+}
 
 function exitFor(exitConditions: unknown, lead: { stage?: string | null }): string | null {
   if (!Array.isArray(exitConditions)) return null;
@@ -41,7 +49,7 @@ export async function POST(req: Request) {
     .lte('next_send_at', new Date().toISOString())
     .limit(BATCH);
 
-  let sent = 0, exited = 0, skipped = 0;
+  let sent = 0, exited = 0, skipped = 0, failed = 0;
   const orgName = new Map<string, string>();
 
   for (const e of due ?? []) {
@@ -58,13 +66,15 @@ export async function POST(req: Request) {
     const { data: step } = await sb.from('campaign_steps').select('*').eq('campaign_id', e.campaign_id).eq('step_number', e.current_step).maybeSingle();
     if (!step) { await sb.from('campaign_enrollments').update({ status: 'completed', exited_at: new Date().toISOString(), exit_reason: 'completed' }).eq('id', e.id); exited++; continue; }
 
-    // Resolve LO/company for personalization. The assigned LO must be NMLS-ready
-    // (or exempt) before borrower SMS/email goes out under their identity.
+    // Resolve LO/company for personalization + sender identity. The assigned LO must
+    // be NMLS-ready (or exempt) before borrower SMS/email goes out under their identity.
     let loName = 'your loan officer';
     let loLocked = false;
+    let loProfile: { first_name?: string | null; last_name?: string | null; email?: string | null; phone?: string | null } | null = null;
     if (lead.assigned_to) {
-      const { data: p } = await sb.from('profiles').select('first_name, last_name, nmls_id, comms_exempt, comms_exempt_reason').eq('id', lead.assigned_to).maybeSingle();
+      const { data: p } = await sb.from('profiles').select('first_name, last_name, email, phone, nmls_id, comms_exempt, comms_exempt_reason').eq('id', lead.assigned_to).maybeSingle();
       if (p) {
+        loProfile = p;
         loName = `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim() || loName;
         loLocked = !evaluateCommsGate(p).allowed;
       }
@@ -73,15 +83,19 @@ export async function POST(req: Request) {
       const { data: o } = await sb.from('organizations').select('name').eq('id', e.org_id).maybeSingle();
       orgName.set(e.org_id, o?.name ?? '');
     }
-    const vars = { ...lead, lo_name: loName, company_name: orgName.get(e.org_id) ?? '' };
+    const company = orgName.get(e.org_id) ?? '';
+    const vars = { ...lead, lo_name: loName, company_name: company };
 
     const body = step.ai_personalize
       ? await personalizeMessage(step.body, vars, step.ai_personalize_instructions ?? undefined)
       : interpolateTemplate(step.body, vars);
     const subject = step.subject ? interpolateTemplate(step.subject, vars) : null;
 
-    // Determine delivery outcome.
+    // Deliver + record the outcome.
     let delivery: string = 'recorded';
+    let twilioSid: string | null = null;
+    let resendId: string | null = null;
+
     if (step.channel === 'task') {
       // Tasks become a lead_activities entry for the LO.
       await sb.from('lead_activities').insert({ lead_id: e.lead_id, org_id: e.org_id, action: 'campaign_task', description: interpolateTemplate(step.task_description ?? step.body, vars), metadata: { campaign_id: e.campaign_id, step: e.current_step } }).then(() => undefined, () => undefined);
@@ -91,20 +105,43 @@ export async function POST(req: Request) {
       else if (lead.sms_opt_out) delivery = 'skipped_unsubscribed';
       else if (!lead.sms_consent) delivery = 'skipped_tcpa';
       else if (loLocked) delivery = 'skipped_comms_locked';
-      else delivery = LIVE ? 'sent' : 'recorded';
-      // TODO(delivery): when LIVE + consent, send via Twilio here.
+      else {
+        const identity = buildSenderIdentity(loProfile ?? {}, { name: company || null, reply_to_email: null, twilio_number: process.env.DEFAULT_TWILIO_NUMBER || process.env.TWILIO_PHONE_NUMBER || null });
+        if (twilioConfigured() && identity.sms_from) {
+          try {
+            const client = twilio(process.env.TWILIO_ACCOUNT_SID!, process.env.TWILIO_AUTH_TOKEN!);
+            const msg = await client.messages.create({ body, from: identity.sms_from, to: lead.phone });
+            twilioSid = msg.sid; delivery = 'sent';
+          } catch (err) {
+            console.error('[campaign] sms send failed', err); delivery = 'failed';
+          }
+        } else {
+          delivery = 'recorded'; // no SMS provider configured — audited but not transmitted
+        }
+      }
     } else {
       if (!lead.email) delivery = 'skipped_no_contact';
       else if (lead.email_opt_out || lead.email_bounced) delivery = 'skipped_unsubscribed';
       else if (loLocked) delivery = 'skipped_comms_locked';
-      else delivery = LIVE ? 'sent' : 'recorded';
-      // TODO(delivery): when LIVE, append emailFooter() (CAN-SPAM) + send via Resend.
+      else {
+        try {
+          // sendCompliantEmail appends the CAN-SPAM footer and throws if the sender
+          // identity / physical address isn't configured (never sends non-compliant).
+          const res = await sendCompliantEmail({ to: lead.email, subject: subject ?? 'A note from your loan team', text: body, orgId: e.org_id, recipientEmail: lead.email, leadId: e.lead_id });
+          resendId = res?.id ?? null; delivery = 'sent';
+        } catch (err) {
+          console.error('[campaign] email send failed', err); delivery = 'failed';
+        }
+      }
     }
-    if (delivery.startsWith('skipped')) skipped++; else sent++;
+    if (delivery === 'failed') failed++;
+    else if (delivery.startsWith('skipped')) skipped++;
+    else if (delivery === 'sent') sent++;
 
     await sb.from('campaign_step_sends').insert({
       enrollment_id: e.id, campaign_id: e.campaign_id, step_id: step.id, lead_id: e.lead_id, org_id: e.org_id,
-      channel: step.channel, subject, body, original_template: step.body, ai_personalized: !!step.ai_personalize, delivery_status: delivery,
+      channel: step.channel, subject, body, original_template: step.body, ai_personalized: !!step.ai_personalize,
+      delivery_status: delivery, twilio_message_sid: twilioSid, resend_message_id: resendId,
     });
 
     // Advance to the next step, or complete.
@@ -117,7 +154,9 @@ export async function POST(req: Request) {
     }
   }
 
-  return NextResponse.json({ processed: due?.length ?? 0, sent, skipped, exited, live: LIVE });
+  await logAgentRun(sb, { agentName: 'campaign_drip', recordsProcessed: sent, status: failed > 0 ? 'failed' : 'completed' });
+
+  return NextResponse.json({ processed: due?.length ?? 0, sent, skipped, failed, exited });
 }
 
 // Vercel Cron invokes via GET with the CRON_SECRET bearer; delegate to POST.
